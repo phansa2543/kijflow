@@ -1,0 +1,940 @@
+# DECISION LOG
+
+## Business Management SaaS
+
+This document records important decisions that have been accepted by the Founder.
+
+Do not use this document to record every small implementation choice.
+
+Only record decisions that materially affect:
+
+* architecture
+* product
+* business
+* security
+* module boundaries
+* technology direction
+* long-term maintainability
+
+---
+
+# Decision Template
+
+## Decision ID
+
+DEC-XXX
+
+## Date
+
+YYYY-MM-DD
+
+## Decision
+
+What was decided?
+
+## Context
+
+Why did this decision need to be made?
+
+## Problem
+
+What problem are we solving?
+
+## Options Considered
+
+1.
+2.
+3.
+
+## Selected Option
+
+What was selected?
+
+## Reasoning
+
+Why was it selected?
+
+## Trade-offs
+
+What do we gain?
+
+What do we sacrifice?
+
+## Risks
+
+What risks remain?
+
+## Reversibility
+
+Easy / Moderate / Difficult
+
+## Reconsideration Trigger
+
+What future evidence would cause us to reconsider this decision?
+
+## Participants
+
+Which roles contributed?
+
+## Founder Approval
+
+Accepted / Rejected / Pending
+
+---
+
+# CURRENT DECISIONS
+
+The major Phase 1 foundation architecture decisions required before implementation planning have been established.
+
+The project is currently transitioning from architecture discovery into Phase 1 implementation planning.
+
+# DEC-001 — Phase 1 SaaS Foundation Scope
+
+## Date
+
+2026-10-07
+
+## Decision
+
+Phase 1 will build the minimum SaaS foundation required to support the first business module.
+
+## Context
+
+Kijflow requires a reliable SaaS foundation before business modules are implemented.
+
+The foundation must provide enough capability for secure multi-tenant operation while avoiding unnecessary enterprise or future-oriented complexity.
+
+## Problem
+
+What capabilities belong in Phase 1 of the SaaS foundation?
+
+## Options Considered
+
+1. Build only minimal SaaS foundation capabilities.
+2. Build a broader reusable platform including billing, advanced permissions, organization hierarchy, and other future capabilities.
+3. Defer foundation decisions until development of the first business module.
+
+## Selected Option
+
+Build only the minimum SaaS foundation required for the first business module.
+
+### In Scope
+
+- Customer / Organization context
+- Authentication
+- User management
+- Minimal authorization / permissions
+- Strong tenant / data isolation
+
+### Non-Goals
+
+- Billing / subscription / package management
+- Advanced permission builder
+- Complex approval hierarchy
+- Enterprise SSO
+- Teams / departments hierarchy without confirmed requirements
+- Multi-company enterprise features
+- Custom workflow engine
+- Business modules
+
+## Reasoning
+
+The product needs a secure and reusable foundation, but Kijflow is being developed and maintained by one person.
+
+Phase 1 should therefore provide only capabilities that are necessary for the first business module while avoiding speculative complexity.
+
+## Trade-offs
+
+### Gains
+
+- Smaller initial scope
+- Lower implementation and maintenance complexity
+- Earlier path to the first business module
+- Reduced risk of premature abstractions
+
+### Sacrifices
+
+- Some future SaaS capabilities will need to be designed later.
+- The architecture may need to evolve when new validated requirements appear.
+
+## Risks
+
+- The foundation could be made too minimal and require later changes.
+- Future requirements may expose assumptions made during Phase 1.
+
+## Reversibility
+
+Moderate
+
+## Reconsideration Trigger
+
+Reconsider the scope if a validated business module requirement cannot be supported by the existing foundation without significant redesign.
+
+## Participants
+
+- Founder
+- Product Manager
+
+## Founder Approval
+
+Accepted
+
+# DEC-002 — Phase 1 Tenant and Organization/User Model
+
+## Date
+
+2026-10-07
+
+## Decision
+
+For Phase 1:
+
+- Organization represents the SME/business using Kijflow.
+- Organization is also the tenant and data-isolation boundary.
+- Tenant is not modeled as a separate business/domain entity.
+- One Organization may have multiple Users.
+- One User belongs to exactly one Organization.
+- Team and Department are not part of the Phase 1 model.
+- Role and permission architecture are deferred to AQ-003 and AQ-004.
+
+## Context
+
+DEC-001 requires Phase 1 to provide Organization context, user management, minimal authorization, and strong tenant/data isolation while avoiding unnecessary enterprise complexity.
+
+AQ-001 and AQ-002 required clarification of what a tenant is and how Users, Organizations, Teams, and Roles relate.
+
+## Problem
+
+What is the minimum tenant and organization/user model required for Phase 1 without introducing speculative multi-company or multi-organization complexity?
+
+## Options Considered
+
+1. Organization is the tenant boundary.
+2. Introduce a separate Tenant entity with a 1:1 relationship to Organization.
+3. Introduce a Tenant/Account that may contain multiple Organizations.
+4. Allow one User to belong to multiple Organizations through a membership model.
+
+## Selected Option
+
+Use Organization as the tenant/data-isolation boundary.
+
+Use a one-Organization-to-many-Users relationship, with each User belonging to exactly one Organization in Phase 1.
+
+Do not introduce a separate Tenant entity, multi-organization membership, Team, or Department.
+
+## Reasoning
+
+For the current Phase 1 requirements, Organization already represents both:
+
+- the business using Kijflow
+- the boundary within which tenant-owned data belongs
+
+A separate Tenant entity does not currently have a distinct responsibility and would introduce additional concepts and lifecycle rules without a validated requirement.
+
+Restricting a User to one Organization avoids multi-organization membership, tenant switching, active-organization context, and organization-specific authorization complexity.
+
+This keeps the conceptual and security model smaller and more understandable for a one-person software house.
+
+## Assumptions
+
+- Phase 1 users do not require access to multiple Organizations through one account.
+- One business Organization can act as one data-isolation boundary for the initial target customers.
+- Multi-company/group-company structure is not required in Phase 1.
+- Tenant isolation enforcement will be designed separately under AQ-005.
+
+## Trade-offs
+
+### Gains
+
+- Smaller conceptual model
+- Lower authentication and authorization complexity
+- No tenant-switching context
+- Easier reasoning about tenant ownership
+- Lower implementation and maintenance burden
+
+### Sacrifices
+
+- One User cannot access multiple Organizations using one account.
+- Accountants, consultants, multi-business owners, and similar use cases are not supported by this model.
+- Supporting multi-organization access later may require changes across identity, authentication context, authorization, APIs, UI, and tests.
+
+## Risks
+
+- The one-user/one-organization assumption may not fit future validated customer segments.
+- The single-organization assumption could become deeply coupled to the system if not kept explicit.
+- Organization-as-Tenant defines the isolation boundary but does not itself enforce tenant isolation.
+
+## Constraints
+
+- Organization membership must be treated as security-sensitive.
+- Moving a User between Organizations must not be treated as an ordinary field update.
+- Tenant context must come from trusted system/authentication context, not arbitrary client input.
+- Tenant-owned data must have clear Organization ownership.
+- Strong tenant-isolation enforcement remains unresolved under AQ-005.
+
+## Reversibility
+
+Moderate to potentially difficult.
+
+Introducing multi-organization membership later is possible but may affect more than database relationships, including authentication, authorization, request context, APIs, UX, background processes, and testing.
+
+## Reconsideration Trigger
+
+Reconsider this decision if validated customer requirements show that:
+
+- users commonly need access to multiple Organizations,
+- one customer account must contain multiple business Organizations,
+- or Organization can no longer serve as a clear tenant/data-isolation boundary.
+
+## Participants
+
+- Founder
+- Tech Lead / Software Architect
+- QA / Quality Engineer
+- Engineering Mentor
+- Command Center
+
+## Founder Approval
+
+Accepted
+
+# DEC-003 — Phase 1 Authorization Model
+
+## Date
+
+2026-10-08
+
+## Decision
+
+Phase 1 will use a minimal fixed-profile authorization model.
+
+Kijflow defines two authorization profiles:
+
+- Organization Admin
+- Member
+
+Each User has exactly one authorization profile within their Organization.
+
+Organizations cannot create custom roles, and Users cannot receive direct per-user permission overrides.
+
+A configurable first-class Role entity is not required in Phase 1.
+
+Exact capabilities and permission granularity remain deferred to AQ-004.
+
+Tenant-isolation enforcement remains deferred to AQ-005.
+
+## Context
+
+DEC-001 requires Phase 1 to provide minimal authorization and permissions while avoiding advanced permission-builder complexity.
+
+DEC-002 established that each User belongs to exactly one Organization and that Organization is the tenant/data-isolation boundary.
+
+AQ-003 required definition of the minimum authorization model necessary for Phase 1.
+
+## Problem
+
+What authorization model provides sufficient security and administrative control for Phase 1 without introducing unnecessary RBAC, policy, or customization complexity?
+
+## Options Considered
+
+1. Fixed Kijflow-defined authorization profiles.
+2. Direct per-user permissions.
+3. Configurable RBAC with Organization-defined roles.
+4. Fixed or configurable roles with direct per-user overrides.
+5. Policy / attribute-based authorization.
+
+## Selected Option
+
+Use fixed Kijflow-defined authorization profiles:
+
+- Organization Admin
+- Member
+
+Each User has one profile.
+
+Do not introduce:
+
+- custom roles
+- per-user permission overrides
+- configurable Role entities
+- ABAC or policy engines
+
+Authorization should conceptually evaluate whether a User may perform an action or capability rather than treating profile names as universal business rules.
+
+## Lifecycle and Security Invariants
+
+- An operational Organization with active Users must have at least one active Organization Admin.
+- The first Admin must be established through trusted system-controlled logic.
+- Arbitrary client input must not be sufficient to grant Admin authority.
+- Authorization-profile changes are security-sensitive operations and are separate from ordinary User profile editing.
+- A User must not be able to elevate their own authorization profile through ordinary account/profile updates.
+- Demotion, disablement, or removal of the final active Admin must not succeed if it would leave the Organization with zero active Admins.
+- Concurrent administrative changes must not be able to produce an invalid zero-Admin state.
+- Organization Admin authority is scoped only to the Admin's own Organization.
+- A profile does not expand or bypass the tenant boundary.
+- Once a privilege-reducing change successfully takes effect, subsequent authorization decisions must no longer recognize the revoked privilege.
+
+## Reasoning
+
+Fixed profiles provide the minimum distinction required between privileged Organization administration and ordinary use without introducing a configurable authorization framework before validated requirements exist.
+
+This keeps authorization easier to understand, implement, test, audit, debug, and maintain for a one-person software house.
+
+The lifecycle invariants ensure that privileged authority cannot be created, changed, or removed through ordinary User CRUD or produce invalid administrative states.
+
+## Assumptions
+
+- Organization Admin and Member are sufficient for the Phase 1 foundation.
+- Initial business-module requirements do not yet require custom roles or per-user exceptions.
+- A live Organization with active Users requires at least one active administrator.
+- A distinct Owner authorization profile is not currently required.
+- Future business-module permission requirements may require the authorization model to evolve.
+
+## Trade-offs
+
+### Gains
+
+- Smaller authorization model
+- Lower implementation and maintenance complexity
+- Smaller security and regression test matrix
+- Predictable authorization behavior across Organizations
+- Easier debugging and auditing
+- No role-configuration UX or lifecycle
+
+### Sacrifices
+
+- Organizations cannot define their own roles.
+- Users cannot receive individual permission exceptions.
+- Intermediate profiles such as Sales Manager, Auditor, or Accountant are not represented in Phase 1.
+- Future validated requirements may require evolution toward a richer authorization model.
+
+## Risks
+
+- Two profiles may prove insufficient once business-module requirements are validated.
+- Organization Admin could accidentally become a universal "allow everything" role if future modules bypass capability-based authorization.
+- Fixed profiles may create pressure for ad-hoc exceptions if the model is not revisited when real requirements change.
+- Account-recovery scenarios where all Admin credentials become unusable are not solved by this decision.
+
+## Constraints
+
+- Organization Admin must not be treated as a universal superuser across future business modules.
+- Future authorization checks should remain capability/action oriented rather than scattering profile-name checks throughout the application.
+- Fixed profiles do not determine the actual permission catalog.
+- AQ-004 must define capabilities and permission scope.
+- AQ-005 must define tenant-isolation enforcement.
+
+## Reversibility
+
+Moderate.
+
+The fixed-profile model can evolve into a richer role/permission model later, but migration cost increases if profile-name assumptions become deeply embedded across business modules.
+
+## Reconsideration Trigger
+
+Reconsider this decision if validated requirements show that:
+
+- customers commonly need more than Admin and Member,
+- a distinct Owner has genuine business or security semantics,
+- Organizations need custom roles,
+- per-user exceptions become common,
+- segregation of duties is required,
+- business modules require materially different authority levels,
+- resource ownership becomes an authorization dimension,
+- or ad-hoc authorization exceptions begin accumulating.
+
+## Participants
+
+- Founder
+- Tech Lead / Software Architect
+- QA / Quality Engineer
+- Engineering Mentor
+- Command Center
+
+## Founder Approval
+
+Accepted
+
+# DEC-004 — Phase 1 Permission Architecture
+
+## Date
+
+2026-10-08
+
+## Decision
+
+Kijflow will use a hybrid, capability-oriented permission architecture.
+
+Capabilities are divided by responsibility:
+
+- SaaS Foundation owns capabilities related to foundation responsibilities.
+- Business Modules own capabilities arising from their own business responsibilities and workflows.
+
+Capability definitions and mappings to authorization profiles are defined by Kijflow.
+
+Organizations cannot create, modify, or override capability mappings.
+
+Concrete Business Module capability catalogs remain deferred until the relevant module requirements are validated.
+
+## Context
+
+DEC-001 requires Phase 1 to provide minimal authorization and permissions without introducing an advanced permission builder.
+
+DEC-003 established fixed Kijflow-defined authorization profiles:
+
+- Organization Admin
+- Member
+
+DEC-003 also established that authorization should be capability/action oriented and that Organization Admin must not become a universal superuser.
+
+AQ-004 required clarification of how capabilities should be structured, owned, mapped, and evaluated.
+
+## Problem
+
+How should Kijflow structure permissions so that authorization remains secure, understandable, modular, and maintainable without introducing configurable RBAC or prematurely defining Business Module permissions?
+
+## Options Considered
+
+1. Foundation/global capabilities only.
+2. Business-Module capabilities only.
+3. Hybrid Foundation-owned and Business-Module-owned capabilities.
+4. Direct authorization checks against authorization profile names without a capability abstraction.
+
+## Selected Option
+
+Use a hybrid capability architecture.
+
+SaaS Foundation owns capabilities arising from foundation responsibilities.
+
+Each Business Module owns capabilities arising from its own business responsibilities and workflows.
+
+Capabilities and their mappings to the fixed authorization profiles are defined by Kijflow.
+
+Organizations cannot configure custom capability mappings.
+
+## Authorization Invariants
+
+- Every named capability must produce a deterministic authorization outcome for every supported authorization profile.
+- An explicit grant authorizes the capability.
+- Absence of an explicit grant results in denial.
+- Missing or unknown capability mappings result in denial.
+- Unknown named capabilities result in denial.
+- Named capabilities therefore fail closed by default.
+- Organization Admin does not implicitly bypass capability evaluation.
+- Admin status alone does not authorize arbitrary Business Module actions.
+- Profiles are not assumed to form an implicit hierarchy such as `Admin = Member + everything`.
+- Profile-to-capability mappings are explicit Kijflow-defined product/security policy.
+
+## Capability Granularity
+
+Capabilities should represent meaningful authorization distinctions such as:
+
+- administrative responsibility
+- business responsibility
+- security sensitivity
+- materially different business consequences
+- materially different audit significance
+
+Capabilities should not mechanically mirror CRUD operations, API endpoints, or database structure.
+
+Two actions may remain separate capabilities even when their current profile mappings are identical if their business or security meaning is materially different.
+
+Not every allowed action requires a named capability.
+
+## Baseline Authorization Rules
+
+Some inherent or baseline authorization behavior may exist without a named capability.
+
+Such rules must be:
+
+- explicit
+- intentional
+- documented
+- testable
+
+A baseline rule must not bypass a named capability protecting the same action.
+
+Baseline rules must not become informal profile-name shortcuts or hidden authorization paths.
+
+## Capability Ownership
+
+Every named capability must have a clear conceptual owner.
+
+Foundation capabilities are owned by the SaaS Foundation.
+
+Business-specific capabilities are owned by the Business Module responsible for the relevant workflow or responsibility.
+
+Cross-module and shared-domain capability ownership remain intentionally deferred until module ownership and shared boundaries are established.
+
+## Mapping Changes
+
+Changes to profile-to-capability mappings are security-relevant product behavior changes.
+
+A change from deny to allow is a privilege expansion.
+
+A change from allow to deny is a privilege reduction.
+
+Such changes must therefore be intentional and subject to appropriate review and regression validation.
+
+Exact release, migration, or versioning mechanisms are not defined by this decision.
+
+## Entitlement Boundary
+
+Module availability or entitlement and User authorization are separate concerns.
+
+Conceptually:
+
+- entitlement determines whether an Organization may use a module or capability area
+- authorization determines whether a User may perform an action within what is available to the Organization
+
+AQ-004 does not define billing, packaging, subscription, or entitlement implementation.
+
+## Reasoning
+
+The hybrid model keeps Foundation authorization responsibilities separate from Business Module authorization semantics.
+
+This prevents the Foundation from accumulating knowledge of every future business workflow while still providing one consistent capability-oriented authorization model.
+
+Kijflow-defined mappings preserve the predictable and maintainable fixed-profile model established by DEC-003.
+
+Default-deny behavior ensures that incomplete authorization policy fails toward unavailable functionality rather than accidental privilege escalation.
+
+Meaningful capability granularity avoids both universal Admin-style authorization and an unnecessarily large CRUD-oriented permission catalog.
+
+## Assumptions
+
+- Organization Admin and Member remain sufficient for the current SaaS Foundation.
+- Kijflow, rather than individual Organizations, defines authorization policy.
+- Business Module requirements will provide the evidence needed to define module-specific capabilities.
+- Default-deny behavior is preferable to accidental privilege expansion.
+- Capability ownership can generally follow architectural or domain responsibility once module boundaries are understood.
+
+## Trade-offs
+
+### Gains
+
+- Clear authorization ownership
+- Strong default-deny security behavior
+- Predictable and testable profile mappings
+- Reduced coupling between Foundation and Business Modules
+- No customer-facing permission configuration complexity
+- Capability model can evolve with validated module requirements
+- Avoids mechanically generated CRUD permissions
+
+### Sacrifices
+
+- Organizations cannot customize permissions.
+- Missing capability mappings may temporarily block legitimate functionality.
+- Fixed Admin/Member mappings may become insufficient as Business Modules mature.
+- Future module and shared-domain ownership decisions are still required.
+
+## Risks
+
+- Capability catalogs may become too granular without discipline.
+- Foundation may become a dumping ground if ownership rules are ignored.
+- Developers may accidentally introduce Admin bypasses instead of capability checks.
+- Baseline rules may become hidden authorization paths if not documented and tested.
+- Static Admin/Member mappings may become difficult to understand as the product grows.
+- Cross-module capabilities may expose ownership ambiguity later.
+
+## Deferred
+
+This decision intentionally does not define:
+
+- exact Sales capabilities
+- exact capabilities for future Business Modules
+- exact Business Module profile mappings
+- cross-module/shared capability ownership
+- resource or record ownership authorization
+- contextual or attribute-based authorization
+- workflow/state-based authorization
+- capability naming conventions
+- tenant-isolation enforcement
+- entitlement/package/subscription implementation
+
+## Reversibility
+
+Moderate.
+
+The capability-oriented architecture provides a reasonable path toward a richer authorization model later.
+
+However, migration becomes more difficult if Business Modules introduce scattered profile checks, undocumented baseline rules, ad-hoc permission flags, or implicit authorization bypasses.
+
+## Reconsideration Trigger
+
+Reconsider this decision and possibly DEC-003 if:
+
+- Admin/Member mappings become too large or difficult to understand,
+- validated Business Modules require materially different authority levels,
+- Organizations genuinely require configurable roles,
+- per-user exceptions become common,
+- resource ownership becomes a frequent authorization dimension,
+- contextual or workflow-state authorization becomes common,
+- ad-hoc permission flags or bypasses begin accumulating,
+- capability granularity grows without clear business or security justification,
+- cross-module capabilities cannot be assigned clear ownership,
+- or entitlement and authorization begin becoming improperly coupled.
+
+## Participants
+
+- Founder
+- Tech Lead / Software Architect
+- QA / Quality Engineer
+- Command Center
+
+## Founder Approval
+
+Accepted
+
+# DEC-005 — Phase 1 Tenant Isolation Enforcement
+
+## Date
+
+2026-10-08
+
+## Decision
+
+Kijflow Phase 1 will enforce tenant isolation through defense in depth on a shared PostgreSQL database and shared schema.
+
+The enforcement model combines:
+
+- trusted Organization context,
+- explicit application/service tenant scoping,
+- effective PostgreSQL Row-Level Security (RLS),
+- independently enforceable same-tenant relationship integrity,
+- fail-closed tenant semantics,
+- and preservation of tenant ownership across non-database storage boundaries.
+
+Organization remains the tenant/data-isolation boundary established by DEC-002.
+
+## Context
+
+DEC-001 requires strong tenant/data isolation in Phase 1.
+
+DEC-002 established that:
+
+- Organization is the tenant/data-isolation boundary,
+- each User belongs to exactly one Organization,
+- tenant context must come from trusted system/authentication state rather than arbitrary client input,
+- tenant-owned data must have clear Organization ownership.
+
+DEC-003 established that Organization Admin authority is limited to the Admin's own Organization and cannot bypass the tenant boundary.
+
+DEC-004 established that authorization and tenant isolation are separate security concerns.
+
+AQ-005 required definition of how tenant isolation is actually enforced.
+
+## Problem
+
+How should Kijflow prevent one Organization from reading, modifying, relating, or otherwise accessing another Organization's tenant-owned data while remaining secure and maintainable for a one-person software house?
+
+## Options Considered
+
+1. Application-layer tenant filtering only.
+2. PostgreSQL RLS as the sole or primary enforcement mechanism.
+3. Defense in depth using application scoping, RLS, and tenant-consistent relationship integrity.
+4. Separate PostgreSQL schema per Organization.
+5. Separate database per Organization.
+6. Application scoping and database constraints without RLS.
+
+## Selected Option
+
+Use defense-in-depth tenant isolation on a shared PostgreSQL database/shared schema.
+
+Conceptually:
+
+Trusted authenticated/system state  
+→ trusted Organization context  
+→ application/service tenant scoping  
+→ effective PostgreSQL RLS  
+→ independently enforceable same-tenant relationship integrity
+
+No individual layer is treated as sufficient on its own.
+
+## Tenant-Isolation Invariants
+
+1. Organization is the tenant/data-isolation boundary.
+2. Tenant context derives only from trusted authenticated or trusted system state.
+3. Arbitrary client Organization identifiers never establish tenant security context.
+4. Missing, conflicting, ambiguous, stale, or untrusted tenant context fails closed.
+5. Every tenant-owned resource resolves deterministically to exactly one Organization.
+6. Derived tenant ownership is permitted only when mandatory, stable, unambiguous, deterministic, and simple enough to enforce consistently.
+7. All normal Kijflow relational access to tenant-owned data remains subject to effective PostgreSQL RLS.
+8. Any RLS-bypass execution context is privileged system context and cannot be used, inherited, or selected by ordinary tenant-facing execution.
+9. Reused database execution context must never leak tenant identity between tenant-scoped units of work.
+10. Application/service data access explicitly operates within trusted tenant context.
+11. Read and write operations remain constrained to the trusted Organization.
+12. Relationships between tenant-owned resources must preserve same-Organization ownership.
+13. Same-tenant relationship integrity must be enforceable independently of ordinary application caller discipline.
+14. Rejected tenant-inconsistent mutations must not leave partially committed tenant-inconsistent state.
+15. Ordinary application operations cannot reassign tenant ownership.
+16. Organization Admin never bypasses tenant isolation.
+17. Organization Admin status does not imply system-wide or cross-tenant authority.
+18. Cross-tenant/system execution is a separate privileged security boundary.
+19. Tenant-scoped non-request execution must independently establish trusted tenant context.
+20. Every stored data/resource category must receive deliberate ownership classification.
+21. Unspecified or missing ownership never implicitly means global/shared.
+22. Foundation/system/security data is classified according to its semantics and is not automatically global.
+23. Tenant ownership follows copies and derived representations across caches, files, indexes, exports, and other storage boundaries.
+24. Tenant-isolation failures fail closed.
+
+## Data Classification
+
+Stored information must be intentionally classified according to ownership semantics.
+
+### Tenant-owned
+
+Owned by exactly one Organization.
+
+### Platform / Global / Shared
+
+Intentionally shared across Organizations and not tenant-specific.
+
+### System / Foundation / Security
+
+Classification depends on actual security semantics.
+
+Being implemented by the SaaS Foundation does not automatically make data global.
+
+Missing ownership is an unresolved architecture/data-model defect, not evidence that data is global.
+
+## Authentication, Tenant Isolation, and Authorization
+
+These remain separate gates.
+
+Conceptually:
+
+Authenticated  
+AND trusted Organization established  
+AND target resource belongs to that Organization  
+AND required authorization capability granted  
+→ operation may proceed.
+
+Possessing an authorization capability never expands the tenant boundary.
+
+## Privileged System Execution
+
+Legitimate future cross-tenant or system-wide operations must use a distinct privileged system security boundary.
+
+Such privilege must not:
+
+- come from Organization Admin status,
+- be selected through ordinary request parameters,
+- be activated through arbitrary Organization IDs,
+- or be inherited accidentally from tenant-scoped execution.
+
+The exact privileged operational mechanism is deferred.
+
+## Reasoning
+
+Application-only tenant filtering is simpler but too dependent on developer discipline. A single missing tenant predicate could expose another Organization's data.
+
+RLS provides an independent database backstop against this class of error but does not solve tenant isolation by itself.
+
+RLS cannot replace:
+
+- trustworthy tenant-context establishment,
+- explicit application scoping,
+- same-tenant relationship integrity,
+- authorization,
+- background-job isolation,
+- or non-database storage isolation.
+
+Schema-per-tenant and database-per-tenant approaches provide stronger structural separation but introduce provisioning, migration, backup, connection, monitoring, and operational complexity that is not justified for the current SME-focused one-person SaaS.
+
+Defense in depth provides stronger isolation while preserving a manageable shared-database architecture.
+
+## Trade-offs
+
+### Gains
+
+- Stronger protection against forgotten tenant filters.
+- Independent application and database isolation layers.
+- Explicit same-tenant relationship integrity.
+- Clear fail-closed behavior.
+- Shared database/schema remains operationally manageable.
+- Security model extends to background processing and non-database copies.
+
+### Sacrifices
+
+- RLS introduces additional database complexity.
+- Database execution context becomes security-sensitive.
+- Debugging and testing tenant-specific behavior become more complex.
+- Schema relationships require deliberate tenant-integrity design.
+- Maintenance and privileged operations require special care.
+
+## Risks
+
+- Incorrect trusted tenant-context establishment.
+- Normal traffic accidentally obtaining an RLS-bypass execution context.
+- Tenant context leaking through reused database execution.
+- Incorrect or incomplete RLS policies.
+- Incomplete ownership classification.
+- Cross-tenant relationship enforcement gaps.
+- Unsafe privileged maintenance paths.
+- Tenant leakage through caches, files, indexes, exports, or background processing.
+- Excessively bespoke RLS/ownership patterns increasing one-person maintenance burden.
+
+## Maintainability Constraint
+
+Tenant-isolation implementation should favor a small number of standardized, repeatable patterns.
+
+If each table or module develops unique tenant-security behavior, the architecture should be reconsidered.
+
+## Deferred Implementation Decisions
+
+DEC-005 does not determine:
+
+- exact RLS policies,
+- database roles,
+- use of `FORCE ROW LEVEL SECURITY`,
+- database tenant-context mechanism,
+- JWT/session representation,
+- FastAPI middleware design,
+- connection-pool mechanics,
+- transaction mechanics,
+- database schema,
+- which records carry direct Organization ownership,
+- exact foreign-key/constraint/trigger techniques,
+- cache-key structure,
+- file/object-storage paths,
+- queue message format,
+- search-index partitioning,
+- API `403` versus `404` behavior,
+- privileged maintenance tooling,
+- integration architecture.
+
+These belong to implementation design after the architecture is accepted.
+
+## Reversibility
+
+Moderate.
+
+Shared-database defense in depth can evolve toward stronger physical tenant separation later.
+
+Migration becomes more difficult if tenant ownership, RLS behavior, or privileged bypass mechanisms become inconsistent across modules.
+
+## Reconsideration Trigger
+
+Reconsider this decision if:
+
+- regulatory or contractual requirements require physical tenant isolation,
+- customers require dedicated databases,
+- tenant-specific data residency becomes required,
+- tenant scale makes shared-database operation unsuitable,
+- multi-Organization membership or group-company models are introduced,
+- system-wide/cross-tenant workflows become common,
+- RLS creates unacceptable tooling/debugging constraints,
+- ownership paths become too indirect to audit safely,
+- standardized isolation patterns cannot be maintained,
+- or security review discovers bypass paths that cannot reasonably be controlled.
+
+## Participants
+
+- Founder
+- Tech Lead / Software Architect
+- QA / Quality Engineer
+- Command Center
+
+## Founder Approval
+
+Accepted

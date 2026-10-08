@@ -1,0 +1,339 @@
+# PROJECT CONTEXT
+
+## Business Management SaaS for SMEs
+
+## 1. Project Overview
+
+This project is a Business Management SaaS designed for SMEs.
+
+The product aims to solve practical business-management pain points while remaining simple, understandable, and easy to use.
+
+The project is being developed as a one-man software house.
+
+The Founder is responsible for product direction, final decisions, and implementation.
+
+---
+
+## 2. Product Vision
+
+Build a practical business-management SaaS for SMEs that provides useful business capabilities without unnecessary complexity.
+
+The product should prioritize:
+
+* simplicity
+* usability
+* practical business workflows
+* maintainability
+* modularity
+* extensibility
+* reasonable development complexity
+
+The product is not intended to directly compete with large enterprise software companies.
+
+Popular SaaS products in Thailand may be studied as references for:
+
+* common business workflows
+* customer expectations
+* terminology
+* feature patterns
+* market conventions
+
+However, competitor products must not automatically be treated as the correct design.
+
+---
+
+## 3. Product Philosophy
+
+The product should solve real customer problems rather than maximize the number of features.
+
+The team should continuously distinguish between:
+
+* necessary functionality
+* useful functionality
+* optional functionality
+* unnecessary complexity
+
+Simplicity is a product requirement.
+
+A feature should not be considered valuable merely because competitors have it.
+
+---
+
+## 4. Target Customer
+
+Primary target:
+
+Small and medium-sized businesses (SMEs).
+
+The exact customer segments, industries, and ideal customer profile are not yet finalized.
+
+These should be validated through product and market research.
+
+---
+
+## 5. Business Model
+
+The intended business model is SaaS.
+
+The exact:
+
+* pricing
+* packaging
+* subscription structure
+* module monetization
+* customer acquisition strategy
+
+are not yet finalized.
+
+These decisions should be evaluated by the Product Manager and SaaS Strategy Consultant.
+
+---
+
+# 6. Development Strategy
+
+The product will be developed incrementally.
+
+The initial goal is not to build a complete business-management suite.
+
+Instead:
+
+1. establish a reliable SaaS foundation
+2. build the first valuable business module
+3. make that module usable in real business situations
+4. validate the product with real customers
+5. expand with additional modules over time
+
+---
+
+# 7. Phase 1 SaaS Foundation
+
+Phase 1 will establish the minimum SaaS foundation required to support the first business module.
+
+Approved scope:
+
+- Customer / Organization context
+- Authentication
+- User management
+- Minimal authorization / permissions
+- Strong tenant / data isolation
+
+Phase 1 explicitly does not include:
+
+- billing / subscription / packaging
+- advanced permission builders
+- complex approval hierarchies
+- enterprise SSO
+- teams / department hierarchies without validated requirements
+- multi-company enterprise capabilities
+- custom workflow engines
+- business modules
+
+The foundation should prioritize:
+
+- security
+- correctness
+- simplicity
+- one-person maintainability
+
+The technical architecture for Phase 1 is sufficiently established to proceed into implementation planning.
+
+The tenant and Organization/User model has been established under DEC-002.
+
+The authorization model has been established under DEC-003.
+
+The permission architecture has been established under DEC-004.
+
+The tenant-isolation enforcement architecture has been established under DEC-005.
+
+---
+
+# 8. Phase 2 — Sales Management
+
+The first major business module will be Sales Management.
+
+The goal is to build the module to a level where real customers can use it.
+
+The product should reach a sufficiently usable and reliable state before the Founder begins selling it.
+
+The exact scope of the Sales module is not yet finalized.
+
+It must be derived from:
+
+* customer problems
+* real SME workflows
+* business requirements
+* usability considerations
+* technical constraints
+
+---
+
+# 9. Future Modules
+
+Additional business modules will be developed after the first module has reached sufficient maturity.
+
+Modules should have:
+
+* clear responsibilities
+* clear boundaries
+* limited unnecessary coupling
+* understandable interfaces
+* deliberate integration points
+
+The exact future module roadmap has not yet been finalized.
+
+---
+
+# 10. Modular Product Philosophy
+
+The intended direction is a modular SaaS platform.
+
+Customers should eventually be able to use relevant business capabilities without being forced to adopt every possible module.
+
+However, "module independence" is not yet technically defined.
+
+It must be determined through architecture analysis.
+
+Independence may refer to:
+
+* business responsibility
+* domain boundary
+* deployment
+* data ownership
+* commercial packaging
+* integration
+
+These concepts must not be assumed to be identical.
+
+---
+
+# 11. Integration Philosophy
+
+Modules should integrate when integration provides meaningful business value.
+
+Integration should not exist merely because it is technically possible.
+
+The architecture should minimize unnecessary coupling while allowing useful business workflows across modules.
+
+The mechanism for integration has not yet been decided.
+
+Potential approaches may include:
+
+* direct application interfaces
+* APIs
+* events
+* other appropriate mechanisms
+
+The decision should be made based on actual requirements rather than architectural fashion.
+
+---
+
+# 12. One-Person Software House Constraint
+
+The system is primarily built and maintained by one person.
+
+Every significant technical and product decision must therefore consider:
+
+* implementation effort
+* maintenance effort
+* operational complexity
+* infrastructure cost
+* learning cost
+* debugging difficulty
+* support burden
+* cognitive complexity
+* technical debt
+* future scalability
+
+Enterprise-level complexity should not be introduced without a concrete reason.
+
+At the same time, short-term shortcuts that create severe long-term architectural problems should also be avoided.
+
+The goal is a system that one person can understand, build, operate, and evolve.
+
+---
+
+# 13. Engineering Philosophy
+
+The Founder wants to understand the system deeply and write the implementation code personally.
+
+AI is primarily used for:
+
+* analysis
+* architecture
+* education
+* review
+* challenge
+* planning
+* identifying risks
+* exploring alternatives
+
+AI should not replace the Founder's engineering work by default.
+
+---
+
+# 14. Current Project Status
+
+Project stage:
+
+Pre-development / Implementation Planning.
+
+The implementation has not started yet.
+
+Current objective:
+
+Create the Phase 1 Implementation Plan and prepare to begin implementation.
+
+---
+
+# 15. Current Focus
+
+Create the Phase 1 Implementation Plan.
+
+The plan should translate DEC-001 through DEC-005 into an implementation sequence while preserving the accepted architecture and avoiding premature Business Module design.
+
+---
+
+# 16. Important Unresolved Architectural Questions
+
+The following broader questions remain intentionally unresolved and are not blockers for starting Phase 1 implementation:
+
+What does "module independence" actually mean for this product?
+
+What should each module own?
+
+What should be shared across modules?
+
+How should modules communicate?
+
+How should future integrations work?
+
+How much architectural flexibility is justified for a one-person software house?
+
+These questions should be resolved only when concrete Business Module requirements provide sufficient evidence.
+
+---
+
+# 17. Current Product Questions
+
+The following business questions remain open:
+
+* Who is the ideal first customer?
+* Which SME segment should be targeted first?
+* Which business pain point should be prioritized?
+* What should the first Sales MVP contain?
+* What should explicitly NOT be included in the MVP?
+* What existing solutions are customers currently using?
+* Why would customers switch?
+* What does "simple" mean from the customer's perspective?
+
+---
+
+# 18. Source of Truth Principle
+
+This document describes the current known state of the project.
+
+It should be updated when major project facts or direction change.
+
+It should not contain detailed conversation history.
+
+It should contain the current understanding of the project, not the history of how that understanding was reached.

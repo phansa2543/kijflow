@@ -1,0 +1,346 @@
+# OPEN QUESTIONS
+
+## Business Management SaaS
+
+This document contains unresolved questions that may materially affect product, architecture, business, or UX decisions.
+
+An open question should remain here until there is sufficient reasoning or evidence to resolve it.
+
+---
+
+# PRODUCT
+
+## PQ-001
+
+Who is the ideal first customer?
+
+Status:
+Open
+
+## PQ-002
+
+Which SME segment should be targeted first?
+
+Status:
+Open
+
+## PQ-003
+
+What is the most painful problem the first version should solve?
+
+Status:
+Open
+
+## PQ-004
+
+What should the Sales Management MVP include?
+
+Status:
+Open
+
+## PQ-005
+
+What should explicitly NOT be included in the MVP?
+
+Status:
+Open
+
+---
+
+# BUSINESS DOMAIN
+
+## BQ-001
+
+What business workflows are most important for the target SME segment?
+
+Status:
+Open
+
+## BQ-002
+
+Which existing Thai SaaS workflows represent genuine business requirements?
+
+Status:
+Open
+
+## BQ-003
+
+Which competitor features are unnecessary complexity?
+
+Status:
+Open
+
+---
+
+# ARCHITECTURE
+
+## AQ-001
+
+What exactly is a tenant?
+
+Status:
+Resolved
+
+Resolution:
+In Phase 1, an Organization is the tenant and data-isolation boundary.
+
+Tenant is not modeled as a separate business/domain entity.
+
+Decision:
+DEC-002
+
+
+## AQ-002
+
+How should users, tenants, organizations, teams, and roles relate?
+
+Status:
+Resolved
+
+Resolution:
+For Phase 1:
+
+- One Organization may have multiple Users.
+- One User belongs to exactly one Organization.
+- Organization is the tenant/data-isolation boundary.
+- Team and Department are not part of the model.
+- Authorization model has been resolved under AQ-003 / DEC-003.
+- Permission architecture has been resolved under AQ-004 / DEC-004.
+
+Decision:
+DEC-002
+
+## AQ-003
+
+What should the authorization model look like?
+
+Status:
+Resolved
+
+Resolution:
+
+Phase 1 uses a minimal fixed-profile authorization model.
+
+Kijflow defines two authorization profiles:
+
+- Organization Admin
+- Member
+
+Each User has exactly one authorization profile within their Organization.
+
+Organizations cannot create custom roles, and Users do not receive direct per-user permission overrides.
+
+A configurable first-class Role entity is not required in Phase 1.
+
+Privileged profile assignment and mutation are security-sensitive operations.
+
+An operational Organization with active Users must retain at least one active Organization Admin.
+
+Organization Admin authority is limited to the Admin's own Organization.
+
+Permission architecture has been resolved under AQ-004 / DEC-004.
+
+Concrete Business Module capability catalogs remain intentionally deferred until their requirements are known.
+
+Tenant-isolation enforcement has been resolved under AQ-005 / DEC-005.
+
+Decision:
+DEC-003
+
+## AQ-004
+
+Should permissions be global, module-specific, or hybrid?
+
+Status:
+Resolved
+
+Resolution:
+
+Kijflow uses a hybrid, capability-oriented permission architecture.
+
+- SaaS Foundation owns capabilities related to Foundation responsibilities.
+- Business Modules own capabilities arising from their own business responsibilities and workflows.
+- Capability definitions and profile mappings are defined by Kijflow.
+- Organizations cannot customize capability mappings.
+- Named capabilities fail closed: access requires an explicit grant.
+- Missing or unknown mappings do not grant authority.
+- Organization Admin does not implicitly bypass capability evaluation.
+- Capability granularity follows meaningful business, administrative, or security distinctions rather than mechanical CRUD structure.
+- Baseline authorization rules must be explicit, documented, testable, and cannot bypass named capabilities.
+- Every named capability must have a clear conceptual owner.
+- Capability-mapping changes are security-relevant product changes.
+- Module entitlement and User authorization are separate concerns.
+- Concrete Business Module capability catalogs remain deferred until validated module requirements exist.
+
+Decision:
+DEC-004
+
+## AQ-005
+
+How should tenant isolation be enforced?
+
+Status:
+Resolved
+
+Resolution:
+
+Kijflow Phase 1 uses defense-in-depth tenant isolation on a shared PostgreSQL database/shared schema.
+
+- Organization remains the tenant/data-isolation boundary.
+- Tenant context derives only from trusted authenticated/system state.
+- Client-supplied Organization identifiers do not establish tenant security context.
+- Application/service access explicitly operates within trusted Organization context.
+- Normal relational access to tenant-owned data remains subject to effective PostgreSQL RLS.
+- RLS-bypass execution is privileged system context and is unavailable to ordinary tenant-facing execution.
+- Reused database execution context must not leak tenant identity between units of work.
+- Tenant-owned resources resolve deterministically to exactly one Organization.
+- Relationships between tenant-owned resources must preserve same-Organization ownership.
+- Same-tenant relationship integrity must be enforceable independently of ordinary application caller discipline.
+- Ordinary application operations cannot reassign tenant ownership.
+- Organization Admin does not bypass tenant isolation.
+- Stored data categories require deliberate ownership classification.
+- Missing ownership never implicitly means global/shared.
+- Tenant ownership follows data into caches, files, indexes, exports, and other derived storage.
+- Tenant isolation fails closed when context or ownership is missing, conflicting, ambiguous, stale, or untrusted.
+
+Implementation details such as SQL policies, database roles, tenant-context mechanics, middleware, schema constraints, and connection-pool behavior remain deferred to implementation design.
+
+Decision:
+DEC-005
+
+## AQ-006
+
+What belongs in the SaaS foundation?
+
+Status:
+Resolved
+
+Resolution:
+Phase 1 foundation scope is defined by DEC-001.
+
+The approved scope includes:
+
+- Customer / Organization context
+- Authentication
+- User management
+- Minimal authorization / permissions
+- Strong tenant / data isolation
+
+The major Phase 1 foundation architecture decisions have now been established under DEC-002 through DEC-005.
+
+Decision:
+DEC-001
+
+## AQ-007
+
+What does "module independence" mean technically?
+
+Status:
+Open
+
+## AQ-008
+
+What does "module independence" mean commercially?
+
+Status:
+Open
+
+## AQ-009
+
+What should each module own?
+
+Status:
+Open
+
+## AQ-010
+
+What should be shared between modules?
+
+Status:
+Open
+
+## AQ-011
+
+How should modules communicate?
+
+Status:
+Open
+
+## AQ-012
+
+How should future integrations work?
+
+Status:
+Open
+
+---
+
+# UX
+
+## UXQ-001
+
+What does "simple" mean for the target customer?
+
+Status:
+Open
+
+## UXQ-002
+
+Which workflows must be exceptionally fast?
+
+Status:
+Open
+
+## UXQ-003
+
+Which complexity should be hidden from users?
+
+Status:
+Open
+
+---
+
+# SAAS STRATEGY
+
+## SQ-001
+
+What is the initial pricing strategy?
+
+Status:
+Open
+
+## SQ-002
+
+Should modules be independently priced?
+
+Status:
+Open
+
+## SQ-003
+
+What is the strongest reason a customer would switch to this product?
+
+Status:
+Open
+
+## SQ-004
+
+What should differentiate the product from established Thai SaaS products?
+
+Status:
+Open
+
+---
+
+# QUESTION MANAGEMENT
+
+When resolving a question:
+
+1. Record the reasoning in the relevant discussion.
+2. Identify the decision.
+3. Obtain Founder acceptance.
+4. Record the decision in DECISION_LOG.
+5. Change the question status to Resolved.
+6. Remove or archive the question when appropriate.
+
+Do not mark a question resolved merely because a role proposed an answer.
