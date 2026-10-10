@@ -275,21 +275,31 @@ AI should not replace the Founder's engineering work by default.
 
 Project stage:
 
-Pre-development / Implementation Planning.
+Phase 1 Implementation.
 
-The implementation has not started yet.
+Current status:
 
-Current objective:
+Milestone 1 — Project Bootstrap is complete.
 
-Create the Phase 1 Implementation Plan and prepare to begin implementation.
+The project has established:
+
+* runnable FastAPI backend
+* runnable Next.js frontend
+* local PostgreSQL development environment
+* migration foundation
+* backend automated test foundation
+* reproducible local development setup
+* minimal CI with migration validation and automated backend tests
+
+Fresh development setup has been verified from a clean clone using the documented repository setup.
 
 ---
 
 # 15. Current Focus
 
-Create the Phase 1 Implementation Plan.
+Begin Milestone 2 — Organization and User Foundation.
 
-The plan should translate DEC-001 through DEC-005 into an implementation sequence while preserving the accepted architecture and avoiding premature Business Module design.
+The current objective is to implement the minimum persistent Organization/User foundation required by DEC-002 without introducing registration, authentication, tenant isolation, authorization, or Business Module behavior prematurely.
 
 ---
 
