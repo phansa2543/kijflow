@@ -15,6 +15,7 @@ An open question should remain here until there is sufficient reasoning or evide
 Who is the ideal first customer?
 
 Status:
+
 Open
 
 ## PQ-002
@@ -22,6 +23,7 @@ Open
 Which SME segment should be targeted first?
 
 Status:
+
 Open
 
 ## PQ-003
@@ -29,6 +31,7 @@ Open
 What is the most painful problem the first version should solve?
 
 Status:
+
 Open
 
 ## PQ-004
@@ -36,6 +39,7 @@ Open
 What should the Sales Management MVP include?
 
 Status:
+
 Open
 
 ## PQ-005
@@ -43,6 +47,7 @@ Open
 What should explicitly NOT be included in the MVP?
 
 Status:
+
 Open
 
 ---
@@ -54,6 +59,7 @@ Open
 What business workflows are most important for the target SME segment?
 
 Status:
+
 Open
 
 ## BQ-002
@@ -61,6 +67,7 @@ Open
 Which existing Thai SaaS workflows represent genuine business requirements?
 
 Status:
+
 Open
 
 ## BQ-003
@@ -68,6 +75,7 @@ Open
 Which competitor features are unnecessary complexity?
 
 Status:
+
 Open
 
 ---
@@ -79,79 +87,137 @@ Open
 What exactly is a tenant?
 
 Status:
+
 Resolved
 
 Resolution:
+
 In Phase 1, an Organization is the tenant and data-isolation boundary.
 
 Tenant is not modeled as a separate business/domain entity.
 
+A global User Identity may participate in multiple Organizations through Membership without changing the tenant boundary.
+
+Each Organization remains an independent tenant.
+
+Multi-Organization Membership does not imply that several Organizations share one tenant boundary.
+
 Decision:
+
 DEC-002
 
+---
 
 ## AQ-002
 
-How should users, tenants, organizations, teams, and roles relate?
+How should Users, Organizations, Memberships, Teams, and authorization profiles relate?
 
 Status:
+
 Resolved
 
 Resolution:
+
 For Phase 1:
 
-- One Organization may have multiple Users.
-- One User belongs to exactly one Organization.
-- Organization is the tenant/data-isolation boundary.
-- Team and Department are not part of the model.
-- Authorization model has been resolved under AQ-003 / DEC-003.
-- Permission architecture has been resolved under AQ-004 / DEC-004.
+- User represents a global Kijflow identity.
+- User may have Memberships in multiple Organizations.
+- Organization may have multiple Memberships.
+- User and Organization are related through Membership.
+- A User may have at most one Membership for the same Organization.
+- Memberships in different Organizations are independent.
+- Organization remains the tenant/data-isolation boundary.
+- A User may exist with zero usable Memberships.
+- Each usable Membership has exactly one Foundation authorization profile.
+- Foundation profiles are Owner, Admin, and Member.
+- A User may therefore have different Foundation profiles in different Organizations.
+- Team and Department are not part of the Phase 1 model.
+- Multi-Organization Membership does not introduce multi-company business functionality.
+
+Organization manages Membership.
+
+Organization does not own the global User Identity.
 
 Decision:
-DEC-002
+
+DEC-002  
+DEC-003
+
+---
 
 ## AQ-003
 
-What should the authorization model look like?
+What should the Foundation authorization model look like?
 
 Status:
+
 Resolved
 
 Resolution:
 
-Phase 1 uses a minimal fixed-profile authorization model.
+Phase 1 uses three Kijflow-defined Foundation authorization profiles:
 
-Kijflow defines two authorization profiles:
-
-- Organization Admin
+- Owner
+- Admin
 - Member
 
-Each User has exactly one authorization profile within their Organization.
+Authorization profiles belong to Membership context rather than global User Identity.
 
-Organizations cannot create custom roles, and Users do not receive direct per-user permission overrides.
+Each usable Membership has exactly one Foundation profile.
 
-A configurable first-class Role entity is not required in Phase 1.
+A User may therefore hold different authority in different Organizations.
 
-Privileged profile assignment and mutation are security-sensitive operations.
+### Owner
 
-An operational Organization with active Users must retain at least one active Organization Admin.
+Owner represents Organization ownership and lifecycle authority.
 
-Organization Admin authority is limited to the Admin's own Organization.
+An active Organization has exactly one Owner.
 
-Permission architecture has been resolved under AQ-004 / DEC-004.
+Owner:
 
-Concrete Business Module capability catalogs remain intentionally deferred until their requirements are known.
+- must have an active Membership,
+- may transfer Organization ownership,
+- cannot be removed, disabled, revoked, or demoted through ordinary Admin Membership-management operations,
+- must transfer ownership before leaving the Organization.
 
-Tenant-isolation enforcement has been resolved under AQ-005 / DEC-005.
+Owner is not a universal Business Module superuser.
+
+### Admin
+
+Admin performs Foundation administrative responsibilities according to explicit capability policy.
+
+Admin:
+
+- is limited to the relevant Organization,
+- cannot use ordinary Membership management to modify the Owner,
+- does not bypass tenant isolation,
+- is not a universal Business Module superuser.
+
+### Member
+
+Member represents an ordinary Organization participant.
+
+Authority is determined through explicit capability policy.
+
+Organizations cannot create custom authorization profiles or customer-defined roles in Phase 1.
+
+Users do not receive direct per-user permission overrides.
+
+Authorization remains capability/action oriented.
 
 Decision:
-DEC-003
+
+DEC-003  
+DEC-004
+
+---
 
 ## AQ-004
 
 Should permissions be global, module-specific, or hybrid?
 
 Status:
+
 Resolved
 
 Resolution:
@@ -159,119 +225,352 @@ Resolution:
 Kijflow uses a hybrid, capability-oriented permission architecture.
 
 - SaaS Foundation owns capabilities related to Foundation responsibilities.
-- Business Modules own capabilities arising from their own business responsibilities and workflows.
-- Capability definitions and profile mappings are defined by Kijflow.
-- Organizations cannot customize capability mappings.
-- Named capabilities fail closed: access requires an explicit grant.
-- Missing or unknown mappings do not grant authority.
-- Organization Admin does not implicitly bypass capability evaluation.
-- Capability granularity follows meaningful business, administrative, or security distinctions rather than mechanical CRUD structure.
-- Baseline authorization rules must be explicit, documented, testable, and cannot bypass named capabilities.
+- Business Modules own capabilities arising from their validated business responsibilities and workflows.
+- Capability definitions are defined by Kijflow.
+- Profile-to-capability mappings are defined by Kijflow.
+- Phase 1 Foundation mappings apply to Owner, Admin, and Member.
+- Authorization is evaluated within the relevant Membership and Organization context.
+- Organizations cannot customize capability mappings in Phase 1.
+- Named capabilities fail closed.
+- Explicit grant allows access.
+- Missing grant denies access.
+- Missing or unknown mappings deny access.
+- Unknown capabilities deny access.
+- Owner does not implicitly bypass capability evaluation.
+- Admin does not implicitly bypass capability evaluation.
+- Foundation profiles are not assumed to form an implicit hierarchy.
+- Capability granularity follows meaningful business, administrative, security, and audit distinctions rather than mechanical CRUD structure.
+- Baseline authorization rules must be explicit, documented, intentional, and testable.
+- Ownership-specific rules must remain limited to genuine Organization ownership/lifecycle behavior.
+- Ownership semantics must not become a hidden Business Module authorization bypass.
 - Every named capability must have a clear conceptual owner.
 - Capability-mapping changes are security-relevant product changes.
 - Module entitlement and User authorization are separate concerns.
-- Concrete Business Module capability catalogs remain deferred until validated module requirements exist.
+- Concrete Business Module capability catalogs remain deferred until validated requirements exist.
 
 Decision:
+
 DEC-004
+
+---
 
 ## AQ-005
 
 How should tenant isolation be enforced?
 
 Status:
+
 Resolved
 
 Resolution:
 
-Kijflow Phase 1 uses defense-in-depth tenant isolation on a shared PostgreSQL database/shared schema.
+Kijflow Phase 1 uses defense-in-depth tenant isolation on a shared PostgreSQL database and shared schema.
+
+Organization remains the tenant/data-isolation boundary.
+
+For normal tenant-scoped access:
+
+```text
+Authenticated User Identity
+        ↓
+Organization selection intent
+        ↓
+Validate usable Membership
+        ↓
+Trusted Organization Context
+        ↓
+Application / service tenant scoping
+        ↓
+Effective PostgreSQL RLS
+        ↓
+Same-tenant relationship integrity
+```
+
+Core rules:
 
 - Organization remains the tenant/data-isolation boundary.
-- Tenant context derives only from trusted authenticated/system state.
-- Client-supplied Organization identifiers do not establish tenant security context.
+- Tenant context derives only from trusted authenticated or trusted system state.
+- Client-supplied Organization identifiers do not independently establish tenant context.
+- A normal User must have a usable Membership before trusted Organization context is established.
+- Every tenant-scoped operation operates within exactly one trusted Organization context.
+- Disabled Membership cannot establish normal tenant access.
+- Revoked/Former Membership cannot establish normal tenant access.
+- Organization switching requires Membership validation.
+- Missing, conflicting, ambiguous, stale, or untrusted context fails closed.
 - Application/service access explicitly operates within trusted Organization context.
 - Normal relational access to tenant-owned data remains subject to effective PostgreSQL RLS.
 - RLS-bypass execution is privileged system context and is unavailable to ordinary tenant-facing execution.
-- Reused database execution context must not leak tenant identity between units of work.
+- Reused database execution context must not leak tenant identity between Organizations or units of work.
 - Tenant-owned resources resolve deterministically to exactly one Organization.
-- Relationships between tenant-owned resources must preserve same-Organization ownership.
+- Relationships between tenant-owned resources preserve same-Organization ownership.
 - Same-tenant relationship integrity must be enforceable independently of ordinary application caller discipline.
 - Ordinary application operations cannot reassign tenant ownership.
-- Organization Admin does not bypass tenant isolation.
+- Owner does not bypass tenant isolation.
+- Admin does not bypass tenant isolation.
 - Stored data categories require deliberate ownership classification.
 - Missing ownership never implicitly means global/shared.
-- Tenant ownership follows data into caches, files, indexes, exports, and other derived storage.
-- Tenant isolation fails closed when context or ownership is missing, conflicting, ambiguous, stale, or untrusted.
+- Global User Identity is not tenant-owned, but that does not make all User-related information globally readable.
+- Membership is Foundation/security data and access to Membership information must be explicitly constrained.
+- Tenant ownership follows derived representations across caches, files, indexes, exports, and other storage boundaries.
+- Pre-tenant Foundation operations must not expose arbitrary tenant-owned business data.
+- Membership discovery must not allow one User to enumerate another User's Memberships.
+- Tenant isolation fails closed.
 
-Implementation details such as SQL policies, database roles, tenant-context mechanics, middleware, schema constraints, and connection-pool behavior remain deferred to implementation design.
+The Milestone 2 persistence subset has been approved separately in `PHASE_1_IMPLEMENTATION`.
+
+Tenant-isolation implementation details belonging to later milestones remain deferred, including:
+
+- exact RLS policies,
+- PostgreSQL roles,
+- `FORCE ROW LEVEL SECURITY`,
+- database tenant-context mechanics,
+- active Organization context representation,
+- JWT/session representation,
+- FastAPI middleware design,
+- connection-pool mechanics,
+- transaction mechanics required for tenant-isolation enforcement,
+- exact database structures required specifically for tenant-isolation enforcement,
+- exact database enforcement technique for ownership lifecycle beyond the approved Milestone 2 persistence invariants,
+- cache-key structure,
+- file/object-storage paths,
+- queue-message format,
+- search-index partitioning,
+- API `403` versus `404` policy,
+- privileged maintenance tooling.
 
 Decision:
+
 DEC-005
+
+---
 
 ## AQ-006
 
-What belongs in the SaaS foundation?
+What belongs in the SaaS Foundation?
 
 Status:
+
 Resolved
 
 Resolution:
-Phase 1 foundation scope is defined by DEC-001.
 
-The approved scope includes:
+Phase 1 builds the minimum self-service SaaS Foundation required before the first Business Module.
 
-- Customer / Organization context
-- Authentication
-- User management
-- Minimal authorization / permissions
-- Strong tenant / data isolation
+The approved Foundation includes:
 
-The major Phase 1 foundation architecture decisions have now been established under DEC-002 through DEC-005.
+- global Kijflow User Identity,
+- Organization,
+- Membership,
+- self-service User registration,
+- self-service Organization creation,
+- Authentication,
+- trusted Organization context,
+- minimum Membership lifecycle,
+- invitation-based Membership onboarding,
+- Owner / Admin / Member Foundation authorization profiles,
+- Organization ownership protection and transfer,
+- minimal capability-oriented authorization,
+- strong tenant/data isolation,
+- security and lifecycle behavior required by the above.
+
+Phase 1 explicitly does not include:
+
+- billing / subscription / packaging implementation,
+- payment-provider integration,
+- customer-defined roles,
+- direct per-user permission overrides,
+- advanced permission builders,
+- complex approval hierarchies,
+- enterprise SSO,
+- Teams / Departments without validated requirements,
+- parent/subsidiary hierarchy,
+- group-company hierarchy,
+- consolidated multi-company reporting,
+- shared inventory across Organizations,
+- shared business data across Organizations,
+- inter-company transactions,
+- Business Modules,
+- custom workflow engines,
+- production-scale DevOps infrastructure,
+- data-retention purge implementation,
+- customer-offboarding export implementation.
+
+The major Phase 1 Foundation architecture decisions are established under DEC-001 through DEC-005.
 
 Decision:
+
 DEC-001
+
+---
 
 ## AQ-007
 
 What does "module independence" mean technically?
 
 Status:
-Open
+
+Resolved
+
+Resolution:
+
+Kijflow uses functional independence with clear module boundaries inside a modular-monolith architecture.
+
+Technical module independence means:
+
+- each Business Module provides a coherent core workflow when used by itself,
+- a Business Module may depend on the Kijflow SaaS Foundation,
+- a Business Module may use deliberately shared business concepts where validated cross-module meaning exists,
+- modules may integrate through explicit boundaries when integration adds business value,
+- one module should not depend directly on another module's internal implementation details.
+
+Technical independence does not require:
+
+- separate deployment,
+- separate databases,
+- microservices,
+- a generic plugin framework,
+- distributed infrastructure,
+- or duplicated copies of shared business concepts.
+
+The default architecture is:
+
+```text
+Kijflow Application
+│
+├── SaaS Foundation
+├── Shared business concepts
+│   └── only where validated
+├── Sales
+├── Inventory
+├── CRM
+├── Purchase
+├── POS
+└── Accounting
+```
+
+Modules may therefore share:
+
+- one application,
+- one deployment,
+- and one PostgreSQL system,
+
+while maintaining deliberate logical boundaries.
+
+The exact ownership of shared concepts and the exact integration mechanism remain unresolved until validated Business Module workflows provide sufficient evidence.
+
+Decision:
+
+DEC-006
+
+---
 
 ## AQ-008
 
 What does "module independence" mean commercially?
 
 Status:
-Open
+
+Resolved
+
+Resolution:
+
+Business Modules should be commercially independent by default.
+
+A customer should be able to adopt a Business Module without being required to purchase or activate another unrelated Business Module merely because technical integration exists between them.
+
+A Business Module must provide its own coherent core workflow.
+
+Cross-module integration should:
+
+- enhance functionality,
+- automate additional workflows,
+- or provide additional business value.
+
+Integration should not exist merely to repair an incomplete standalone module.
+
+Commercial independence does not yet determine:
+
+- exact pricing,
+- packaging,
+- bundles,
+- discounts,
+- subscription mechanics,
+- or entitlement implementation.
+
+A future validated business dependency may justify a bundle or module dependency.
+
+Such an exception must be intentional and documented rather than an accidental result of technical coupling.
+
+Decision:
+
+DEC-006
+
+---
 
 ## AQ-009
 
 What should each module own?
 
 Status:
+
 Open
+
+This should be resolved from validated Business Module responsibilities and workflows.
+
+DEC-006 requires clear ownership but does not predefine the exact ownership boundary of Sales, Inventory, CRM, Purchase, POS, Accounting, or future modules.
+
+---
 
 ## AQ-010
 
 What should be shared between modules?
 
 Status:
+
 Open
+
+DEC-006 allows deliberately shared business concepts where genuine cross-module meaning is validated.
+
+The exact shared concepts are intentionally not defined yet.
+
+For example, Customer or Product/Service may later prove to be shared concepts, but this must be derived from real Business Module workflows rather than assumed in advance.
+
+---
 
 ## AQ-011
 
 How should modules communicate?
 
 Status:
+
 Open
+
+DEC-006 requires deliberate module boundaries and explicit integration points.
+
+The exact communication mechanism remains open.
+
+Depending on validated requirements, an integration may later use:
+
+- direct application/service interfaces,
+- internal APIs,
+- domain/application events,
+- or another sufficiently simple mechanism.
+
+The simplest mechanism that preserves the required boundary should be preferred.
+
+---
 
 ## AQ-012
 
 How should future integrations work?
 
 Status:
+
 Open
+
+DEC-006 establishes that cross-module integrations should be optional by default and should add meaningful business value.
+
+The exact integration workflow, ownership, consistency model, failure behavior, and implementation mechanism remain unresolved until concrete cross-module requirements exist.
 
 ---
 
@@ -282,6 +581,7 @@ Open
 What does "simple" mean for the target customer?
 
 Status:
+
 Open
 
 ## UXQ-002
@@ -289,6 +589,7 @@ Open
 Which workflows must be exceptionally fast?
 
 Status:
+
 Open
 
 ## UXQ-003
@@ -296,6 +597,7 @@ Open
 Which complexity should be hidden from users?
 
 Status:
+
 Open
 
 ---
@@ -307,6 +609,7 @@ Open
 What is the initial pricing strategy?
 
 Status:
+
 Open
 
 ## SQ-002
@@ -314,13 +617,19 @@ Open
 Should modules be independently priced?
 
 Status:
+
 Open
+
+DEC-006 establishes commercial independence as the default product principle but does not determine the final pricing or packaging model.
+
+Independent pricing, bundles, discounts, and other packaging choices remain subject to future product and commercial validation.
 
 ## SQ-003
 
 What is the strongest reason a customer would switch to this product?
 
 Status:
+
 Open
 
 ## SQ-004
@@ -328,6 +637,7 @@ Open
 What should differentiate the product from established Thai SaaS products?
 
 Status:
+
 Open
 
 ---
@@ -344,3 +654,12 @@ When resolving a question:
 6. Remove or archive the question when appropriate.
 
 Do not mark a question resolved merely because a role proposed an answer.
+
+If an accepted decision is later revised:
+
+1. Re-evaluate questions whose resolutions depended on the superseded assumption.
+2. Update their resolutions to reflect the current accepted decision.
+3. Preserve the relevant decision reference.
+4. Do not leave contradictory resolved answers in this document.
+
+This document should describe the current accepted understanding rather than preserve obsolete architectural assumptions.

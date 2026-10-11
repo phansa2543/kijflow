@@ -7,8 +7,10 @@ from alembic import context
 
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv
+
+from app.db.base import Base
+import app.models.registry
 
 project_root = Path(__file__).resolve().parents[2]
 load_dotenv(project_root / ".env")
@@ -25,7 +27,7 @@ config.set_main_option("sqlalchemy.url", database_url)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = None
+target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
 

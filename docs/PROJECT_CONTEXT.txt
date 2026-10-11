@@ -20,25 +20,38 @@ Build a practical business-management SaaS for SMEs that provides useful busines
 
 The product should prioritize:
 
-* simplicity
-* usability
-* practical business workflows
-* maintainability
-* modularity
-* extensibility
-* reasonable development complexity
+- simplicity
+- usability
+- practical business workflows
+- maintainability
+- modularity
+- extensibility
+- reasonable development complexity
 
 The product is not intended to directly compete with large enterprise software companies.
 
 Popular SaaS products in Thailand may be studied as references for:
 
-* common business workflows
-* customer expectations
-* terminology
-* feature patterns
-* market conventions
+- common business workflows
+- customer expectations
+- terminology
+- feature patterns
+- market conventions
 
 However, competitor products must not automatically be treated as the correct design.
+
+Kijflow should use market and competitor research to understand:
+
+- customer problems
+- real business workflows
+- common expectations
+- avoidable complexity
+
+The purpose is not to copy competitor requirements.
+
+The guiding product principle is:
+
+> We do not discover requirements merely to build what customers or competitors already have. We discover problems and workflows so Kijflow can decide what standard it should provide.
 
 ---
 
@@ -48,14 +61,24 @@ The product should solve real customer problems rather than maximize the number 
 
 The team should continuously distinguish between:
 
-* necessary functionality
-* useful functionality
-* optional functionality
-* unnecessary complexity
+- necessary functionality
+- useful functionality
+- optional functionality
+- unnecessary complexity
 
 Simplicity is a product requirement.
 
 A feature should not be considered valuable merely because competitors have it.
+
+Product decisions should favor:
+
+- clear default behavior
+- understandable workflows
+- low setup complexity
+- low support burden
+- practical SME usability
+
+Flexibility should be introduced only when validated requirements justify its cost.
 
 ---
 
@@ -69,23 +92,29 @@ The exact customer segments, industries, and ideal customer profile are not yet 
 
 These should be validated through product and market research.
 
+The product should remain appropriate for Thai SME usage while avoiding unnecessary enterprise complexity.
+
 ---
 
 ## 5. Business Model
 
-The intended business model is SaaS.
+The intended primary product model is SaaS.
 
 The exact:
 
-* pricing
-* packaging
-* subscription structure
-* module monetization
-* customer acquisition strategy
+- pricing
+- packaging
+- subscription structure
+- module monetization
+- customer acquisition strategy
 
 are not yet finalized.
 
-These decisions should be evaluated by the Product Manager and SaaS Strategy Consultant.
+Billing and packaging are intentionally deferred until the Sales Management core is sufficiently defined and usable.
+
+The SaaS Foundation should not prematurely encode assumptions about future package or pricing structure.
+
+Subscription and entitlement concepts must remain separate from User authorization.
 
 ---
 
@@ -97,112 +126,351 @@ The initial goal is not to build a complete business-management suite.
 
 Instead:
 
-1. establish a reliable SaaS foundation
-2. build the first valuable business module
+1. establish a reliable SaaS Foundation
+2. build the first valuable Business Module
 3. make that module usable in real business situations
 4. validate the product with real customers
 5. expand with additional modules over time
+
+Architecture should be designed only far enough to support validated current requirements without blocking reasonable future evolution.
+
+Implementation-level detail should be designed primarily for the current milestone.
 
 ---
 
 # 7. Phase 1 SaaS Foundation
 
-Phase 1 will establish the minimum SaaS foundation required to support the first business module.
+Phase 1 establishes the minimum self-service SaaS Foundation required before the first Business Module.
 
-Approved scope:
+The Foundation must support realistic SaaS identity, Organization, Membership, ownership, authorization, and tenant behavior without becoming a general-purpose enterprise platform.
 
-- Customer / Organization context
-- Authentication
-- User management
-- Minimal authorization / permissions
-- Strong tenant / data isolation
+## Core Product Model
+
+### Global User Identity
+
+User represents a global Kijflow identity.
+
+A User is not owned by one Organization.
+
+A User may participate in:
+
+- zero Organizations
+- one Organization
+- multiple Organizations
+
+through Membership.
+
+### Organization
+
+Organization represents the SME/business using Kijflow.
+
+Organization is the tenant and data-isolation boundary.
+
+Tenant is not modeled as a separate business/domain entity in Phase 1.
+
+Each Organization remains independent from other Organizations.
+
+Multi-Organization Membership does not imply multi-company enterprise functionality.
+
+### Membership
+
+Membership represents the relationship between a global User Identity and one Organization.
+
+A User may have Memberships in multiple Organizations.
+
+Memberships in different Organizations are independent.
+
+A change in Organization A must not implicitly modify Membership in Organization B.
+
+The same User may have different Foundation authority in different Organizations.
+
+### Foundation Authorization Profiles
+
+Phase 1 uses three Kijflow-defined Foundation profiles:
+
+- Owner
+- Admin
+- Member
+
+The profile belongs to Membership context.
+
+An active Organization has exactly one Owner.
+
+Owner represents Organization ownership and lifecycle authority.
+
+Owner and Admin are not universal Business Module superusers.
+
+Authorization remains capability-oriented.
+
+### Trusted Organization Context
+
+Every tenant-scoped operation operates within exactly one trusted Organization context.
+
+Conceptually:
+
+```text
+Authenticated User Identity
+        ↓
+Organization selection intent
+        ↓
+Validate usable Membership
+        ↓
+Trusted Organization Context
+        ↓
+Tenant-scoped operation
+```
+
+Client-supplied Organization identifiers do not independently establish trusted tenant context.
+
+### Membership Lifecycle
+
+The Foundation must support the product semantics required for:
+
+- Pending
+- Active
+- Disabled
+- Revoked / Former
+
+The exact technical representation of each state is determined by the relevant implementation milestone.
+
+Milestone 2 establishes only the persistent Membership lifecycle representation required by that milestone:
+
+- Active
+- Disabled
+- Revoked
+
+Invitation and Pending representation remain deferred to the relevant later milestone.
+
+Revoking Membership:
+
+- removes access to that Organization,
+- does not delete global User Identity,
+- does not affect Membership in another Organization,
+- must preserve historical attribution.
+
+### Self-Service SaaS Behavior
+
+The intended Foundation supports self-service User registration and Organization creation.
+
+New User direction:
+
+```text
+Register User Identity
+        ↓
+Authenticate
+        ↓
+Create first Organization
+        ↓
+Create Membership
+        ↓
+Creator becomes Owner
+```
+
+Existing authenticated User may create another Organization and become Owner of that new Organization through a new Membership.
+
+### Invitation Principle
+
+Organization manages Membership.
+
+Organization does not create or own another person's global credentials.
+
+A person invited into an Organization should establish or use their own global Kijflow Identity.
+
+## Phase 1 Scope
+
+Phase 1 includes:
+
+- global Kijflow User Identity
+- Organization
+- Membership
+- self-service User registration
+- self-service Organization creation
+- authentication
+- trusted Organization context
+- minimum Membership lifecycle
+- invitation-based Membership onboarding
+- Owner / Admin / Member Foundation authorization
+- Organization ownership protection and transfer
+- minimal capability-oriented authorization
+- strong tenant/data isolation
+- automated security regression coverage
+- minimum deployment readiness required before the first Business Module
+
+## Phase 1 Non-Goals
 
 Phase 1 explicitly does not include:
 
-- billing / subscription / packaging
+- billing / subscription / packaging implementation
+- payment-provider integration
+- Business Modules
+- customer-defined roles
+- direct per-user permission overrides
 - advanced permission builders
 - complex approval hierarchies
 - enterprise SSO
-- teams / department hierarchies without validated requirements
-- multi-company enterprise capabilities
+- Teams / Departments without validated requirements
+- parent/subsidiary hierarchy
+- group-company hierarchy
+- consolidated multi-company reporting
+- shared inventory across Organizations
+- shared business data across Organizations
+- inter-company transactions
 - custom workflow engines
-- business modules
+- customer-offboarding export implementation
+- data-retention purge implementation
+- production-scale DevOps infrastructure
 
-The foundation should prioritize:
+## Accepted Architecture
 
-- security
-- correctness
-- simplicity
-- one-person maintainability
+The accepted Phase 1 Foundation architecture is defined by:
 
-The technical architecture for Phase 1 is sufficiently established to proceed into implementation planning.
+- DEC-001 — Phase 1 SaaS Foundation Scope
+- DEC-002 — Phase 1 Identity, Organization, and Membership Model
+- DEC-003 — Phase 1 Foundation Authorization Model
+- DEC-004 — Phase 1 Permission Architecture
+- DEC-005 — Phase 1 Tenant Isolation Enforcement
 
-The tenant and Organization/User model has been established under DEC-002.
+The original one-User/one-Organization assumption has been superseded.
 
-The authorization model has been established under DEC-003.
-
-The permission architecture has been established under DEC-004.
-
-The tenant-isolation enforcement architecture has been established under DEC-005.
+The current architecture must be used for all implementation from Milestone 2 onward.
 
 ---
 
 # 8. Phase 2 — Sales Management
 
-The first major business module will be Sales Management.
+The first major Business Module will be Sales Management.
 
 The goal is to build the module to a level where real customers can use it.
 
 The product should reach a sufficiently usable and reliable state before the Founder begins selling it.
 
-The exact scope of the Sales module is not yet finalized.
+The exact scope of the Sales Management core is not yet finalized.
 
 It must be derived from:
 
-* customer problems
-* real SME workflows
-* business requirements
-* usability considerations
-* technical constraints
+- customer problems
+- real SME workflows
+- business requirements
+- usability considerations
+- technical constraints
+
+Only functionality necessary for a coherent end-to-end Sales workflow should be treated as core.
+
+Convenience features and enhancements should be deferred unless they are necessary for real use.
+
+Pricing/package boundaries should not drive Sales Management scope prematurely.
 
 ---
 
 # 9. Future Modules
 
-Additional business modules will be developed after the first module has reached sufficient maturity.
+Additional Business Modules may be developed after the first module has reached sufficient maturity.
 
-Modules should have:
+Potential Business Modules include areas such as:
 
-* clear responsibilities
-* clear boundaries
-* limited unnecessary coupling
-* understandable interfaces
-* deliberate integration points
+- Sales Management
+- POS
+- Inventory
+- Purchase
+- CRM
+- Accounting
 
-The exact future module roadmap has not yet been finalized.
+The exact future roadmap is not finalized.
+
+Business Modules should have:
+
+- clear business responsibilities,
+- clear logical boundaries,
+- deliberate ownership of module-specific behavior and data,
+- limited unnecessary coupling,
+- understandable interfaces,
+- and explicit integration points.
+
+Each Business Module should provide a coherent core workflow without requiring the customer to purchase or activate another unrelated Business Module.
+
+A module may depend on:
+
+- the Kijflow SaaS Foundation,
+- deliberately shared business concepts where validated,
+- and explicit optional integrations.
+
+A future Business Module should not automatically become a dependency of another module merely because integration is possible.
+
+Exact module ownership and shared-business boundaries remain subject to validated Business Module workflows.
 
 ---
 
 # 10. Modular Product Philosophy
 
-The intended direction is a modular SaaS platform.
+Kijflow follows the Business Module Independence Principle established by DEC-006.
 
-Customers should eventually be able to use relevant business capabilities without being forced to adopt every possible module.
+Module independence means:
 
-However, "module independence" is not yet technically defined.
+- functional independence,
+- commercial independence by default,
+- clear module boundaries,
+- optional integration,
+- and a modular-monolith technical architecture.
 
-It must be determined through architecture analysis.
+A customer should be able to use a selected Business Module for its coherent core workflow without being forced to purchase another unrelated Business Module.
 
-Independence may refer to:
+Cross-module integration should add:
 
-* business responsibility
-* domain boundary
-* deployment
-* data ownership
-* commercial packaging
-* integration
+- useful automation,
+- additional workflow capability,
+- or additional business value.
 
-These concepts must not be assumed to be identical.
+Integration should not repair an incomplete standalone module.
+
+Business Module independence does not require:
+
+- separate deployment,
+- separate databases,
+- microservices,
+- duplicated shared concepts,
+- generic plugin architecture,
+- or distributed infrastructure.
+
+The default technical direction is a modular monolith.
+
+Conceptually:
+
+```text
+Kijflow Application
+│
+├── SaaS Foundation
+├── Shared business concepts
+│   └── only where validated
+├── Sales
+├── Inventory
+├── CRM
+├── Purchase
+├── POS
+└── Accounting
+```
+
+Modules may therefore share:
+
+- one application,
+- one deployment model,
+- and one PostgreSQL system,
+
+while maintaining deliberate logical boundaries.
+
+Shared business concepts must not be created speculatively.
+
+Concepts such as Customer or Product/Service may later prove to be shared, but their ownership must be derived from validated business workflows rather than assumed in advance.
+
+Commercial independence establishes the default product principle.
+
+It does not yet determine:
+
+- pricing,
+- packaging,
+- bundles,
+- discounts,
+- subscription mechanics,
+- or entitlement implementation.
 
 ---
 
@@ -210,20 +478,42 @@ These concepts must not be assumed to be identical.
 
 Modules should integrate when integration provides meaningful business value.
 
+Cross-module integration is optional by default.
+
+Integration should:
+
+- enhance a workflow,
+- automate useful cross-module behavior,
+- or provide additional value.
+
 Integration should not exist merely because it is technically possible.
 
-The architecture should minimize unnecessary coupling while allowing useful business workflows across modules.
+One Business Module should not depend directly on another module's internal implementation details.
 
-The mechanism for integration has not yet been decided.
+Cross-module behavior should pass through deliberate boundaries.
 
-Potential approaches may include:
+The exact communication and integration mechanisms remain unresolved until concrete workflow requirements exist.
 
-* direct application interfaces
-* APIs
-* events
-* other appropriate mechanisms
+Potential mechanisms may include:
 
-The decision should be made based on actual requirements rather than architectural fashion.
+- direct application/service interfaces,
+- internal APIs,
+- domain/application events,
+- or another sufficiently simple mechanism.
+
+Kijflow should prefer the simplest mechanism that preserves the required boundary.
+
+Distributed infrastructure such as:
+
+- message brokers,
+- generic event buses,
+- plugin frameworks,
+- service meshes,
+- or microservices
+
+should not be introduced merely to satisfy an abstract idea of modularity.
+
+The appropriate integration mechanism should follow actual workflow, ownership, consistency, and failure-handling requirements.
 
 ---
 
@@ -233,41 +523,80 @@ The system is primarily built and maintained by one person.
 
 Every significant technical and product decision must therefore consider:
 
-* implementation effort
-* maintenance effort
-* operational complexity
-* infrastructure cost
-* learning cost
-* debugging difficulty
-* support burden
-* cognitive complexity
-* technical debt
-* future scalability
+- implementation effort
+- maintenance effort
+- operational complexity
+- infrastructure cost
+- learning cost
+- debugging difficulty
+- support burden
+- cognitive complexity
+- technical debt
+- future scalability
 
-Enterprise-level complexity should not be introduced without a concrete reason.
+Enterprise-level complexity should not be introduced without concrete justification.
 
-At the same time, short-term shortcuts that create severe long-term architectural problems should also be avoided.
+At the same time, short-term shortcuts that create severe long-term architecture or security problems should be avoided.
 
-The goal is a system that one person can understand, build, operate, and evolve.
+The goal is a system that one person can:
+
+- understand
+- build
+- debug
+- test
+- operate
+- support
+- evolve
+
+Reasonable extensibility is desirable.
+
+Speculative flexibility is not.
 
 ---
 
 # 13. Engineering Philosophy
 
-The Founder wants to understand the system deeply and write the implementation code personally.
+The Founder wants to understand the system deeply and write implementation code personally.
 
 AI is primarily used for:
 
-* analysis
-* architecture
-* education
-* review
-* challenge
-* planning
-* identifying risks
-* exploring alternatives
+- analysis
+- architecture
+- education
+- review
+- challenge
+- planning
+- risk identification
+- testing strategy
+- exploring alternatives
 
 AI should not replace the Founder's engineering work by default.
+
+The normal engineering flow is:
+
+```text
+Requirements / Product Direction
+        ↓
+Domain Understanding
+        ↓
+Architecture
+        ↓
+Current Milestone Design
+        ↓
+Founder Understanding
+        ↓
+Founder Implementation
+        ↓
+Review
+        ↓
+Testing
+        ↓
+Documentation Sync
+```
+
+Accepted architecture should not be silently bypassed during implementation.
+
+If implementation evidence conflicts with an accepted decision, the issue should return to architecture review.
 
 ---
 
@@ -277,64 +606,227 @@ Project stage:
 
 Phase 1 Implementation.
 
-Current status:
+## Completed
 
 Milestone 1 — Project Bootstrap is complete.
 
-The project has established:
+Milestone 1 established:
 
-* runnable FastAPI backend
-* runnable Next.js frontend
-* local PostgreSQL development environment
-* migration foundation
-* backend automated test foundation
-* reproducible local development setup
-* minimal CI with migration validation and automated backend tests
+- runnable FastAPI backend
+- runnable Next.js frontend
+- local PostgreSQL development environment
+- migration foundation
+- backend automated test foundation
+- reproducible local development setup
+- minimal CI with migration validation and automated backend tests
 
 Fresh development setup has been verified from a clean clone using the documented repository setup.
+
+## Foundation Retrospective
+
+Before Milestone 2 implementation began, the Phase 1 Foundation was reviewed from the Product perspective.
+
+That review identified that the original one-User/one-Organization model did not adequately represent the intended self-service SaaS product.
+
+The Founder approved revised Product Directions including:
+
+- global User Identity
+- multi-Organization Membership
+- Owner semantics
+- self-service registration
+- self-service Organization creation
+- Membership lifecycle
+- Organization lifecycle direction
+
+The Phase 1 Foundation architecture was then re-baselined.
+
+## Revised Architecture Status
+
+The Founder has accepted the revised Phase 1 architecture.
+
+Current accepted decisions:
+
+- DEC-001 revised
+- DEC-002 revised
+- DEC-003 revised
+- DEC-004 revalidated
+- DEC-005 revalidated and revised
+- DEC-006 accepted — Business Module Independence Principle
+
+The following source-of-truth documents have been revised to reflect the accepted architecture:
+
+- DECISION_LOG
+- OPEN_QUESTIONS
+- PHASE_1_IMPLEMENTATION
+- PROJECT_CONTEXT
+
+No Milestone 2 domain implementation was completed under the superseded one-User/one-Organization model.
+
+The architectural revision therefore occurred before the obsolete model became deeply embedded in implementation.
+
+## Milestone 2 Design Status
+
+The Milestone 2 implementation-level technical design has been completed.
+
+The design was:
+
+- proposed and reviewed by the Tech Lead / Software Architect,
+- challenged by QA,
+- revised to incorporate QA findings,
+- reviewed with the Founder by the Engineering Mentor,
+- and explicitly approved by the Founder.
+
+The approved Milestone 2 persistence design is recorded in `PHASE_1_IMPLEMENTATION`.
+
+The design establishes the minimum persistent representation for:
+
+- global User Identity,
+- Organization,
+- Membership,
+- Membership-specific Owner / Admin / Member profiles,
+- Active / Disabled / Revoked Membership state,
+- durable User–Organization Membership identity,
+- minimum ownership persistence invariants,
+- restrictive Membership foreign-key behavior,
+- and the migration/testing boundary required for Milestone 2.
+
+This implementation-level approval does not expand Milestone 2 into later Foundation workflows.
 
 ---
 
 # 15. Current Focus
 
-Begin Milestone 2 — Organization and User Foundation.
+The current focus is:
 
-The current objective is to implement the minimum persistent Organization/User foundation required by DEC-002 without introducing registration, authentication, tenant isolation, authorization, or Business Module behavior prematurely.
+**Milestone 2 — Identity / Organization / Membership Foundation**
+
+Milestone 2 technical design is approved.
+
+Founder implementation is now the current step.
+
+Its purpose is to establish the minimum persistent Foundation model for:
+
+- global User Identity
+- Organization
+- Membership
+- Membership-specific Owner / Admin / Member profile semantics
+- minimum ownership representation
+- minimum Membership lifecycle representation required by later security behavior
+
+Milestone 2 must not prematurely implement:
+
+- public registration workflow
+- login/authentication
+- active Organization selection UX
+- trusted tenant-context enforcement
+- PostgreSQL RLS enforcement
+- capability evaluation
+- invitation workflow
+- full Membership-management workflow
+- ownership-transfer workflow
+- Business Module behavior
+- billing/subscription behavior
+
+Later milestones should remain at milestone-level scope until they become current.
+
+The current progression is:
+
+```text
+M1 — Project Bootstrap
+     COMPLETE
+
+        ↓
+
+Phase 1 Architecture Revision
+     ACCEPTED
+
+        ↓
+
+M2 — Identity / Organization / Membership Foundation
+     TECHNICAL DESIGN — APPROVED
+
+        ↓
+
+Founder Implementation
+     CURRENT
+
+        ↓
+
+Implementation Review / Testing
+     NEXT
+```
+
+Milestone 2 is not complete until its Acceptance Criteria in `PHASE_1_IMPLEMENTATION` are satisfied.
 
 ---
 
 # 16. Important Unresolved Architectural Questions
 
-The following broader questions remain intentionally unresolved and are not blockers for starting Phase 1 implementation:
+The major Phase 1 Foundation architecture questions required before Milestone 2 have been resolved under DEC-001 through DEC-005.
 
-What does "module independence" actually mean for this product?
+The Business Module Independence Principle has been resolved under DEC-006.
 
-What should each module own?
+The following broader architectural questions remain intentionally unresolved:
 
-What should be shared across modules?
+- What should each Business Module own?
+- What should be shared across modules?
+- How should modules communicate?
+- How should future integrations work?
 
-How should modules communicate?
+These questions are not blockers for Phase 1 Foundation implementation.
 
-How should future integrations work?
+They should be resolved from validated Business Module responsibilities and workflows rather than speculative architecture.
 
-How much architectural flexibility is justified for a one-person software house?
+The Milestone 2 persistence subset is no longer an unresolved implementation question.
 
-These questions should be resolved only when concrete Business Module requirements provide sufficient evidence.
+Its approved implementation-level design is recorded in `PHASE_1_IMPLEMENTATION`.
+
+Implementation details belonging to later milestones remain intentionally deferred, including:
+
+- authentication-specific User fields
+- additional Organization lifecycle fields
+- Invitation persistence
+- Pending-state representation
+- lifecycle/audit representation beyond the approved Milestone 2 Membership state
+- active Organization-context storage
+- JWT/session representation
+- authentication-token mechanics
+- exact RLS policies
+- PostgreSQL application roles
+- database tenant-context mechanics
+- connection-pool context handling
+- ownership-transfer enforcement technique
+- exact Foundation capability catalog
+
+These are not unresolved architecture direction.
+
+They are implementation decisions that should be addressed only when the relevant milestone requires them.
 
 ---
 
 # 17. Current Product Questions
 
-The following business questions remain open:
+The following product and business questions remain open:
 
-* Who is the ideal first customer?
-* Which SME segment should be targeted first?
-* Which business pain point should be prioritized?
-* What should the first Sales MVP contain?
-* What should explicitly NOT be included in the MVP?
-* What existing solutions are customers currently using?
-* Why would customers switch?
-* What does "simple" mean from the customer's perspective?
+- Who is the ideal first customer?
+- Which SME segment should be targeted first?
+- What is the most painful problem the first version should solve?
+- What should the Sales Management MVP include?
+- What should explicitly NOT be included in the MVP?
+- What business workflows are most important for the target SME segment?
+- Which existing Thai SaaS workflows represent genuine business requirements?
+- Which competitor features represent unnecessary complexity?
+- What does "simple" mean for the target customer?
+- Which workflows must be exceptionally fast?
+- Which complexity should be hidden from users?
+- What is the initial pricing strategy?
+- Should modules be independently priced?
+- What is the strongest reason a customer would switch to Kijflow?
+- What should differentiate Kijflow from established Thai SaaS products?
+
+These questions should be answered from evidence and product/domain research rather than assumptions.
+
+They are not blockers for implementing the accepted Phase 1 Foundation unless new evidence contradicts an accepted Foundation decision.
 
 ---
 
@@ -346,4 +838,29 @@ It should be updated when major project facts or direction change.
 
 It should not contain detailed conversation history.
 
-It should contain the current understanding of the project, not the history of how that understanding was reached.
+It should contain the current accepted understanding of the project rather than obsolete assumptions or a chronological record of previous discussions.
+
+Detailed decisions belong in:
+
+- DECISION_LOG
+
+Unresolved material questions belong in:
+
+- OPEN_QUESTIONS
+
+Phase 1 milestone boundaries, approved current-milestone implementation design, and acceptance criteria belong in:
+
+- PHASE_1_IMPLEMENTATION
+
+PROJECT_CONTEXT should remain a concise high-level representation of:
+
+- what Kijflow is,
+- what has been decided,
+- where the project currently stands,
+- and what the current focus is.
+
+When these documents conflict, the conflict must be resolved rather than silently choosing whichever document is convenient.
+
+Accepted Founder decisions recorded in DECISION_LOG are authoritative for architecture and product direction.
+
+Approved implementation-level design for the current milestone must remain consistent with those decisions.
