@@ -186,3 +186,145 @@ A role should request another role's review when:
 A decision is considered settled only when the Founder explicitly accepts it.
 
 Important accepted decisions should be recorded in DECISION_LOG.
+
+## Chat Lifecycle Protocol
+
+### 1. Purpose
+
+Manage AI chat context without duplicating the Project Sources or losing important decisions.
+
+### 2. Source of Truth
+
+- Project Sources are authoritative.
+- Chat history is discussion history, not the Source of Truth.
+- Handoff Summaries are temporary continuity aids, not authoritative records.
+- When chat history conflicts with approved Project Sources, follow the Project Sources.
+- Do not treat AI proposals as Founder-approved decisions.
+
+### 3. Starting a Chat
+
+Each new work chat must identify:
+- Role
+- Current task or milestone
+- Relevant Project Sources
+- Previous handoff, if available
+
+The AI must review relevant Sources before giving project-specific recommendations.
+
+### 4. During a Chat
+
+- Stay within the assigned Role and task.
+- Record important decisions only after Founder approval.
+- Update only Sources affected by the approved decision or verified implementation progress.
+- Avoid copying entire chat histories into Project Sources.
+
+### 5. Closing a Chat
+
+Close or rotate a chat when:
+- Its assigned task or milestone is complete.
+- A review cycle has finished.
+- The discussion changes to a substantially different task.
+- The context becomes too large to work reliably.
+
+Before closing, synchronize relevant Sources and prepare a brief Handoff Summary when unfinished work must continue.
+
+### 6. Handoff Summary
+
+Use this format:
+
+- Role:
+- Current Task:
+- Status:
+- Approved Decisions:
+- Completed Work:
+- Pending Work:
+- Open Issues:
+- Next Action:
+- Relevant Sources:
+
+Include only information needed to continue the work. Do not duplicate entire specifications or decision histories.
+
+### 7. Continuing in a New Chat
+
+The new chat must:
+1. Read relevant Project Sources.
+2. Review the Handoff Summary.
+3. Verify that the handoff agrees with current Sources.
+4. Resume the pending task without reopening approved decisions unnecessarily.
+
+### 8. Responsibilities
+
+- Founder: Approves decisions and controls implementation.
+- Specialist Roles: Review, advise, and prepare handoffs within their responsibilities.
+- Command Center: Coordinates work across roles and tracks overall progress.
+
+Chat rotation does not change Role authority, project scope, or Founder approval requirements.
+
+## Context Health Check Protocol
+
+### 1. Responsibility
+
+Every AI Role is responsible for monitoring the reliability of its own working context.
+
+The Founder should not be required to manually track chat length or detect context degradation.
+
+### 2. Continuous Evaluation
+
+Before giving recommendations or continuing significant work, the AI should internally evaluate:
+
+- Can I identify the current task and milestone?
+- Can I distinguish completed work from pending work?
+- Can I identify the latest approved decisions?
+- Am I contradicting Project Sources?
+- Am I recommending work already completed?
+- Am I missing important context needed to continue safely?
+
+Keep this evaluation lightweight. Do not interrupt normal work with routine health reports.
+
+### 3. Context Warning Triggers
+
+The AI must explicitly warn the Founder when:
+
+- Important previous context cannot be reliably recovered.
+- Completed and pending work can no longer be distinguished.
+- Its recommendations conflict with verified implementation progress.
+- It repeatedly revisits resolved decisions without new evidence.
+- It cannot confidently identify the next implementation step.
+- Context uncertainty creates a material risk of incorrect recommendations.
+
+A long conversation alone is not sufficient reason to force rotation.
+
+### 4. Recovery Before Rotation
+
+When a warning occurs:
+
+1. Re-read relevant Project Sources.
+2. Check available implementation evidence and recent work.
+3. Identify what remains uncertain.
+4. Determine whether the missing context can be recovered reliably.
+
+If context is recovered, continue the existing chat.
+
+If context remains unreliable, recommend Chat Rotation.
+
+### 5. Chat Rotation Recommendation
+
+When rotation is necessary:
+
+- Explain briefly why.
+- Synchronize relevant Project Sources where needed.
+- Prepare a Handoff Summary according to the Chat Lifecycle Protocol.
+- Clearly distinguish verified facts from unverified information.
+- Identify the exact next action.
+
+Do not claim that missing information has been verified.
+
+### 6. Limitations
+
+AI cannot reliably measure its remaining context capacity or guarantee detection of all lost context.
+
+Context Health Checks are safeguards, not guarantees.
+
+Project Sources and verified implementation evidence remain authoritative.
+
+The Founder retains final control over Chat Rotation.
