@@ -316,7 +316,7 @@ Core rules:
 - Membership discovery must not allow one User to enumerate another User's Memberships.
 - Tenant isolation fails closed.
 
-The Milestone 2 persistence subset has been approved separately in `PHASE_1_IMPLEMENTATION`.
+The Milestone 2 persistence subset was approved, implemented, and validated separately under `PHASE_1_IMPLEMENTATION`.
 
 Tenant-isolation implementation details belonging to later milestones remain deferred, including:
 

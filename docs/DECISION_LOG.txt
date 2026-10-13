@@ -111,7 +111,7 @@ The revised Phase 1 Foundation architecture was accepted by the Founder on 2026-
 
 DEC-006 was accepted by the Founder on 2026-10-11 and establishes the Business Module Independence Principle for future Business Module design without changing the current Phase 1 implementation scope.
 
-Milestone 2 — Identity / Organization / Membership Foundation has completed implementation-level technical design.
+Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
 The Milestone 2 persistence design was:
 
@@ -119,15 +119,19 @@ The Milestone 2 persistence design was:
 - challenged by QA,
 - revised to incorporate QA findings,
 - reviewed with the Founder by the Engineering Mentor,
-- and explicitly approved by the Founder.
+- explicitly approved by the Founder,
+- implemented,
+- and validated through migrations, PostgreSQL-backed persistence tests, and CI.
 
 The approved Milestone 2 implementation-level design is recorded in `PHASE_1_IMPLEMENTATION`.
 
-It does not create a new architecture decision and therefore does not require a new DEC entry.
+Milestone 2 completion does not create a new architecture decision and therefore does not require a new DEC entry.
 
-Founder implementation of Milestone 2 is now the current engineering step.
+The current engineering focus is Milestone 3 — Registration & Authentication.
 
-If implementation evidence conflicts with DEC-001 through DEC-005, the issue must return to architecture review rather than silently changing the accepted architecture.
+Milestone 3 must complete implementation-level technical design and boundary review before Founder implementation begins.
+
+If future implementation evidence conflicts with DEC-001 through DEC-006, the issue must return to architecture review rather than silently changing the accepted architecture.
 
 ---
 

@@ -664,33 +664,26 @@ No Milestone 2 domain implementation was completed under the superseded one-User
 
 The architectural revision therefore occurred before the obsolete model became deeply embedded in implementation.
 
-## Milestone 2 Design Status
+## Milestone 2 Completion Status
 
-The Milestone 2 implementation-level technical design has been completed.
+Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
-The design was:
+The approved persistence design has been implemented and validated.
 
-- proposed and reviewed by the Tech Lead / Software Architect,
-- challenged by QA,
-- revised to incorporate QA findings,
-- reviewed with the Founder by the Engineering Mentor,
-- and explicitly approved by the Founder.
+Milestone 2 established:
 
-The approved Milestone 2 persistence design is recorded in `PHASE_1_IMPLEMENTATION`.
-
-The design establishes the minimum persistent representation for:
-
-- global User Identity,
-- Organization,
-- Membership,
+- global User Identity persistence,
+- Organization persistence,
+- durable User–Organization Membership,
 - Membership-specific Owner / Admin / Member profiles,
 - Active / Disabled / Revoked Membership state,
-- durable User–Organization Membership identity,
-- minimum ownership persistence invariants,
+- ownership persistence invariants,
 - restrictive Membership foreign-key behavior,
-- and the migration/testing boundary required for Milestone 2.
+- migration validation,
+- PostgreSQL-backed persistence invariant tests,
+- and CI coverage for migrations and backend tests.
 
-This implementation-level approval does not expand Milestone 2 into later Foundation workflows.
+Milestone 2 remained within its approved boundary and did not implement authentication, trusted tenant context, authorization, invitations, ownership transfer, Business Modules, or billing behavior.
 
 ---
 
@@ -698,34 +691,36 @@ This implementation-level approval does not expand Milestone 2 into later Founda
 
 The current focus is:
 
-**Milestone 2 — Identity / Organization / Membership Foundation**
+**Milestone 3 — Registration & Authentication**
 
-Milestone 2 technical design is approved.
+Milestone 2 is complete.
 
-Founder implementation is now the current step.
+Milestone 3 currently remains at milestone-level scope in `PHASE_1_IMPLEMENTATION`.
 
-Its purpose is to establish the minimum persistent Foundation model for:
+The next engineering step is implementation-level technical design and boundary review for Milestone 3 before Founder implementation begins.
 
-- global User Identity
-- Organization
-- Membership
-- Membership-specific Owner / Admin / Member profile semantics
-- minimum ownership representation
-- minimum Membership lifecycle representation required by later security behavior
+Milestone 3 must establish:
 
-Milestone 2 must not prematurely implement:
+- self-service global User registration,
+- secure credential establishment,
+- authentication,
+- trusted current-User identity,
+- authentication failure behavior,
+- and minimum authenticated Foundation behavior.
 
-- public registration workflow
-- login/authentication
-- active Organization selection UX
-- trusted tenant-context enforcement
-- PostgreSQL RLS enforcement
-- capability evaluation
-- invitation workflow
-- full Membership-management workflow
-- ownership-transfer workflow
-- Business Module behavior
-- billing/subscription behavior
+Milestone 3 must not prematurely implement:
+
+- Organization creation,
+- Organization bootstrap,
+- trusted Organization context,
+- Organization switching,
+- tenant-isolation enforcement,
+- PostgreSQL RLS,
+- Foundation capability authorization,
+- invitation workflow,
+- Membership administration,
+- Business Module behavior,
+- billing/subscription behavior.
 
 Later milestones should remain at milestone-level scope until they become current.
 
@@ -743,20 +738,18 @@ Phase 1 Architecture Revision
         ↓
 
 M2 — Identity / Organization / Membership Foundation
-     TECHNICAL DESIGN — APPROVED
+     COMPLETE
+
+        ↓
+
+M3 — Registration & Authentication
+     CURRENT — TECHNICAL DESIGN / BOUNDARY REVIEW
 
         ↓
 
 Founder Implementation
-     CURRENT
-
-        ↓
-
-Implementation Review / Testing
-     NEXT
+     AFTER DESIGN APPROVAL
 ```
-
-Milestone 2 is not complete until its Acceptance Criteria in `PHASE_1_IMPLEMENTATION` are satisfied.
 
 ---
 

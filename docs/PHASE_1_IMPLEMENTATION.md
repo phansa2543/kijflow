@@ -258,11 +258,20 @@ Milestone 1 is complete when:
 
 ### Status
 
-Implementation — Current.
+Complete.
 
-The Milestone 2 implementation-level technical design has been reviewed by the Tech Lead / Software Architect, challenged by QA, revised, reviewed for Founder understanding by the Engineering Mentor, and approved by the Founder.
+The Milestone 2 implementation-level technical design was reviewed and approved before implementation.
 
-Founder implementation is now in progress.
+The approved persistence model has been implemented and validated.
+
+Validation completed includes:
+
+- clean migration from the Milestone 1 baseline to Milestone 2,
+- downgrade from Milestone 2 to Milestone 1,
+- re-upgrade to Milestone 2,
+- PostgreSQL-backed persistence invariant tests,
+- full backend test-suite validation,
+- and successful CI execution of migrations and automated tests.
 
 ### Goal
 
@@ -1438,6 +1447,7 @@ Milestone 1 — Project Bootstrap
         ↓
 
 Milestone 2 — Identity / Organization / Membership Foundation
+              COMPLETE
 
         ↓
 
