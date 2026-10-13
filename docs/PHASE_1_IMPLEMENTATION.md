@@ -47,6 +47,20 @@ The revised architecture is defined by DEC-001 through DEC-005.
 
 Implementation must proceed from the revised architecture rather than the superseded one-User/one-Organization model.
 
+Milestone 2 — Identity / Organization / Membership Foundation is complete.
+
+Milestone 3 — Registration & Authentication is the current milestone.
+
+The Milestone 3 implementation-level technical design has been:
+
+- completed by the Tech Lead / Software Architect,
+- challenged and revised through QA review,
+- given final QA PASS,
+- reviewed with the Founder by the Engineering Mentor,
+- and explicitly approved by the Founder.
+
+Founder implementation is now the current Milestone 3 step.
+
 ---
 
 # Scope
@@ -607,6 +621,22 @@ Milestone 2 is complete when:
 
 ## Milestone 3 — Registration & Authentication
 
+### Status
+
+Implementation — Current.
+
+The Milestone 3 implementation-level technical design has been completed, reviewed, and approved before implementation.
+
+The design was:
+
+- proposed and revised by the Tech Lead / Software Architect,
+- challenged through multiple QA review rounds,
+- given final QA PASS with no remaining blocker or required Tech Lead revision,
+- reviewed with the Founder by the Engineering Mentor,
+- and explicitly approved by the Founder.
+
+Founder implementation is now the current step.
+
 ### Goal
 
 Establish global User self-service registration and trusted authenticated User Identity.
@@ -616,17 +646,21 @@ Establish global User self-service registration and trusted authenticated User I
 Implement:
 
 - self-service User registration,
-- secure credential establishment,
+- secure password-credential establishment,
 - authentication,
+- authoritative server-side session establishment,
 - trusted current-User identity,
+- current-session logout/revocation,
 - authentication failure behavior,
-- minimum authenticated Foundation behavior.
+- login and registration abuse protection,
+- browser authentication security required by the approved design,
+- and minimum authenticated Foundation behavior.
 
-Registration creates a global User Identity.
+Registration creates a global User Identity plus its password credential as one atomic operation.
 
 Organization creation belongs to Milestone 4.
 
-A User with zero usable Memberships is a valid Foundation state.
+A User with zero usable Memberships is a valid Foundation state and must be able to authenticate normally.
 
 ### Product Flow Boundary
 
@@ -645,45 +679,767 @@ Register
 
 The Organization portion is implemented in Milestone 4.
 
-### Security Requirements
+Milestone 3 authentication establishes only trusted global User Identity.
 
-- User establishes their own credentials.
-- Arbitrary client identity claims cannot establish authenticated identity.
-- Authentication must not imply Membership in any Organization.
-- Authentication must not automatically establish tenant context.
-- Global User Identity must remain separate from Organization authority.
+It does not establish or imply:
+
+- Organization Membership,
+- trusted Organization context,
+- tenant access,
+- Owner / Admin / Member profile,
+- Foundation capabilities,
+- or verified mailbox ownership.
+
+### Approved M3 Implementation-Level Design
+
+The Founder has approved the following implementation-level Registration & Authentication design for Milestone 3.
+
+#### Authentication Persistence Boundary
+
+The existing global `users` table remains the authoritative global User Identity persistence established in Milestone 2.
+
+Milestone 3 does not add authentication-specific fields directly to `users`.
+
+A valid M2 User may exist without password credentials.
+
+Such a User:
+
+```text
+exists globally
++
+no user_password_credentials row
+→ cannot authenticate using password
+```
+
+Do not create fake credentials merely because a global User exists.
+
+Milestone 3 introduces separate password-credential and server-session persistence.
+
+#### Password Credential Persistence
+
+Minimum approved representation:
+
+```text
+user_password_credentials
+────────────────────────────
+user_id          UUID PK NOT NULL
+email            TEXT NOT NULL UNIQUE
+password_hash    TEXT NOT NULL
+created_at       TIMESTAMPTZ NOT NULL
+updated_at       TIMESTAMPTZ NOT NULL
+```
+
+Rules:
+
+- `user_id` references the global `users` identity,
+- one password credential exists at most once per User,
+- `email` stores the canonical Phase 1 global login identifier,
+- canonical email uniqueness is database-enforced,
+- `password_hash` stores only the Argon2id representation,
+- plaintext passwords are never persisted,
+- and credential deletion behavior must remain deliberate while global User hard-delete semantics remain unresolved.
+
+The global login email is credential/login data.
+
+It does not make the User belong to an Organization.
+
+#### Email Canonicalization
+
+Phase 1 uses email as the global password-login identifier.
+
+Canonicalization is deterministic:
+
+1. trim surrounding whitespace,
+2. accept conventional ASCII email syntax,
+3. lowercase the local part,
+4. lowercase the domain,
+5. use the resulting canonical email for database uniqueness and login lookup.
+
+Do not perform provider-specific rewriting such as:
+
+- Gmail dot removal,
+- `+tag` removal,
+- provider-specific alias expansion.
+
+Native Unicode/EAI email support is outside the Milestone 3 design.
+
+For example:
+
+```text
+Alice@Example.COM
+ alice@example.com
+ALICE@example.com
+```
+
+canonicalize to:
+
+```text
+alice@example.com
+```
+
+Milestone 3 does not include email verification.
+
+Therefore:
+
+> Registration with an email address does not prove that the User controls or owns that mailbox.
+
+Future invitation, recovery, or other mailbox-sensitive behavior must not silently treat an unverified login email as verified mailbox ownership.
+
+#### Password Processing Contract
+
+Password processing must be deterministic.
+
+Approved pipeline:
+
+```text
+raw password
+→ Unicode NFC normalization
+→ length / policy validation
+→ common / compromised password blocklist evaluation
+→ Argon2id
+```
+
+Login applies the same NFC normalization before password verification.
+
+Milestone 3 does not perform additional password normalization:
+
+- no trimming,
+- no lowercasing,
+- no case folding,
+- no whitespace collapsing.
+
+Leading and trailing whitespace remain part of the password.
+
+After NFC normalization:
+
+- minimum length is 15 Unicode code points,
+- maximum length is 128 Unicode code points,
+- over-maximum input is rejected,
+- silent truncation is forbidden,
+- Unicode and spaces are allowed.
+
+Password establishment must reject passwords identified by the approved policy as:
+
+- common,
+- known-compromised.
+
+An external breach-service integration is not required for Milestone 3.
+
+The exact local/versioned dataset or suitable established dependency remains an implementation choice as long as the approved security outcome is met.
+
+#### Argon2id Policy
+
+Milestone 3 uses Argon2id for password hashing.
+
+Initial approved baseline:
+
+```text
+Algorithm:   Argon2id
+Version:     19
+Memory:      19456 KiB / 19 MiB
+Time cost:   2
+Parallelism: 1
+```
+
+This is the initial security floor and should be benchmarked against the intended runtime before Milestone 3 completion.
+
+The normal stored Argon2 representation contains its algorithm, version, salt, and parameter metadata.
+
+No separate salt column is required.
+
+After successful password verification:
+
+```text
+stored Argon2 policy outdated?
+→ safely rehash using current policy
+→ replace old hash
+```
+
+Rehash rules:
+
+- rehash only after successful authentication,
+- failed authentication never rehashes,
+- rehash failure must not destroy the previous valid credential.
+
+#### Registration Flow
+
+Conceptually:
+
+```text
+receive untrusted email / password
+        ↓
+request / resource bounds
+        ↓
+canonicalize + validate email
+        ↓
+NFC normalize password
+        ↓
+password length / policy validation
+        ↓
+password blocklist check
+        ↓
+registration abuse control
+        ↓
+Argon2id hashing
+        ↓
+BEGIN TRANSACTION
+        ↓
+create global User
+        ↓
+create PasswordCredential
+        ↓
+COMMIT
+```
+
+Successful registration creates only:
+
+```text
+global User
++
+PasswordCredential
+```
+
+Registration must not create:
+
+- Organization,
+- Membership,
+- trusted Organization context,
+- Foundation profile,
+- Foundation capability authority.
+
+User and PasswordCredential persistence form one atomic registration operation.
+
+If either persistence step fails, the registration transaction must roll back rather than leave a partial account state.
+
+#### Duplicate Registration
+
+Canonical email uniqueness is database-enforced.
+
+Concurrent registrations using the same canonical email must not create multiple accounts.
+
+When the canonical email already exists:
+
+- registration fails,
+- no duplicate User or credential is created,
+- no internal User ID, Membership information, or internal account state is exposed,
+- public failure messaging remains generic,
+- registration abuse protection still applies.
+
+Milestone 3 accepts the residual possibility that registration success-versus-failure can reveal some account-existence information.
+
+Milestone 3 does not introduce fake-success or email-verification workflow solely to eliminate that residual inference.
+
+#### Login Flow
+
+Conceptually:
+
+```text
+receive untrusted email / password
+        ↓
+canonicalize email
+        ↓
+NFC normalize password
+        ↓
+online-guessing protection
+        ↓
+credential lookup
+        ↓
+Argon2 verification
+(or verification-class work when account is absent)
+        ↓
+success?
+  ├─ no → generic authentication failure
+  └─ yes
+       ↓
+       optional safe Argon2 rehash
+       ↓
+       generate fresh opaque session token
+       ↓
+       persist session-token digest / authoritative session state
+       ↓
+       issue secure HttpOnly cookie
+```
+
+Failed authentication must never create a session.
+
+#### Account-Enumeration Resistance
+
+Unknown email and wrong password must not have an obvious cheap-path timing difference.
+
+Conceptually:
+
+```text
+existing account
+→ verify real Argon2 hash
+
+nonexistent account
+→ perform password-verification-class work
+   against a pre-generated dummy current-policy hash
+```
+
+Public authentication failure behavior must be materially equivalent.
+
+Perfect request-wide constant-time execution is not required, but obvious enumeration shortcuts are forbidden.
+
+Anti-abuse behavior must also preserve this boundary.
+
+For repeated failed login attempts, materially observable behavior for known and nonexistent identifiers must remain materially equivalent, including as applicable:
+
+- throttling behavior,
+- delays,
+- retry / lockout behavior,
+- HTTP status,
+- response body,
+- other externally observable anti-abuse behavior.
+
+Anti-abuse controls must not become a new account-enumeration side channel.
+
+#### Login and Registration Abuse Protection
+
+Repeated failed authentication must eventually trigger effective online-guessing protection.
+
+Protection must consider at least:
+
+- canonical account/login identifier,
+- request source / network dimension.
+
+Do not rely solely on permanent account lockout.
+
+Registration also requires abuse/resource-exhaustion protection because it performs expensive or state-changing work including:
+
+- validation,
+- password blocklist evaluation,
+- Argon2 hashing,
+- database writes.
+
+The approved design does not require a particular abuse-control infrastructure such as:
+
+- Redis,
+- a specific database-counter design,
+- a gateway,
+- CAPTCHA,
+- or fixed thresholds.
+
+The mechanism may be selected during implementation, but it must satisfy the approved security and enumeration-resistance outcomes before Milestone 3 is complete.
+
+#### Server-Side Session Persistence
+
+Milestone 3 uses PostgreSQL-backed opaque server sessions.
+
+Minimum approved representation:
+
+```text
+auth_sessions
+────────────────────────────
+id             UUID PK NOT NULL
+user_id        UUID NOT NULL
+token_digest   BYTEA NOT NULL UNIQUE
+created_at     TIMESTAMPTZ NOT NULL
+expires_at     TIMESTAMPTZ NOT NULL
+revoked_at     TIMESTAMPTZ NULL
+```
+
+Required persistence/security invariants include:
+
+```text
+user_id references a valid User
+
+token_digest NOT NULL
+token_digest UNIQUE
+
+created_at NOT NULL
+expires_at NOT NULL
+
+expires_at > created_at
+
+revoked_at IS NULL
+OR revoked_at >= created_at
+```
+
+`auth_sessions` does not contain:
+
+- `organization_id`,
+- `membership_id`,
+- `active_organization_id`,
+- Owner / Admin / Member profile,
+- Foundation capabilities.
+
+A session represents authenticated global User Identity only.
+
+#### Session Token Security
+
+The session token is:
+
+- opaque,
+- server-generated,
+- cryptographically random,
+- designed with approximately 256 bits of entropy,
+- returned to the browser only through the authentication cookie.
+
+The database persists only the SHA-256 digest of the raw token.
+
+The raw session token must never be persisted.
+
+The token itself encodes no trusted claims about:
+
+- User,
+- Organization,
+- Membership,
+- profile,
+- capability.
+
+Authenticated identity is resolved through authoritative server-side session state.
+
+#### Session Validity
+
+The initial absolute session lifetime is configurable, with approximately 24 hours as the initial default.
+
+A session is valid only when:
+
+```text
+token digest is recognized
+AND referenced User exists
+AND revoked_at IS NULL
+AND current time < expires_at
+```
+
+The following fail closed:
+
+- missing token,
+- malformed token,
+- unknown token,
+- expired session,
+- revoked session,
+- invalid referenced identity.
+
+Multiple sessions for one User are allowed.
+
+Milestone 3 does not introduce refresh tokens.
+
+#### Trusted Current User
+
+Trusted current User identity resolves conceptually as:
+
+```text
+cookie raw token
+        ↓
+SHA-256 digest
+        ↓
+valid authoritative AuthSession
+        ↓
+auth_sessions.user_id
+        ↓
+global User
+```
+
+Untrusted identity claims such as:
+
+```text
+body.user_id
+query user_id
+X-User-ID
+arbitrary client email identity
+```
+
+must never establish or override authenticated User identity.
+
+For example:
+
+```text
+valid session = User A
+client claim  = User B
+```
+
+must resolve as:
+
+```text
+Trusted User = User A
+```
+
+#### Logout Semantics
+
+Logout revokes the current session server-side.
+
+Required invariant:
+
+```text
+token valid
+→ logout succeeds
+→ current session becomes revoked
+→ same raw token is presented again
+→ authentication fails
+```
+
+Clearing the browser cookie alone is not sufficient logout behavior.
+
+Current-session logout must not accidentally revoke unrelated sessions belonging to the same User.
+
+Logout-all-devices is outside Milestone 3.
+
+#### Cookie Security
+
+Production-like session-cookie requirements are:
+
+```text
+HttpOnly
+Secure
+SameSite=Lax
+Path=/
+```
+
+Host-only / `__Host-` semantics should be preferred when deployment topology permits.
+
+The authentication bearer token must not be stored in:
+
+- `localStorage`,
+- `sessionStorage`,
+- URLs or query strings.
+
+#### CSRF Boundary
+
+`SameSite=Lax` is defense in depth, not the complete CSRF solution.
+
+State-changing browser authentication operations require intentional CSRF/security treatment.
+
+Milestone 3 operations include at least:
+
+- registration,
+- login,
+- logout.
+
+Required security outcome:
+
+> An untrusted cross-site browser origin must not be able to trigger a security-sensitive authentication state transition as though it came from trusted Kijflow frontend interaction.
+
+The exact mechanism may be selected during implementation according to the actual frontend/backend deployment boundary.
+
+Possible mechanisms may include:
+
+- Origin validation,
+- CSRF tokens,
+- double-submit patterns,
+- or a suitable combination.
+
+SameSite alone must not be treated as proof that the CSRF requirement is satisfied.
+
+#### Secret Leakage Prohibition
+
+The following secrets must never appear in database persistence or normal observability/output paths:
+
+```text
+plaintext password
+raw session token
+```
+
+They must not be emitted to:
+
+- normal logs,
+- structured request-body logs,
+- traces,
+- exception messages,
+- debug output,
+- analytics/events,
+- CI/test failure output.
+
+Password hashes and session digests should also not be routinely emitted into logs.
+
+Authentication endpoints must support appropriate sensitive-field redaction or exclusion from generic request logging.
+
+### Approved M3 Boundary
+
+Milestone 3 must not establish or imply:
+
+```text
+Authentication
+≠ Organization Membership
+≠ trusted Organization context
+≠ tenant access
+≠ Owner / Admin / Member profile
+≠ Foundation capabilities
+```
+
+A User with zero Memberships must be able to complete this flow:
+
+```text
+register
+→ authenticate
+→ trusted current User resolves
+→ no Organization context exists
+```
+
+This is valid Milestone 3 behavior.
+
+### Implementation-Level Choices Still Open Within M3
+
+The approved design intentionally leaves several mechanism-level choices open provided the required outcomes above are satisfied before Milestone 3 completion:
+
+- exact abuse-control storage technology,
+- exact throttling thresholds,
+- exact password blocklist dataset/dependency,
+- exact CSRF mechanism consistent with the actual deployment boundary,
+- deployment-dependent host-only / `__Host-` cookie applicability.
+
+These are implementation choices, not permission to weaken the approved security invariants.
 
 ### Non-Goals
 
-- Social login
-- Enterprise SSO
-- advanced session-management features
-- Organization invitation acceptance
-- full Organization switching
-- tenant-isolation enforcement
-- Business Module authorization
-- billing/subscription onboarding
+Milestone 3 does not implement:
+
+- Organization creation or bootstrap,
+- Membership discovery,
+- Organization selection,
+- trusted Organization context,
+- Organization switching,
+- tenant-isolation enforcement,
+- PostgreSQL RLS,
+- Foundation capability authorization,
+- invitation / Pending Membership workflow,
+- full Membership administration,
+- ownership transfer,
+- password change,
+- password reset / recovery,
+- email verification,
+- MFA,
+- social login,
+- enterprise SSO,
+- refresh tokens,
+- token rotation infrastructure,
+- session/device-management UI,
+- logout-all-devices,
+- Organization/profile/capability state in authentication sessions,
+- native internationalized/EAI login-email support,
+- Business Module behavior or authorization,
+- billing/subscription onboarding.
+
+### Required Automated / Adversarial Validation
+
+At minimum, Milestone 3 testing must cover the following classes.
+
+#### Email / Registration
+
+- canonical email case variants,
+- surrounding-whitespace normalization,
+- canonical duplicate rejection,
+- concurrent duplicate registration,
+- unsupported EAI/Unicode email rejection deterministically,
+- atomic registration rollback on partial persistence failure,
+- registration creates zero Organization/Membership rows,
+- existing global User without password credential cannot authenticate by password.
+
+#### Password
+
+- common password rejected,
+- known-compromised password rejected,
+- minimum-length boundary,
+- maximum-length boundary,
+- over-maximum rejection,
+- no silent truncation,
+- leading/trailing whitespace preserved,
+- deterministic Unicode NFC behavior,
+- canonically equivalent Unicode password verifies consistently,
+- same plaintext password produces independently salted Argon2 representations.
+
+#### Argon2id
+
+- current-policy hash verifies,
+- wrong password fails,
+- outdated valid hash authenticates and safely rehashes,
+- failed authentication never rehashes,
+- malformed stored credential fails safely.
+
+#### Login / Abuse / Enumeration
+
+- valid login,
+- wrong password,
+- nonexistent email,
+- nonexistent-account path performs password-verification-class work,
+- public known-account and nonexistent-account failure behavior is materially equivalent,
+- repeated failed attempts for known and unknown identifiers have materially equivalent observable anti-abuse behavior,
+- failed login creates no session,
+- login throttling/abuse protection activates,
+- registration throttling/abuse protection activates,
+- abuse controls do not become unsafe permanent lockout or accidental account destruction.
+
+#### Session
+
+- valid session resolves the correct global User,
+- missing token denied,
+- malformed token denied,
+- unknown token denied,
+- expired token denied,
+- revoked token denied,
+- invalid timestamp ordering rejected by persistence constraints,
+- raw token absent from database persistence,
+- multiple sessions can coexist,
+- current-session logout leaves unrelated session valid,
+- logout makes the original raw token unusable.
+
+#### Browser Security / CSRF
+
+- required cookie security attributes are present,
+- raw authentication token is inaccessible to frontend JavaScript,
+- untrusted cross-site login cannot establish an unintended authenticated session,
+- cross-site logout cannot revoke the victim's session as though it were a trusted Kijflow action,
+- SameSite is not accepted as the sole CSRF control.
+
+#### Secret Leakage
+
+- plaintext password is not logged,
+- raw session token is not logged,
+- sensitive fields are excluded/redacted from structured request logs,
+- exceptions/debug output do not reveal plaintext password or raw session token,
+- CI/test failure output does not reveal these secrets.
+
+#### Architecture Boundary
+
+```text
+User with zero Memberships
+→ login succeeds
+→ current User resolves
+→ no Organization context exists
+```
+
+Registration and login must not:
+
+- create Organization,
+- create or modify Membership,
+- establish trusted Organization context,
+- establish Owner / Admin / Member profile,
+- evaluate or grant Foundation capability authority.
 
 ### Acceptance Criteria
 
 Milestone 3 is complete when:
 
-- a new User can register a global Identity,
-- registration does not require an existing Organization,
-- credentials are established securely through the User's own flow,
-- a valid User can authenticate,
-- invalid authentication is rejected,
-- backend can reliably determine the authenticated User,
-- arbitrary client claims cannot establish another User's identity,
-- authentication remains independent from Organization membership,
+- a new User can register a global Identity with password credentials,
+- User + PasswordCredential registration is atomic,
+- registration does not require or create an Organization/Membership,
+- canonical login email uniqueness is enforced,
+- password processing follows the approved NFC / length / blocklist / Argon2id policy,
+- password hashes rather than plaintext passwords are persisted,
+- valid credentials can authenticate,
+- invalid credentials are rejected without creating a session,
+- nonexistent-account login does not take an obvious cheap path,
+- abuse controls protect login and registration without creating a material account-enumeration distinction,
+- successful authentication establishes an authoritative PostgreSQL-backed opaque server session,
+- only the SHA-256 digest of the session token is persisted,
+- missing, malformed, unknown, expired, or revoked sessions fail closed,
+- backend can reliably resolve the authenticated global User from authoritative session state,
+- arbitrary client identity claims cannot establish or override another User's identity,
+- current-session logout revokes server-side session state and the old raw token cannot be reused,
+- authentication remains independent from Organization Membership and tenant context,
 - a User with zero Memberships can remain a valid authenticated identity,
-- relevant automated tests run in CI.
+- required cookie and CSRF security outcomes are validated,
+- plaintext passwords and raw session tokens do not leak through persistence, logs, traces, errors, debug output, analytics, or CI/test output,
+- the required automated/adversarial authentication regressions run in CI,
+- implementation remains within the accepted M3 boundary and preserves DEC-001 through DEC-005.
 
 ### Relevant Decisions
 
 - DEC-001
 - DEC-002
 - DEC-003
+- DEC-005
 
 ---
 
@@ -1452,6 +2208,7 @@ Milestone 2 — Identity / Organization / Membership Foundation
         ↓
 
 Milestone 3 — Registration & Authentication
+              CURRENT — FOUNDER IMPLEMENTATION
 
         ↓
 
@@ -1597,30 +2354,49 @@ This prevents implementation planning from becoming speculative architecture des
 
 # Intentionally Deferred Implementation Decisions
 
-The approved Milestone 2 persistence subset is defined in the Milestone 2 implementation-level design above.
+The approved Milestone 2 persistence subset and the approved Milestone 3 Registration & Authentication design are defined in their milestone sections above.
+
+Milestone 3 has resolved the password-credential and authentication-session direction, including:
+
+- separate `user_password_credentials`,
+- Argon2id password hashing,
+- email as the Phase 1 global login identifier,
+- PostgreSQL-backed opaque server sessions,
+- SHA-256 session-token digest persistence,
+- secure HttpOnly cookie transport,
+- absolute server-side session expiry,
+- and current-session logout/revocation.
+
+Those are no longer unresolved authentication architecture questions.
+
+Within Milestone 3, the implementation-level mechanism choices explicitly left open by the approved design remain limited to items such as:
+
+- exact abuse-control storage technology,
+- exact throttling thresholds,
+- exact password blocklist dataset/dependency,
+- exact CSRF mechanism that satisfies the approved browser-security outcome,
+- deployment-dependent host-only / `__Host-` cookie applicability.
 
 Implementation details belonging to later milestones remain intentionally deferred, including:
 
-- authentication-specific User fields,
 - additional Organization lifecycle fields,
 - Invitation persistence model,
 - Pending-state representation,
 - lifecycle/audit representation beyond the approved M2 Membership state,
 - active Organization-context storage,
-- JWT versus other session representation,
-- exact authentication-token mechanics,
+- exact relationship between authenticated global User state and later Organization-context representation,
 - exact RLS policies,
 - PostgreSQL application roles,
 - `FORCE ROW LEVEL SECURITY`,
 - database tenant-context mechanism,
-- FastAPI middleware/dependency structure,
-- connection-pool context handling,
-- transaction mechanics,
+- FastAPI middleware/dependency structure for tenant context,
+- connection-pool tenant-context handling,
+- tenant-scoped transaction mechanics,
 - exact same-tenant foreign-key/constraint/trigger technique,
 - exact ownership-transfer database enforcement,
 - exact Foundation capability catalog,
 - exact capability naming convention,
-- API `403` versus `404` policy,
+- API `403` versus `404` policy for later tenant/authorization behavior,
 - Organization closure implementation,
 - retention/purge mechanics,
 - billing/subscription mechanics,
@@ -1630,13 +2406,26 @@ Implementation details belonging to later milestones remain intentionally deferr
 - production deployment topology,
 - CD implementation.
 
+The following authentication features also remain outside Milestone 3 and must not be added merely because authentication now exists:
+
+- password change,
+- password reset/recovery,
+- email verification,
+- MFA,
+- social login / enterprise SSO,
+- refresh-token infrastructure,
+- token rotation infrastructure,
+- session/device-management UI,
+- logout-all-devices,
+- native internationalized/EAI login-email support.
+
 These should be decided only when the relevant milestone or validated requirement requires them.
 
 ---
 
 # Architecture Escalation Rule
 
-Implementation must preserve DEC-001 through DEC-005.
+Implementation must preserve DEC-001 through DEC-006.
 
 If implementation evidence shows that an accepted decision:
 

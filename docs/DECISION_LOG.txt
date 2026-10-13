@@ -129,7 +129,34 @@ Milestone 2 completion does not create a new architecture decision and therefore
 
 The current engineering focus is Milestone 3 — Registration & Authentication.
 
-Milestone 3 must complete implementation-level technical design and boundary review before Founder implementation begins.
+The Milestone 3 implementation-level design was:
+
+- developed and revised by the Tech Lead / Software Architect,
+- challenged through multiple QA review rounds,
+- given final QA PASS,
+- reviewed with the Founder by the Engineering Mentor,
+- and explicitly approved by the Founder.
+
+The approved Milestone 3 implementation-level design is recorded in `PHASE_1_IMPLEMENTATION`.
+
+Milestone 3 Founder implementation is now the current engineering step.
+
+The approved Milestone 3 design establishes, among other implementation-level choices:
+
+- email as the Phase 1 global login identifier,
+- separate `user_password_credentials`,
+- Argon2id password hashing,
+- PostgreSQL-backed opaque server sessions,
+- persistence of only the SHA-256 session-token digest,
+- secure HttpOnly cookie transport,
+- configurable absolute session expiry with approximately 24 hours as the initial default,
+- current-session server-side logout/revocation,
+- no refresh tokens in Milestone 3,
+- and authentication establishing trusted global User Identity only.
+
+Authentication does not establish or imply Organization Membership, trusted Organization context, tenant access, Foundation profile, or Foundation capabilities.
+
+The approved Milestone 3 implementation-level design does not create a new architecture decision and therefore does not require a new DEC entry.
 
 If future implementation evidence conflicts with DEC-001 through DEC-006, the issue must return to architecture review rather than silently changing the accepted architecture.
 
@@ -1258,6 +1285,10 @@ Multi-Organization Membership must not produce separate bespoke tenant-security 
 
 ## Deferred Implementation Decisions
 
+Milestone 3 now establishes authenticated global User Identity through the Founder-approved opaque server-side authentication-session design recorded in `PHASE_1_IMPLEMENTATION`.
+
+That authentication session does not establish trusted Organization context.
+
 DEC-005 still does not determine:
 
 - exact RLS policies
@@ -1265,10 +1296,10 @@ DEC-005 still does not determine:
 - `FORCE ROW LEVEL SECURITY`
 - database tenant-context mechanism
 - active Organization context representation
-- JWT/session representation
-- FastAPI middleware design
+- exact relationship between authenticated global User session state and later trusted Organization-context representation
+- FastAPI middleware design for tenant context
 - connection-pool mechanics
-- transaction mechanics
+- transaction mechanics required for tenant-isolation enforcement
 - exact database structures required specifically for tenant-isolation enforcement
 - exact database enforcement technique for ownership lifecycle beyond the approved Milestone 2 persistence invariants
 - cache-key structure
@@ -1278,7 +1309,7 @@ DEC-005 still does not determine:
 - API `403` versus `404`
 - privileged maintenance tooling
 
-These remain implementation-design decisions.
+These remain implementation-design decisions for the relevant later milestone.
 
 ## Reasoning
 

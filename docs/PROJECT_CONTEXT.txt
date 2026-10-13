@@ -685,42 +685,153 @@ Milestone 2 established:
 
 Milestone 2 remained within its approved boundary and did not implement authentication, trusted tenant context, authorization, invitations, ownership transfer, Business Modules, or billing behavior.
 
+## Milestone 3 Design Status
+
+Milestone 3 — Registration & Authentication is the current milestone.
+
+Its implementation-level technical design has been completed.
+
+The design was:
+
+- developed and revised by the Tech Lead / Software Architect,
+- challenged through multiple QA review rounds,
+- given final QA PASS,
+- reviewed with the Founder by the Engineering Mentor,
+- and explicitly approved by the Founder.
+
+The approved Milestone 3 design is recorded in `PHASE_1_IMPLEMENTATION`.
+
+The approved direction establishes:
+
+- email as the Phase 1 global login identifier,
+- separate password-credential persistence through `user_password_credentials`,
+- Argon2id password hashing,
+- deterministic email and password processing,
+- PostgreSQL-backed opaque server sessions,
+- persistence of only the session-token digest,
+- secure HttpOnly cookie transport,
+- configurable absolute session expiry with approximately 24 hours as the initial default,
+- current-session server-side logout/revocation,
+- login and registration abuse protection,
+- account-enumeration resistance,
+- intentional CSRF protection,
+- and strict secret-leakage prevention.
+
+Milestone 3 authentication establishes trusted global User Identity only.
+
+It does not establish or imply:
+
+- Organization Membership,
+- trusted Organization context,
+- tenant access,
+- Owner / Admin / Member profile,
+- Foundation capabilities.
+
+A User with zero Memberships remains a valid authenticated User.
+
+Milestone 3 intentionally does not introduce refresh tokens.
+
+Founder implementation is now the current engineering step.
+
 ---
 
 # 15. Current Focus
 
 The current focus is:
 
-**Milestone 3 — Registration & Authentication**
+**Milestone 3 — Registration & Authentication — Founder Implementation**
 
-Milestone 2 is complete.
+Milestone 1 and Milestone 2 are complete.
 
-Milestone 3 currently remains at milestone-level scope in `PHASE_1_IMPLEMENTATION`.
+Milestone 3 implementation-level design has completed:
 
-The next engineering step is implementation-level technical design and boundary review for Milestone 3 before Founder implementation begins.
+```text
+Tech Lead Design
+     COMPLETE
 
-Milestone 3 must establish:
+        ↓
+
+QA Challenge / Re-review
+     PASS
+
+        ↓
+
+Engineering Mentor
+Founder Understanding Review
+     PASS
+
+        ↓
+
+Founder Explicit Approval
+     APPROVED
+
+        ↓
+
+Founder Implementation
+     CURRENT
+```
+
+Milestone 3 implementation must establish:
 
 - self-service global User registration,
-- secure credential establishment,
+- secure password-credential establishment,
 - authentication,
+- authoritative server-side session establishment,
 - trusted current-User identity,
-- authentication failure behavior,
-- and minimum authenticated Foundation behavior.
+- current-session logout/revocation,
+- approved authentication failure behavior,
+- approved login/registration abuse protection,
+- and required browser/security behavior.
 
-Milestone 3 must not prematurely implement:
+Registration must atomically create:
+
+```text
+global User
++
+PasswordCredential
+```
+
+and must roll back if partial persistence fails.
+
+Authentication must resolve authoritative trusted global User Identity through server-side session state.
+
+It must not establish or imply:
+
+```text
+Organization Membership
+Organization context
+tenant access
+Owner / Admin / Member profile
+Foundation capabilities
+```
+
+Milestone 3 must remain within the approved boundary and must not prematurely implement:
 
 - Organization creation,
 - Organization bootstrap,
+- Membership discovery,
+- Organization selection,
 - trusted Organization context,
 - Organization switching,
 - tenant-isolation enforcement,
 - PostgreSQL RLS,
 - Foundation capability authorization,
-- invitation workflow,
-- Membership administration,
+- invitation / Pending Membership workflow,
+- full Membership administration,
+- ownership transfer,
+- password change,
+- password reset / recovery,
+- email verification,
+- MFA,
+- social login / enterprise SSO,
+- refresh-token infrastructure,
+- token-rotation infrastructure,
+- session/device-management UI,
+- logout-all-devices,
 - Business Module behavior,
 - billing/subscription behavior.
+
+Detailed Milestone 3 implementation design, security invariants, test requirements, and acceptance criteria belong in `PHASE_1_IMPLEMENTATION`.
 
 Later milestones should remain at milestone-level scope until they become current.
 
@@ -743,12 +854,19 @@ M2 — Identity / Organization / Membership Foundation
         ↓
 
 M3 — Registration & Authentication
-     CURRENT — TECHNICAL DESIGN / BOUNDARY REVIEW
+     CURRENT — FOUNDER IMPLEMENTATION
 
         ↓
 
-Founder Implementation
-     AFTER DESIGN APPROVAL
+Implementation Review / Testing / Documentation Sync
+
+        ↓
+
+M3 Completion
+
+        ↓
+
+M4 — Organization Bootstrap & Trusted Organization Context
 ```
 
 ---
@@ -774,26 +892,54 @@ The Milestone 2 persistence subset is no longer an unresolved implementation que
 
 Its approved implementation-level design is recorded in `PHASE_1_IMPLEMENTATION`.
 
+The Milestone 3 Registration & Authentication direction is also no longer unresolved.
+
+Its approved implementation-level design establishes:
+
+- separate `user_password_credentials`,
+- Argon2id password hashing,
+- email as the Phase 1 global login identifier,
+- PostgreSQL-backed opaque server sessions,
+- SHA-256 session-token digest persistence,
+- secure HttpOnly cookie transport,
+- absolute server-side session expiry,
+- and current-session logout/revocation.
+
+Authentication-specific fields are not added directly to the global `users` identity merely to support Milestone 3.
+
+JWT versus opaque authentication session representation is therefore no longer an open Milestone 3 question.
+
+Milestone 3 intentionally uses opaque server-side sessions and does not introduce refresh tokens.
+
+Implementation-level mechanism choices intentionally left open inside the approved Milestone 3 design remain documented in `PHASE_1_IMPLEMENTATION`.
+
 Implementation details belonging to later milestones remain intentionally deferred, including:
 
-- authentication-specific User fields
 - additional Organization lifecycle fields
 - Invitation persistence
 - Pending-state representation
 - lifecycle/audit representation beyond the approved Milestone 2 Membership state
 - active Organization-context storage
-- JWT/session representation
-- authentication-token mechanics
+- exact relationship between authenticated global User state and later Organization-context representation
 - exact RLS policies
 - PostgreSQL application roles
+- `FORCE ROW LEVEL SECURITY`
 - database tenant-context mechanics
+- tenant-context middleware/dependency mechanics
 - connection-pool context handling
+- tenant-scoped transaction mechanics
+- same-tenant relationship enforcement technique
 - ownership-transfer enforcement technique
 - exact Foundation capability catalog
+- exact capability naming convention
+- later tenant/authorization `403` versus `404` behavior
+- privileged maintenance tooling
 
 These are not unresolved architecture direction.
 
 They are implementation decisions that should be addressed only when the relevant milestone requires them.
+
+If future implementation evidence conflicts with DEC-001 through DEC-006 or with an approved current-milestone design, the issue must return to review rather than silently changing accepted architecture.
 
 ---
 

@@ -318,6 +318,32 @@ Core rules:
 
 The Milestone 2 persistence subset was approved, implemented, and validated separately under `PHASE_1_IMPLEMENTATION`.
 
+The Milestone 3 Registration & Authentication implementation-level design has also been approved and is recorded in `PHASE_1_IMPLEMENTATION`.
+
+Milestone 3 establishes authenticated global User Identity through:
+
+- separate password-credential persistence,
+- Argon2id password hashing,
+- PostgreSQL-backed opaque server sessions,
+- persisted session-token digest only,
+- secure HttpOnly cookie transport,
+- absolute server-side session expiry,
+- and current-session server-side logout/revocation.
+
+The Milestone 3 authentication session establishes trusted global User Identity only.
+
+It does not establish:
+
+- Organization Membership,
+- trusted Organization context,
+- tenant access,
+- Owner / Admin / Member profile,
+- Foundation capabilities.
+
+JWT versus opaque authentication-session representation is therefore no longer an unresolved question for Milestone 3.
+
+Milestone 3 intentionally uses opaque server-side sessions and does not introduce refresh tokens.
+
 Tenant-isolation implementation details belonging to later milestones remain deferred, including:
 
 - exact RLS policies,
@@ -325,8 +351,8 @@ Tenant-isolation implementation details belonging to later milestones remain def
 - `FORCE ROW LEVEL SECURITY`,
 - database tenant-context mechanics,
 - active Organization context representation,
-- JWT/session representation,
-- FastAPI middleware design,
+- exact relationship between authenticated global User session state and later trusted Organization-context representation,
+- FastAPI middleware design for tenant context,
 - connection-pool mechanics,
 - transaction mechanics required for tenant-isolation enforcement,
 - exact database structures required specifically for tenant-isolation enforcement,
