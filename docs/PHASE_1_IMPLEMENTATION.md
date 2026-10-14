@@ -51,6 +51,12 @@ Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
 Milestone 3 — Registration & Authentication is the current milestone.
 
+The Milestone 3 authentication persistence foundation and email canonicalization/validation component have been implemented and tested locally.
+
+The latest full backend regression test run passed 59 tests, including 29 email canonicalization tests.
+
+Registration, login, password processing, and runtime authentication/session workflows remain incomplete.
+
 The Milestone 3 implementation-level technical design has been:
 
 - completed by the Tech Lead / Software Architect,
@@ -636,6 +642,42 @@ The design was:
 - and explicitly approved by the Founder.
 
 Founder implementation is now the current step.
+
+#### Implementation Progress
+
+**Authentication Persistence Foundation — Implemented**
+
+- Implemented password-credential and authentication-session persistence models and Alembic migration.
+- Added PostgreSQL-backed persistence invariant tests.
+- Registration, login, and runtime session workflows are not yet implemented.
+
+**Email Canonicalization & Validation — Implemented and Tested Locally**
+
+- Implemented `canonicalize_email()` in `backend/app/auth/email.py`.
+- Uses compiled Python Regex and explicit Python validation.
+- Supports the selected conventional ASCII dot-atom local-part syntax and hostname-style domain labels.
+- Trims surrounding whitespace and lowercases both local part and domain.
+- Preserves dots and plus tags without provider-specific rewriting.
+- Rejects invalid syntax and unsupported Non-ASCII/EAI email addresses.
+- Validates length limits: 64 characters for local part, 63 per domain label, and 254 for the complete email address.
+- Added 29 automated tests in `backend/tests/test_email.py`.
+- Full backend regression suite: 59 tests passed locally.
+- CI validation for the new email changes has not yet been confirmed.
+
+**Remaining M3 Work**
+
+- Password normalization, validation, blocklist checks, and Argon2id hashing
+- Atomic user registration
+- Login and authentication failure handling
+- Server-side session issuance, validation, and logout
+- Authentication abuse protection
+- Cookie security, CSRF protection, and remaining security tests
+
+**Open Consideration**
+
+- The current validator accepts single-label domains such as `alice@localhost`.
+- Public SaaS domain policy remains unresolved.
+- Email syntax validation does not verify mailbox ownership. Email verification remains outside M3.
 
 ### Goal
 
