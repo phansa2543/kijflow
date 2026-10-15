@@ -107,12 +107,15 @@ As a result:
 - DEC-005 was revalidated and revised for multi-Organization Membership
 - DEC-006 established the Business Module Independence Principle using functional and commercial independence, optional integration, and a modular-monolith default architecture.
 - DEC-007 established the post-Phase-1 roadmap skeleton while keeping Phase 1 unchanged.
+- DEC-008 revised the approved M3 password minimum length from 15 to 8 Unicode code points while preserving the other approved password-processing and authentication-security controls.
 
 The revised Phase 1 Foundation architecture was accepted by the Founder on 2026-10-10.
 
 DEC-006 was accepted by the Founder on 2026-10-11 and establishes the Business Module Independence Principle for future Business Module design without changing the current Phase 1 implementation scope.
 
 DEC-007 was accepted by the Founder on 2026-10-15 and establishes the post-Phase-1 roadmap skeleton. It does not revise Phase 1 scope, architecture, milestones, or implementation design.
+
+DEC-008 was accepted by the Founder on 2026-10-15. It changes the approved M3 password minimum length to 8 Unicode code points after NFC normalization, while keeping the 128-code-point maximum and the remaining security controls unchanged. The Founder accepts that an 8-code-point minimum for password-only authentication does not meet the NIST SP 800-63B-4 single-factor minimum of 15 characters. DEC-008 does not expand M3 to MFA, Passkeys, Social Login, or other new authentication mechanisms.
 
 Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
@@ -159,9 +162,9 @@ The approved Milestone 3 design establishes, among other implementation-level ch
 
 Authentication does not establish or imply Organization Membership, trusted Organization context, tenant access, Foundation profile, or Foundation capabilities.
 
-The approved Milestone 3 implementation-level design does not create a new architecture decision and therefore does not require a new DEC entry.
+The original approved Milestone 3 implementation-level design did not itself require a new DEC entry. Its later Founder-approved password minimum-length revision is recorded separately as DEC-008 because it modifies an approved authentication-security requirement and explicitly accepts a security trade-off.
 
-If future implementation evidence conflicts with DEC-001 through DEC-007, the issue must return to review rather than silently changing an accepted decision.
+If future implementation evidence conflicts with DEC-001 through DEC-008, the issue must return to review rather than silently changing an accepted decision.
 
 ---
 
@@ -2208,6 +2211,169 @@ Changing a future roadmap phase does not automatically reopen Phase 1.
 - SaaS / Business Strategy Consultant
 - QA / Product Reviewer
 - Command Center
+
+## Founder Approval
+
+Accepted
+
+---
+
+# DEC-008 — Milestone 3 Password Minimum Length Policy
+
+## Date
+
+2026-10-15
+
+## Decision
+
+Milestone 3 changes the approved minimum password length from 15 to **8 Unicode code points**, evaluated **after Unicode NFC normalization**.
+
+The approved M3 password-length and processing policy is:
+
+- Minimum length: 8 Unicode code points after NFC normalization.
+- Maximum length: 128 Unicode code points after NFC normalization.
+- Accept Unicode and spaces, including leading and trailing whitespace.
+- Do not trim, lowercase, casefold, or collapse whitespace in passwords.
+- Reject passwords above the maximum; never silently truncate.
+- Retain common/compromised-password blocklist screening.
+- Retain Argon2id hashing and verification.
+- Retain login and registration abuse protection, account-enumeration resistance, secure session handling, CSRF controls, and secret-leakage prevention.
+
+The password-establishment sequence remains:
+
+```text
+raw password
+  → Unicode NFC normalization
+  → length / policy validation
+  → common / compromised password blocklist evaluation
+  → Argon2id hashing
+```
+
+Login applies the same Unicode NFC normalization before password verification.
+
+Only the **minimum length** changes. DEC-008 does not expand Milestone 3 to MFA, Passkeys, Social Login, password recovery, email verification, or other authentication features outside its approved boundary.
+
+## Context
+
+The previously approved M3 implementation-level design required a minimum of 15 and maximum of 128 Unicode code points after NFC normalization.
+
+During Founder implementation, password NFC normalization was completed before length/policy validation began. The Founder questioned whether a 15-code-point minimum imposed disproportionate self-service registration friction for Kijflow's intended simple SME product experience.
+
+At the time of the handoff:
+
+- Password NFC normalization was implemented.
+- Latest full backend regression: 64 tests passed.
+- Commit: `c6281e7`.
+- GitHub Actions CI: PASS, confirmed by the Founder.
+- Password length/policy validation had not begun.
+
+This change revises an approved authentication-security requirement and therefore requires an explicit decision record and M3 implementation-plan synchronization.
+
+## Problem
+
+What minimum password length should Kijflow require for password-only self-service registration, given the trade-off between reducing user friction and limiting exposure to weak, guessable passwords?
+
+## External Security Context
+
+NIST SP 800-63B-4 states that passwords used as a single authentication factor SHALL be at least 15 characters. It permits a minimum of 8 when passwords are used only as part of a multi-factor authentication process.
+
+Kijflow M3 is password-only, and MFA is outside its scope. The 8-code-point minimum is therefore an **intentional deviation from the NIST single-factor minimum**, not equivalent compliance and not a claim of equivalent security.
+
+NIST also calls for Unicode code-point counting, and the retained controls include common/compromised-password screening and online-guessing protection. Argon2id and these other measures reduce important risks, but they do not make an 8-character password minimum equivalent to a 15-character minimum.
+
+Official reference: https://pages.nist.gov/800-63-4/sp800-63b/authenticators/
+
+Additional technical reference: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+
+## Options Considered
+
+1. Keep 15 Unicode code points as the minimum, preserving alignment with the NIST single-factor minimum but potentially imposing greater registration friction.
+2. Reduce the minimum to 8, keep the 128 maximum and all approved security controls, and accept the lower password-strength floor.
+3. Reduce the minimum while adding MFA to M3, improving authentication assurance but materially expanding scope, implementation, recovery, and support complexity.
+
+## Selected Option
+
+Use option 2: **8–128 Unicode code points after NFC normalization**, with all remaining approved M3 password and authentication security controls preserved.
+
+## Reasoning
+
+The Founder prioritizes reducing potential password-creation friction for Kijflow's self-service registration while maintaining the established M3 authentication architecture and security controls.
+
+The concern that 15 characters materially harm Kijflow conversion is a reasonable product hypothesis, not a Kijflow-specific measured result. The known trade-off is that a shorter minimum allows a wider range of potentially guessable passwords. Founder approval explicitly accepts that risk instead of asserting security equivalence.
+
+Adding MFA or another authentication mechanism solely to justify this minimum would expand M3 beyond its accepted boundary and create new maintenance and support obligations for a one-person software house.
+
+## Impact Assessment and Validation
+
+Command Center assessment of the approved M3 contract identified no necessary change to:
+
+- Unicode NFC normalization or processing order;
+- blocklist evaluation;
+- Argon2id hashing/verification and parameters;
+- credential persistence or atomic registration;
+- session model and logout;
+- account-enumeration resistance;
+- login and registration abuse controls;
+- tenant, Membership, or authorization boundaries.
+
+Required regression coverage includes at minimum:
+
+- 7 Unicode code points after NFC: reject;
+- 8 and 9 code points after NFC: meet the length rule, but remain subject to other policy checks;
+- 128 code points: meet the length rule, subject to remaining checks;
+- 129 code points: reject;
+- NFC canonical-equivalence behavior and inputs whose measured length changes after normalization;
+- leading/trailing spaces preserved and counted;
+- no silent truncation;
+- blocklisted passwords rejected even if they meet length limits;
+- Argon2id and abuse-protection paths remain intact.
+
+This assessment does not claim independent sign-off from separately consulted Tech Lead or QA conversations. Any later specialist review that finds a material conflict should be escalated to the Founder before changing other accepted requirements.
+
+## Trade-offs
+
+### Gains
+
+- Lower password-creation requirement for self-service registration.
+- A simple, understandable minimum-length rule.
+- No expansion of M3 authentication architecture or infrastructure.
+- Retention of the existing password screening, Argon2id, and anti-abuse controls.
+
+### Sacrifices
+
+- Lower security floor for user-selected passwords relative to the approved 15-code-point policy.
+- Intentional deviation from the NIST SP 800-63B-4 single-factor minimum.
+- Increased exposure to weak 8–14-character choices that the previous rule would reject.
+
+## Risks
+
+- Some passwords that satisfy an 8-code-point minimum may remain relatively easy to guess, especially under offline attack following credential-hash exposure.
+- Blocklists, Argon2id, and online rate limiting address different attack modes but do not fully offset reduced minimum password length.
+- A future contractual, regulatory, or customer security requirement may require a stronger minimum or another authentication assurance model.
+- Raising the minimum after real users exist will require deliberate treatment of credentials already established under the weaker policy.
+
+## Reversibility
+
+Moderate.
+
+Before real customer credentials exist, the numeric minimum can be revised with limited operational impact. After customers have established 8–14-code-point passwords, changing the signup requirement alone would not strengthen their existing credentials; a separate transition or password-replacement policy would be required.
+
+## Reconsideration Trigger
+
+Revisit the decision if:
+
+- security testing or abuse evidence exposes unacceptable risk under the shorter minimum;
+- verified customer requirements, contractual obligations, or compliance targets require a stronger single-factor policy;
+- measured Kijflow usability evidence shows little benefit from the lower minimum relative to the security cost;
+- or a deliberate future authentication-assurance redesign changes the relevant trade-offs.
+
+## Participants
+
+- Founder — decision and risk acceptance
+- Engineering Mentor — Founder discussion/handoff
+- Command Center — source-of-truth impact assessment and coordination
+
+Separate Tech Lead / Software Architect and QA / Product Reviewer sign-off has not been independently documented in this decision record.
 
 ## Founder Approval
 

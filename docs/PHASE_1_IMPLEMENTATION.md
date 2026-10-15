@@ -51,11 +51,15 @@ Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
 Milestone 3 — Registration & Authentication is the current milestone.
 
-The Milestone 3 authentication persistence foundation and email canonicalization/validation component have been implemented and tested locally.
+The Milestone 3 authentication persistence foundation, email canonicalization/validation component, password NFC normalization, and password length validation have been implemented and tested locally.
 
-The latest full backend regression test run passed 64 tests, including 29 email canonicalization tests.
+The latest full backend regression test run passed 75 tests, including 29 email canonicalization tests and 16 password tests.
 
-Registration, login, remaining password processing, and runtime authentication/session workflows remain incomplete.
+Password NFC normalization work on commit `c6281e7` passed GitHub Actions CI, as confirmed by the Founder.
+
+The subsequent Password Length Validation subtask has passed local tests and Engineering Mentor code review. Its documentation synchronization is complete. Commit, push, and GitHub Actions CI confirmation are still pending.
+
+Registration, login, common/compromised-password blocklist screening, Argon2id hashing/verification, and runtime authentication/session workflows remain incomplete.
 
 The Milestone 3 implementation-level technical design has been:
 
@@ -64,6 +68,8 @@ The Milestone 3 implementation-level technical design has been:
 - given final QA PASS,
 - reviewed with the Founder by the Engineering Mentor,
 - and explicitly approved by the Founder.
+
+The approved M3 password minimum-length policy was subsequently revised by Founder Decision DEC-008 from 15 to 8 Unicode code points after NFC normalization.
 
 Founder implementation is now the current Milestone 3 step.
 
@@ -641,6 +647,8 @@ The design was:
 - reviewed with the Founder by the Engineering Mentor,
 - and explicitly approved by the Founder.
 
+The password minimum-length portion of that design was subsequently revised by Founder Decision DEC-008.
+
 Founder implementation is now the current step.
 
 #### Implementation Progress
@@ -661,29 +669,56 @@ Founder implementation is now the current step.
 - Rejects invalid syntax and unsupported Non-ASCII/EAI email addresses.
 - Validates length limits: 64 characters for local part, 63 per domain label, and 254 for the complete email address.
 - Added 29 automated tests in `backend/tests/test_email.py`.
-- Full backend regression suite: 59 tests passed locally.
+- Full backend regression suite: 59 tests passed locally at completion of this subtask.
 - Email canonicalization changes passed GitHub Actions CI on commit `d438bea`, as confirmed by the Founder.
 
-**Password NFC Normalization — Implemented and Tested Locally**
+**Password NFC Normalization — Implemented, Tested Locally, and CI Confirmed**
 
 - Implemented `normalize_password()` in `backend/app/auth/password.py`.
 - Uses Python `unicodedata.normalize("NFC", raw_password)`.
 - Preserves leading/trailing whitespace and case sensitivity.
 - Supports Unicode passwords, including Thai characters.
 - Added `backend/tests/test_password.py` with 5 automated tests covering whitespace preservation, Unicode NFC equivalence, case sensitivity, Thai characters, and idempotence.
-- Latest password normalization test run: 5 passed locally.
-- Latest full backend regression run: 64 passed locally.
-- Password length/policy validation, blocklist checks, Argon2id hashing, and verification remain incomplete.
-- CI validation for this new password normalization work has not yet been confirmed.
+- At completion of NFC normalization, 5 password normalization tests passed locally.
+- At completion of NFC normalization, the full backend regression run passed 64 tests locally.
+- Password NFC normalization changes on commit `c6281e7` passed GitHub Actions CI, as confirmed by the Founder.
+- The subsequent password length validation work is tracked separately below.
+- Common/compromised-password blocklist checks, Argon2id hashing, and verification remain incomplete.
+
+**Password Length Validation — Implemented and Tested Locally; Commit, Push, and CI Pending**
+
+- Founder implemented `prepare_password(raw_password: str) -> str` in `backend/app/auth/password.py`.
+- The implementation performs Unicode NFC normalization before password length validation.
+- DEC-008 requires a minimum of 8 and maximum of 128 Unicode code points after NFC normalization.
+- Passwords outside the allowed length range are rejected using `ValueError`.
+- Password validation preserves Unicode, case sensitivity, and leading/trailing whitespace.
+- Passwords are not silently truncated.
+- Plaintext passwords are not included in validation error messages.
+- The existing `normalize_password()` function remains unchanged in behavior.
+- Founder added 11 automated tests to `backend/tests/test_password.py`.
+- New tests cover 7/8/9 and 128/129 code-point boundaries, NFC-normalized length changes, leading/trailing whitespace, case sensitivity, Thai/Non-ASCII passwords, and no silent truncation.
+- Latest local password test suite: 16/16 passed.
+- Latest local full backend regression: 75/75 passed.
+- Local failed tests: 0.
+- Engineering Mentor reviewed `backend/app/auth/password.py`, `backend/tests/test_password.py`, and the relevant source-of-truth documents.
+- Engineering Mentor reported that implementation logic and tests passed review.
+- `git diff --check` reported no remaining whitespace errors.
+- A Windows LF-to-CRLF warning for `docs/DECISION_LOG.txt` and minor formatting observations were reported as non-blocking.
+- Documentation synchronization is complete and has been reviewed by Command Center.
+- Commit, Push, and GitHub Actions CI confirmation for Password Length Validation have not yet been completed.
+- Passing local tests does not constitute CI confirmation.
+- This subtask covers NFC normalization and length validation only; blocklist screening, Argon2id, and registration/login integration remain separate M3 tasks.
 
 **Remaining M3 Work**
 
-- Password length/policy validation, common/compromised-password screening, Argon2id hashing and verification
+- Common/compromised-password blocklist screening
+- Argon2id hashing and verification
 - Atomic user registration
 - Login and authentication failure handling
 - Server-side session issuance, validation, and logout
 - Authentication abuse protection
 - Cookie security, CSRF protection, and remaining security tests
+- Commit, Push, and GitHub Actions CI confirmation for the completed Password Length Validation subtask
 
 **Open Consideration**
 
@@ -746,7 +781,7 @@ It does not establish or imply:
 
 ### Approved M3 Implementation-Level Design
 
-The Founder has approved the following implementation-level Registration & Authentication design for Milestone 3.
+The Founder has approved the following implementation-level Registration & Authentication design for Milestone 3, subject to the subsequent minimum-password-length revision recorded in DEC-008.
 
 #### Authentication Persistence Boundary
 
@@ -866,11 +901,17 @@ Leading and trailing whitespace remain part of the password.
 
 After NFC normalization:
 
-- minimum length is 15 Unicode code points,
+- minimum length is **8 Unicode code points**,
 - maximum length is 128 Unicode code points,
 - over-maximum input is rejected,
 - silent truncation is forbidden,
 - Unicode and spaces are allowed.
+
+The minimum was revised from 15 to 8 by DEC-008.
+
+This revision deliberately accepts a lower password-strength floor for password-only authentication. It does not meet the NIST SP 800-63B-4 minimum of 15 characters for passwords used as a single authentication factor.
+
+The Founder has accepted that trade-off.
 
 Password establishment must reject passwords identified by the approved policy as:
 
@@ -880,6 +921,8 @@ Password establishment must reject passwords identified by the approved policy a
 An external breach-service integration is not required for Milestone 3.
 
 The exact local/versioned dataset or suitable established dependency remains an implementation choice as long as the approved security outcome is met.
+
+DEC-008 does not change the blocklist requirement, Argon2id policy, abuse-protection requirements, or other approved M3 security controls.
 
 #### Argon2id Policy
 
@@ -1365,6 +1408,8 @@ Milestone 3 does not implement:
 - Business Module behavior or authorization,
 - billing/subscription onboarding.
 
+DEC-008 does not expand these M3 boundaries.
+
 ### Required Automated / Adversarial Validation
 
 At minimum, Milestone 3 testing must cover the following classes.
@@ -1384,13 +1429,21 @@ At minimum, Milestone 3 testing must cover the following classes.
 
 - common password rejected,
 - known-compromised password rejected,
-- minimum-length boundary,
-- maximum-length boundary,
+- minimum-length boundary under DEC-008:
+  - 7 Unicode code points after NFC normalization are rejected,
+  - 8 Unicode code points meet the minimum-length rule, subject to other policy checks,
+  - 9 Unicode code points meet the minimum-length rule, subject to other policy checks,
+- maximum-length boundary:
+  - 128 Unicode code points after NFC normalization meet the maximum-length rule, subject to other policy checks,
+  - 129 Unicode code points after NFC normalization are rejected,
 - over-maximum rejection,
 - no silent truncation,
-- leading/trailing whitespace preserved,
+- leading/trailing whitespace preserved and counted,
 - deterministic Unicode NFC behavior,
+- length validation performed after NFC normalization,
+- Unicode inputs whose code-point count changes under NFC are evaluated using the normalized value,
 - canonically equivalent Unicode password verifies consistently,
+- passwords meeting the length rule remain subject to common/compromised-password blocklist screening,
 - same plaintext password produces independently salted Argon2 representations.
 
 #### Argon2id
@@ -1469,7 +1522,7 @@ Milestone 3 is complete when:
 - User + PasswordCredential registration is atomic,
 - registration does not require or create an Organization/Membership,
 - canonical login email uniqueness is enforced,
-- password processing follows the approved NFC / length / blocklist / Argon2id policy,
+- password processing follows the approved NFC / length / blocklist / Argon2id policy, including the 8–128 Unicode-code-point limits established by DEC-008,
 - password hashes rather than plaintext passwords are persisted,
 - valid credentials can authenticate,
 - invalid credentials are rejected without creating a session,
@@ -1486,7 +1539,7 @@ Milestone 3 is complete when:
 - required cookie and CSRF security outcomes are validated,
 - plaintext passwords and raw session tokens do not leak through persistence, logs, traces, errors, debug output, analytics, or CI/test output,
 - the required automated/adversarial authentication regressions run in CI,
-- implementation remains within the accepted M3 boundary and preserves DEC-001 through DEC-005.
+- implementation remains within the accepted M3 boundary and preserves DEC-001 through DEC-005 and DEC-008.
 
 ### Relevant Decisions
 
@@ -1494,6 +1547,7 @@ Milestone 3 is complete when:
 - DEC-002
 - DEC-003
 - DEC-005
+- DEC-008
 
 ---
 
@@ -1577,7 +1631,7 @@ Client input alone cannot establish trusted Organization context.
 ### Security Requirements
 
 - Organization creation and Owner establishment form one valid operation.
-- Creator becomes Owner through trusted system-controlled behavior.
+- Creator becomes Owner through trusted system behavior.
 - Arbitrary client input cannot assign Owner authority.
 - User cannot establish normal Organization context without valid usable Membership.
 - Membership in Organization A cannot establish Organization B context.
@@ -2410,6 +2464,8 @@ This prevents implementation planning from becoming speculative architecture des
 
 The approved Milestone 2 persistence subset and the approved Milestone 3 Registration & Authentication design are defined in their milestone sections above.
 
+The Milestone 3 password minimum-length requirement was revised separately by Founder Decision DEC-008.
+
 Milestone 3 has resolved the password-credential and authentication-session direction, including:
 
 - separate `user_password_credentials`,
@@ -2479,7 +2535,7 @@ These should be decided only when the relevant milestone or validated requiremen
 
 # Architecture Escalation Rule
 
-Implementation must preserve DEC-001 through DEC-006.
+Implementation must preserve applicable accepted decisions, including DEC-001 through DEC-006 and the M3 password-security revision DEC-008.
 
 If implementation evidence shows that an accepted decision:
 
@@ -2540,7 +2596,7 @@ AI advisory roles support:
 Phase 1 is complete only when:
 
 1. Milestones 1 through 8 satisfy their Acceptance Criteria.
-2. Revised DEC-001 through DEC-005 remain preserved.
+2. Revised DEC-001 through DEC-005 and M3-specific DEC-008 remain preserved.
 3. Global Identity and multi-Organization Membership behavior are validated.
 4. Authentication is validated.
 5. Trusted Organization-context establishment is validated.
