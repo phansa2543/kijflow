@@ -18,6 +18,8 @@ Status:
 
 Open
 
+---
+
 ## PQ-002
 
 Which SME segment should be targeted first?
@@ -25,6 +27,8 @@ Which SME segment should be targeted first?
 Status:
 
 Open
+
+---
 
 ## PQ-003
 
@@ -34,21 +38,72 @@ Status:
 
 Open
 
+---
+
 ## PQ-004
 
-What should the Sales Management MVP include?
+What should the first Business Module be?
 
 Status:
 
 Open
+
+DEC-007 establishes that Phase 3 will deliver the first Business Module but does not finalize which Business Module should be selected.
+
+Current research may inform the decision, but the final selection should be based on validated:
+
+- customer value,
+- business responsibility,
+- workflow coherence,
+- standalone usefulness,
+- adoption potential,
+- and one-person implementation/support constraints.
+
+---
 
 ## PQ-005
 
-What should explicitly NOT be included in the MVP?
+What should the first Business Module's coherent core workflow include?
 
 Status:
 
 Open
+
+The first Business Module must provide meaningful standalone value consistent with DEC-006.
+
+Its scope should be derived from real business responsibilities and workflows rather than from competitor feature lists or future pricing/package boundaries.
+
+---
+
+## PQ-006
+
+What should explicitly NOT be included in the first Business Module?
+
+Status:
+
+Open
+
+The first Business Module should remain focused on functionality necessary for a coherent and realistically usable core workflow.
+
+Convenience features, speculative flexibility, and unrelated adjacent workflows should remain outside the core unless evidence demonstrates that they are necessary.
+
+---
+
+## PQ-007
+
+What Import / Export capability does the first Business Module actually require?
+
+Status:
+
+Open
+
+DEC-007 establishes minimum practical Import / Export as part of Phase 3 where justified by adoption and data-portability needs.
+
+The exact required data, workflows, file formats, validation behavior, error handling, and export semantics remain unresolved.
+
+Import / Export should be designed around business meaning rather than raw database structures.
+
+The solution should not become a generic ETL, mapping, connector, or data-integration platform without validated need.
 
 ---
 
@@ -62,6 +117,8 @@ Status:
 
 Open
 
+---
+
 ## BQ-002
 
 Which existing Thai SaaS workflows represent genuine business requirements?
@@ -69,6 +126,8 @@ Which existing Thai SaaS workflows represent genuine business requirements?
 Status:
 
 Open
+
+---
 
 ## BQ-003
 
@@ -270,7 +329,7 @@ Organization remains the tenant/data-isolation boundary.
 
 For normal tenant-scoped access:
 
-```text
+```text id="lwye6i"
 Authenticated User Identity
         ↓
 Organization selection intent
@@ -460,16 +519,16 @@ Technical independence does not require:
 
 The default architecture is:
 
-```text
+```text id="755l43"
 Kijflow Application
 │
 ├── SaaS Foundation
 ├── Shared business concepts
 │   └── only where validated
-├── Sales
+├── Sales / Managed Sales
 ├── Inventory
+├── Purchasing
 ├── CRM
-├── Purchase
 ├── POS
 └── Accounting
 ```
@@ -543,7 +602,7 @@ Open
 
 This should be resolved from validated Business Module responsibilities and workflows.
 
-DEC-006 requires clear ownership but does not predefine the exact ownership boundary of Sales, Inventory, CRM, Purchase, POS, Accounting, or future modules.
+DEC-006 requires clear ownership but does not predefine the exact ownership boundary of Sales / Managed Sales, Inventory, Purchasing, CRM, POS, Accounting, or future modules.
 
 ---
 
@@ -584,6 +643,8 @@ Depending on validated requirements, an integration may later use:
 
 The simplest mechanism that preserves the required boundary should be preferred.
 
+DEC-007 intentionally defers the first real cross-module integration until concrete participating modules exist.
+
 ---
 
 ## AQ-012
@@ -596,7 +657,78 @@ Open
 
 DEC-006 establishes that cross-module integrations should be optional by default and should add meaningful business value.
 
-The exact integration workflow, ownership, consistency model, failure behavior, and implementation mechanism remain unresolved until concrete cross-module requirements exist.
+DEC-007 places the first real cross-module integration after the second Business Module.
+
+The exact integration workflow, ownership, consistency model, failure behavior, configuration, and implementation mechanism remain unresolved until concrete cross-module requirements exist.
+
+---
+
+## AQ-013
+
+What is the minimum Module Enablement model required in Phase 2?
+
+Status:
+
+Open
+
+DEC-007 establishes Phase 2 as Module Enablement Foundation.
+
+The minimum model must allow Kijflow to determine which Business Modules an Organization may use without prematurely implementing Billing / Subscription.
+
+The exact:
+
+- entitlement model,
+- entitlement lifecycle,
+- persistence design,
+- module activation/deactivation behavior,
+- administration behavior,
+- source of entitlement,
+- and relationship with Business Module authorization
+
+remain unresolved.
+
+Module entitlement must remain conceptually distinct from:
+
+- module configuration,
+- Membership/User authorization,
+- integration activation,
+- and commercial Billing / Subscription.
+
+This question should be resolved during Phase 2 design rather than Phase 1.
+
+---
+
+## AQ-014
+
+What production operating model should Kijflow use for the Business Application before commercial launch?
+
+Status:
+
+Open
+
+DEC-007 establishes that Phase 5 includes production deployment and commercial launch readiness for the Kijflow Business Application.
+
+The exact operating model remains unresolved, including:
+
+- hosting/provider selection,
+- frontend/backend deployment topology,
+- production PostgreSQL,
+- secret management,
+- backup strategy,
+- restore validation,
+- monitoring/error visibility,
+- application deployment procedure,
+- database migration procedure,
+- rollback/recovery approach,
+- production access control,
+- operational security,
+- and CD policy.
+
+The solution should remain proportionate to actual operational risk and the one-person software-house constraint.
+
+Production readiness does not imply enterprise-scale infrastructure.
+
+This question should be resolved when Phase 5 approaches.
 
 ---
 
@@ -610,6 +742,8 @@ Status:
 
 Open
 
+---
+
 ## UXQ-002
 
 Which workflows must be exceptionally fast?
@@ -618,6 +752,8 @@ Status:
 
 Open
 
+---
+
 ## UXQ-003
 
 Which complexity should be hidden from users?
@@ -625,6 +761,70 @@ Which complexity should be hidden from users?
 Status:
 
 Open
+
+---
+
+# MARKETING & GROWTH
+
+## MQ-001
+
+Which Marketing & Growth channels should Kijflow prioritize initially?
+
+Status:
+
+Open
+
+DEC-007 establishes a dedicated Marketing & Growth Foundation in Phase 4 but does not determine which acquisition channels should receive priority.
+
+Channel choices should consider:
+
+- target customer behavior,
+- measurable acquisition value,
+- Founder time,
+- content-production burden,
+- operating cost,
+- and long-term sustainability.
+
+---
+
+## MQ-002
+
+What SEO and content strategy is sustainable for a one-person software house?
+
+Status:
+
+Open
+
+Phase 4 includes SEO and useful educational/domain content.
+
+The strategy should prioritize useful, customer-relevant content rather than high-volume low-value publishing.
+
+The exact:
+
+- target search intent,
+- topic strategy,
+- content cadence,
+- content workflow,
+- measurement approach,
+- and relationship between product/domain research and published content
+
+remain unresolved.
+
+---
+
+## MQ-003
+
+How should customer/prospect feedback be collected and managed?
+
+Status:
+
+Open
+
+Phase 4 includes contact and feedback capability.
+
+The exact feedback workflow remains unresolved.
+
+The solution should distinguish feedback from a full customer-support or community platform and should avoid introducing unnecessary product-management infrastructure without evidence.
 
 ---
 
@@ -638,6 +838,12 @@ Status:
 
 Open
 
+DEC-007 places Pricing / Packaging in Phase 5.
+
+The decision should remain deferred until the first Business Module is sufficiently defined and usable.
+
+---
+
 ## SQ-002
 
 Should modules be independently priced?
@@ -650,21 +856,108 @@ DEC-006 establishes commercial independence as the default product principle but
 
 Independent pricing, bundles, discounts, and other packaging choices remain subject to future product and commercial validation.
 
+---
+
 ## SQ-003
 
-What is the strongest reason a customer would switch to this product?
+What is the strongest reason a customer would switch to Kijflow?
 
 Status:
 
 Open
+
+---
 
 ## SQ-004
 
-What should differentiate the product from established Thai SaaS products?
+What should differentiate Kijflow from established Thai SaaS products?
 
 Status:
 
 Open
+
+---
+
+## SQ-005
+
+What subscription model should Kijflow initially use?
+
+Status:
+
+Open
+
+DEC-007 places Billing / Subscription MVP in Phase 5.
+
+The exact subscription lifecycle, billing period, renewal behavior, cancellation behavior, failed-payment behavior, entitlement consequences, and payment-provider relationship remain unresolved.
+
+These should be designed from the final commercial model rather than prematurely encoded into the SaaS Foundation or Phase 2 Module Enablement.
+
+---
+
+## SQ-006
+
+Should Kijflow offer a trial, freemium model, or neither?
+
+Status:
+
+Open
+
+DEC-007 does not assume a public free trial or a real-customer pilot before commercial launch.
+
+There is currently no accepted trial or freemium model.
+
+This should be decided later from acquisition, conversion, support-cost, abuse-risk, and product-value evidence.
+
+---
+
+## SQ-007
+
+What customer onboarding model should Kijflow use at commercial launch?
+
+Status:
+
+Open
+
+Phase 5 includes a customer onboarding baseline.
+
+The exact balance between:
+
+- self-service onboarding,
+- guided onboarding,
+- documentation,
+- in-product guidance,
+- initial data import,
+- and Founder involvement
+
+remains unresolved.
+
+The model should remain sustainable for a one-person software house.
+
+---
+
+## SQ-008
+
+What customer support model is sustainable after launch?
+
+Status:
+
+Open
+
+Phase 5 includes a support baseline before real paid customer use begins.
+
+The exact:
+
+- support channels,
+- expected response model,
+- issue triage,
+- operational escalation,
+- documentation responsibility,
+- customer communication,
+- and boundaries between support, feedback, and product requests
+
+remain unresolved.
+
+The support model must remain realistic for a one-person software house.
 
 ---
 
@@ -675,7 +968,7 @@ When resolving a question:
 1. Record the reasoning in the relevant discussion.
 2. Identify the decision.
 3. Obtain Founder acceptance.
-4. Record the decision in DECISION_LOG.
+4. Record the decision in DECISION_LOG when the resolution materially affects product, architecture, business, security, module boundaries, technology direction, or long-term maintainability.
 5. Change the question status to Resolved.
 6. Remove or archive the question when appropriate.
 
@@ -687,5 +980,9 @@ If an accepted decision is later revised:
 2. Update their resolutions to reflect the current accepted decision.
 3. Preserve the relevant decision reference.
 4. Do not leave contradictory resolved answers in this document.
+
+Future-phase open questions should not be treated as authorization to design or implement those phases early.
+
+Questions should be resolved when their evidence and sequencing require them.
 
 This document should describe the current accepted understanding rather than preserve obsolete architectural assumptions.

@@ -53,9 +53,9 @@ Milestone 3 — Registration & Authentication is the current milestone.
 
 The Milestone 3 authentication persistence foundation and email canonicalization/validation component have been implemented and tested locally.
 
-The latest full backend regression test run passed 59 tests, including 29 email canonicalization tests.
+The latest full backend regression test run passed 64 tests, including 29 email canonicalization tests.
 
-Registration, login, password processing, and runtime authentication/session workflows remain incomplete.
+Registration, login, remaining password processing, and runtime authentication/session workflows remain incomplete.
 
 The Milestone 3 implementation-level technical design has been:
 
@@ -662,11 +662,23 @@ Founder implementation is now the current step.
 - Validates length limits: 64 characters for local part, 63 per domain label, and 254 for the complete email address.
 - Added 29 automated tests in `backend/tests/test_email.py`.
 - Full backend regression suite: 59 tests passed locally.
-- CI validation for the new email changes has not yet been confirmed.
+- Email canonicalization changes passed GitHub Actions CI on commit `d438bea`, as confirmed by the Founder.
+
+**Password NFC Normalization — Implemented and Tested Locally**
+
+- Implemented `normalize_password()` in `backend/app/auth/password.py`.
+- Uses Python `unicodedata.normalize("NFC", raw_password)`.
+- Preserves leading/trailing whitespace and case sensitivity.
+- Supports Unicode passwords, including Thai characters.
+- Added `backend/tests/test_password.py` with 5 automated tests covering whitespace preservation, Unicode NFC equivalence, case sensitivity, Thai characters, and idempotence.
+- Latest password normalization test run: 5 passed locally.
+- Latest full backend regression run: 64 passed locally.
+- Password length/policy validation, blocklist checks, Argon2id hashing, and verification remain incomplete.
+- CI validation for this new password normalization work has not yet been confirmed.
 
 **Remaining M3 Work**
 
-- Password normalization, validation, blocklist checks, and Argon2id hashing
+- Password length/policy validation, common/compromised-password screening, Argon2id hashing and verification
 - Atomic user registration
 - Login and authentication failure handling
 - Server-side session issuance, validation, and logout

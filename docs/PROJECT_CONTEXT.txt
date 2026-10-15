@@ -110,11 +110,15 @@ The exact:
 
 are not yet finalized.
 
-Billing and packaging are intentionally deferred until the Sales Management core is sufficiently defined and usable.
+Pricing, packaging, Billing, and Subscription implementation are intentionally deferred until the first Business Module is sufficiently defined and usable.
 
 The SaaS Foundation should not prematurely encode assumptions about future package or pricing structure.
 
-Subscription and entitlement concepts must remain separate from User authorization.
+Module entitlement, subscription state, and User authorization are related but separate concerns.
+
+Phase 2 will establish the minimum Module Enablement Foundation required before Business Modules depend on Organization-level module availability.
+
+Phase 5 will address Pricing / Packaging, Billing / Subscription MVP, production operation of the Kijflow Business Application, and commercial launch readiness.
 
 ---
 
@@ -124,17 +128,53 @@ The product will be developed incrementally.
 
 The initial goal is not to build a complete business-management suite.
 
-Instead:
+The accepted post-Phase-1 roadmap skeleton is:
 
-1. establish a reliable SaaS Foundation
-2. build the first valuable Business Module
-3. make that module usable in real business situations
-4. validate the product with real customers
-5. expand with additional modules over time
+```text
+Phase 1 — SaaS Foundation
+        ↓
+Phase 2 — Module Enablement Foundation
+        ↓
+Phase 3 — First Business Module
+          + Minimum Import / Export
+        ↓
+Phase 4 — Marketing & Growth Foundation
+          + Public Kijflow Marketing Site
+        ↓
+Phase 5 — Commercialization & Launch
+          + Production Kijflow Business Application
+          + Pricing / Packaging
+          + Billing / Subscription MVP
+          + Commercial launch readiness
+        ↓
+        Paid Commercial Launch
+        ↓
+Phase 6 — Second Business Module
+        ↓
+Phase 7 — First Real Cross-Module Integration
+```
+
+This is a roadmap skeleton.
+
+Detailed scope, milestones, acceptance criteria, technical design, provider choices, and implementation mechanisms for future phases should be decided only when the relevant phase approaches.
+
+Phase 1 is not reopened or expanded by this roadmap.
+
+The general development strategy is to:
+
+1. establish a reliable SaaS Foundation,
+2. establish minimum Organization-level Business Module enablement,
+3. build the first valuable Business Module,
+4. provide practical Import / Export where needed for adoption and portability,
+5. establish a public Marketing & Growth surface,
+6. prepare production operation, commercialization, Billing / Subscription, onboarding, and support,
+7. launch for real paid customer use,
+8. expand with additional Business Modules,
+9. introduce real cross-module integration only when concrete module workflows justify it.
 
 Architecture should be designed only far enough to support validated current requirements without blocking reasonable future evolution.
 
-Implementation-level detail should be designed primarily for the current milestone.
+Implementation-level detail should be designed primarily for the current milestone or phase.
 
 ---
 
@@ -334,48 +374,292 @@ The original one-User/one-Organization assumption has been superseded.
 
 The current architecture must be used for all implementation from Milestone 2 onward.
 
+The post-Phase-1 roadmap established by DEC-007 does not revise Phase 1 scope, architecture, milestones, implementation-level designs, security requirements, or acceptance criteria.
+
 ---
 
-# 8. Phase 2 — Sales Management
+# 8. Post-Phase-1 Roadmap
 
-The first major Business Module will be Sales Management.
+DEC-007 establishes the accepted high-level roadmap after Phase 1.
 
-The goal is to build the module to a level where real customers can use it.
+## Phase 2 — Module Enablement Foundation
 
-The product should reach a sufficiently usable and reliable state before the Founder begins selling it.
+Phase 2 establishes the minimum foundation required for Kijflow to know which Business Modules an Organization may use.
 
-The exact scope of the Sales Management core is not yet finalized.
+Conceptually:
+
+```text
+Module Entitlement
+→ may this Organization use this Business Module?
+
+Authorization
+→ may this Membership/User perform this action?
+```
+
+Module Enablement and User authorization are separate concerns.
+
+Phase 2 is not the Billing / Subscription phase.
+
+The exact:
+
+- entitlement model,
+- lifecycle,
+- persistence design,
+- administration behavior,
+- module activation/deactivation behavior,
+- and relationship with Business Module authorization
+
+remain deferred until Phase 2 review.
+
+Phase 2 should not become a premature pricing, packaging, subscription, or billing platform.
+
+## Phase 3 — First Business Module
+
+Phase 3 delivers the first valuable Business Module.
+
+The Business Module must provide a coherent standalone workflow consistent with DEC-006.
+
+The exact first Business Module scope is not yet finalized.
 
 It must be derived from:
 
-- customer problems
-- real SME workflows
-- business requirements
-- usability considerations
-- technical constraints
+- customer problems,
+- real SME workflows,
+- business responsibilities,
+- usability considerations,
+- technical constraints,
+- one-person implementation and support constraints,
+- and product/domain evidence.
 
-Only functionality necessary for a coherent end-to-end Sales workflow should be treated as core.
+Only functionality necessary for a coherent and usable core workflow should be treated as core.
 
-Convenience features and enhancements should be deferred unless they are necessary for real use.
+Convenience features and enhancements should be deferred unless necessary for real use.
 
-Pricing/package boundaries should not drive Sales Management scope prematurely.
+Pricing/package boundaries should not prematurely determine Business Module scope.
+
+### Import / Export
+
+Phase 3 also includes minimum practical Import / Export where justified by adoption and data-portability needs.
+
+Import / Export should be defined from business semantics rather than raw database tables.
+
+Potential purposes include:
+
+- onboarding from existing tools,
+- migration of existing business data,
+- useful business-data portability,
+- downstream analysis or operational use,
+- customer trust,
+- and future offboarding requirements.
+
+This does not imply building:
+
+- a generic ETL platform,
+- arbitrary transformation engine,
+- generic connector platform,
+- configurable mapping platform,
+- or generalized integration infrastructure.
+
+The first Business Module's actual Import / Export requirements remain subject to its validated workflow and data model.
+
+## Phase 4 — Marketing & Growth Foundation
+
+Phase 4 establishes Kijflow's public marketing, education, trust, feedback, and organic-acquisition surface.
+
+The Kijflow Marketing Site should be built and publicly deployed during this phase.
+
+Conceptually:
+
+```text
+www.kijflow.com
+        ↓
+Public Marketing & Growth Surface
+```
+
+High-level responsibilities may include:
+
+- product pages,
+- Business Module pages,
+- SEO foundation,
+- educational and domain content,
+- product updates and development news,
+- promotions,
+- contact channels,
+- customer-feedback channels,
+- and publishing capability for genuine future Customer Reviews / Stories.
+
+The Marketing Site is intended to become a long-term acquisition and education surface rather than only a static landing page.
+
+SEO should focus on useful customer and domain knowledge rather than high-volume low-value content production.
+
+Because real paid customer use does not begin before Phase 5, Kijflow must not fabricate:
+
+- customer reviews,
+- testimonials,
+- usage claims,
+- customer stories,
+- or customer evidence
+
+to fill marketing content.
+
+Marketing & Growth should not expand without evidence into:
+
+- a general-purpose CMS,
+- social network,
+- customer community platform,
+- marketing-automation platform,
+- or unrelated media platform.
+
+Exact:
+
+- repository structure,
+- deployment topology,
+- publishing workflow,
+- analytics tooling,
+- SEO implementation,
+- and content operations
+
+remain deferred until Phase 4 design.
+
+## Phase 5 — Commercialization & Launch
+
+Phase 5 converts Kijflow into a commercially operable SaaS offering.
+
+This is the phase in which the Kijflow Business Application reaches production operation and Kijflow prepares to accept real paid customers.
+
+High-level responsibilities include:
+
+- production deployment of the Kijflow Business Application,
+- production deployment and operation of the required backend/API,
+- production PostgreSQL operating model,
+- production configuration and secret management,
+- backup and restore capability,
+- monitoring and error visibility,
+- controlled application deployment,
+- controlled database migration,
+- recovery / rollback appropriate to operational risk,
+- production access control,
+- operational security,
+- pricing and packaging,
+- Billing / Subscription MVP,
+- relationship between subscription state and module entitlement,
+- customer onboarding baseline,
+- support baseline,
+- and final commercial launch review.
+
+Conceptually:
+
+```text
+Phase 4
+www.kijflow.com
+→ public
+
+Phase 5
+app.kijflow.com
++ API
++ production data platform
+        ↓
+Commercial readiness
+        ↓
+Paid Commercial Launch
+```
+
+Production readiness does not imply enterprise-scale infrastructure.
+
+Kijflow should favor an operating model the Founder can:
+
+- understand,
+- deploy,
+- monitor,
+- secure,
+- recover,
+- support,
+- and maintain alone.
+
+The exact:
+
+- hosting provider,
+- cloud architecture,
+- payment provider,
+- subscription lifecycle,
+- pricing model,
+- packaging model,
+- deployment tooling,
+- monitoring tooling,
+- and CD policy
+
+remain deferred until Phase 5 review.
+
+There is currently no planned real-customer pilot before commercial launch.
+
+DEC-007 does not assume a public free trial.
+
+Trials, freemium, or other acquisition mechanics may be considered later if supported by product and commercial evidence.
+
+## Phase 6 — Second Business Module
+
+Phase 6 introduces the second Business Module.
+
+The second module must also provide a coherent standalone workflow consistent with DEC-006.
+
+The exact second Business Module is not finalized.
+
+Its selection should follow:
+
+- validated customer value,
+- business responsibility,
+- real workflow evidence,
+- integration potential,
+- usability,
+- and one-person implementation/support constraints.
+
+## Phase 7 — First Real Cross-Module Integration
+
+Phase 7 implements and validates the first real integration between concrete Business Modules.
+
+Cross-module integration should:
+
+- add meaningful business value,
+- automate or enhance a real workflow,
+- preserve clear module responsibilities,
+- respect Organization/module entitlement,
+- and not repair an incomplete standalone module.
+
+The exact:
+
+- workflow,
+- trigger,
+- ownership,
+- consistency model,
+- failure behavior,
+- configuration,
+- and technical communication mechanism
+
+remain deferred until the participating modules exist and their workflows are understood.
+
+Kijflow should not introduce a generic integration platform, event platform, plugin framework, message broker, or distributed architecture merely because cross-module integration exists.
+
+The simplest mechanism that preserves the required boundaries should remain the default.
 
 ---
 
-# 9. Future Modules
+# 9. Future Business Modules
 
-Additional Business Modules may be developed after the first module has reached sufficient maturity.
+Additional Business Modules may be developed after the first module has reached sufficient maturity and according to the accepted roadmap.
 
-Potential Business Modules include areas such as:
+Potential Business Module areas include:
 
-- Sales Management
-- POS
+- Sales / Managed Sales
+- POS / Operational Selling
 - Inventory
-- Purchase
+- Purchasing
 - CRM
 - Accounting
+- other validated business responsibilities
 
-The exact future roadmap is not finalized.
+These are candidates, not a finalized module catalog.
+
+The exact first and later Business Module boundaries remain subject to validated workflow and domain evidence.
 
 Business Modules should have:
 
@@ -441,10 +725,10 @@ Kijflow Application
 ├── SaaS Foundation
 ├── Shared business concepts
 │   └── only where validated
-├── Sales
+├── Sales / Managed Sales
 ├── Inventory
+├── Purchasing
 ├── CRM
-├── Purchase
 ├── POS
 └── Accounting
 ```
@@ -470,7 +754,7 @@ It does not yet determine:
 - bundles,
 - discounts,
 - subscription mechanics,
-- or entitlement implementation.
+- or exact entitlement implementation.
 
 ---
 
@@ -515,6 +799,8 @@ should not be introduced merely to satisfy an abstract idea of modularity.
 
 The appropriate integration mechanism should follow actual workflow, ownership, consistency, and failure-handling requirements.
 
+DEC-007 intentionally places the first real cross-module integration after the second Business Module so that integration behavior can be derived from concrete participating workflows rather than speculation.
+
 ---
 
 # 12. One-Person Software House Constraint
@@ -551,6 +837,17 @@ The goal is a system that one person can:
 Reasonable extensibility is desirable.
 
 Speculative flexibility is not.
+
+This constraint applies not only to application architecture but also to:
+
+- Marketing & Growth operations,
+- SEO/content production,
+- production infrastructure,
+- Billing / Subscription,
+- customer onboarding,
+- support,
+- Import / Export,
+- and future module integration.
 
 ---
 
@@ -598,6 +895,8 @@ Accepted architecture should not be silently bypassed during implementation.
 
 If implementation evidence conflicts with an accepted decision, the issue should return to architecture review.
 
+Future-phase roadmap entries do not authorize implementation before the relevant requirements and design reviews are complete.
+
 ---
 
 # 14. Current Project Status
@@ -640,7 +939,7 @@ The Founder approved revised Product Directions including:
 
 The Phase 1 Foundation architecture was then re-baselined.
 
-## Revised Architecture Status
+## Revised Architecture and Roadmap Status
 
 The Founder has accepted the revised Phase 1 architecture.
 
@@ -652,8 +951,11 @@ Current accepted decisions:
 - DEC-004 revalidated
 - DEC-005 revalidated and revised
 - DEC-006 accepted — Business Module Independence Principle
+- DEC-007 accepted — Post-Phase-1 Roadmap Skeleton
 
-The following source-of-truth documents have been revised to reflect the accepted architecture:
+DEC-007 does not reopen Phase 1.
+
+The following source-of-truth documents are responsible for the accepted project direction:
 
 - DECISION_LOG
 - OPEN_QUESTIONS
@@ -829,6 +1131,7 @@ Milestone 3 must remain within the approved boundary and must not prematurely im
 - session/device-management UI,
 - logout-all-devices,
 - Business Module behavior,
+- Module Enablement behavior,
 - billing/subscription behavior.
 
 Detailed Milestone 3 implementation design, security invariants, test requirements, and acceptance criteria belong in `PHASE_1_IMPLEMENTATION`.
@@ -869,6 +1172,8 @@ M3 Completion
 M4 — Organization Bootstrap & Trusted Organization Context
 ```
 
+DEC-007 defines the roadmap after Phase 1 but does not alter this Phase 1 implementation sequence.
+
 ---
 
 # 16. Important Unresolved Architectural Questions
@@ -877,16 +1182,30 @@ The major Phase 1 Foundation architecture questions required before Milestone 2 
 
 The Business Module Independence Principle has been resolved under DEC-006.
 
-The following broader architectural questions remain intentionally unresolved:
+The post-Phase-1 roadmap skeleton has been resolved under DEC-007.
+
+The following broader architectural and product questions remain intentionally unresolved:
 
 - What should each Business Module own?
 - What should be shared across modules?
 - How should modules communicate?
 - How should future integrations work?
+- What is the exact Phase 2 Module Enablement model?
+- What should the exact first Business Module boundary be?
+- What Import / Export capability does the first Business Module actually require?
+- What production operating model should Phase 5 use?
+- What Billing / Subscription implementation should Phase 5 use?
 
 These questions are not blockers for Phase 1 Foundation implementation.
 
-They should be resolved from validated Business Module responsibilities and workflows rather than speculative architecture.
+They should be resolved when the relevant phase approaches and from validated:
+
+- Business Module responsibilities,
+- workflows,
+- customer evidence,
+- commercial requirements,
+- security requirements,
+- and operational constraints.
 
 The Milestone 2 persistence subset is no longer an unresolved implementation question.
 
@@ -913,7 +1232,7 @@ Milestone 3 intentionally uses opaque server-side sessions and does not introduc
 
 Implementation-level mechanism choices intentionally left open inside the approved Milestone 3 design remain documented in `PHASE_1_IMPLEMENTATION`.
 
-Implementation details belonging to later milestones remain intentionally deferred, including:
+Implementation details belonging to later Phase 1 milestones remain intentionally deferred, including:
 
 - additional Organization lifecycle fields
 - Invitation persistence
@@ -939,33 +1258,46 @@ These are not unresolved architecture direction.
 
 They are implementation decisions that should be addressed only when the relevant milestone requires them.
 
-If future implementation evidence conflicts with DEC-001 through DEC-006 or with an approved current-milestone design, the issue must return to review rather than silently changing accepted architecture.
+If future implementation evidence conflicts with DEC-001 through DEC-007 or with an approved current-milestone design, the issue must return to review rather than silently changing accepted architecture or product direction.
 
 ---
 
-# 17. Current Product Questions
+# 17. Current Product and Business Questions
 
 The following product and business questions remain open:
 
 - Who is the ideal first customer?
 - Which SME segment should be targeted first?
 - What is the most painful problem the first version should solve?
-- What should the Sales Management MVP include?
-- What should explicitly NOT be included in the MVP?
+- What should the first Business Module be?
+- What should the first Business Module's coherent core workflow include?
+- What should explicitly NOT be included in the first Business Module?
 - What business workflows are most important for the target SME segment?
 - Which existing Thai SaaS workflows represent genuine business requirements?
 - Which competitor features represent unnecessary complexity?
 - What does "simple" mean for the target customer?
 - Which workflows must be exceptionally fast?
 - Which complexity should be hidden from users?
+- Which data must realistically be importable for initial adoption?
+- Which business data must realistically be exportable?
 - What is the initial pricing strategy?
 - Should modules be independently priced?
+- What subscription model should Kijflow initially use?
+- Should Kijflow later offer a trial, freemium model, or neither?
 - What is the strongest reason a customer would switch to Kijflow?
 - What should differentiate Kijflow from established Thai SaaS products?
+- Which Marketing & Growth channels should receive priority?
+- What SEO/content strategy is sustainable for a one-person software house?
+- What production operating model is appropriate before commercial launch?
+- What support model is sustainable after launch?
 
 These questions should be answered from evidence and product/domain research rather than assumptions.
 
 They are not blockers for implementing the accepted Phase 1 Foundation unless new evidence contradicts an accepted Foundation decision.
+
+The accepted roadmap provides sequencing for when many of these questions must be resolved.
+
+It does not pre-answer them.
 
 ---
 

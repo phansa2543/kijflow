@@ -106,10 +106,13 @@ As a result:
 - DEC-004 was revalidated with revised Foundation profile semantics
 - DEC-005 was revalidated and revised for multi-Organization Membership
 - DEC-006 established the Business Module Independence Principle using functional and commercial independence, optional integration, and a modular-monolith default architecture.
+- DEC-007 established the post-Phase-1 roadmap skeleton while keeping Phase 1 unchanged.
 
 The revised Phase 1 Foundation architecture was accepted by the Founder on 2026-10-10.
 
 DEC-006 was accepted by the Founder on 2026-10-11 and establishes the Business Module Independence Principle for future Business Module design without changing the current Phase 1 implementation scope.
+
+DEC-007 was accepted by the Founder on 2026-10-15 and establishes the post-Phase-1 roadmap skeleton. It does not revise Phase 1 scope, architecture, milestones, or implementation design.
 
 Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
@@ -158,7 +161,7 @@ Authentication does not establish or imply Organization Membership, trusted Orga
 
 The approved Milestone 3 implementation-level design does not create a new architecture decision and therefore does not require a new DEC entry.
 
-If future implementation evidence conflicts with DEC-001 through DEC-006, the issue must return to architecture review rather than silently changing the accepted architecture.
+If future implementation evidence conflicts with DEC-001 through DEC-007, the issue must return to review rather than silently changing an accepted decision.
 
 ---
 
@@ -1775,6 +1778,435 @@ Reconsider this decision if:
 - Engineering Mentor
 - QA / Quality Engineer
 - SaaS / Business Strategy
+- Command Center
+
+## Founder Approval
+
+Accepted
+
+---
+
+# DEC-007 — Post-Phase-1 Roadmap Skeleton
+
+## Date
+
+2026-10-15
+
+## Decision
+
+Kijflow adopts the following high-level roadmap skeleton after Phase 1:
+
+```text
+Phase 1 — SaaS Foundation
+        ↓
+Phase 2 — Module Enablement Foundation
+        ↓
+Phase 3 — First Business Module
+          + Minimum Import / Export
+        ↓
+Phase 4 — Marketing & Growth Foundation
+          + Build and publicly deploy the Kijflow Marketing Site
+          + SEO / Content
+          + Product Updates / News
+          + Promotions
+          + Contact / Feedback
+          + Prepare capability for future genuine Customer Reviews / Stories
+        ↓
+Phase 5 — Commercialization & Launch
+          + Production deployment of the Kijflow Business Application
+          + Production API and PostgreSQL operating model
+          + Production operations baseline
+          + Pricing / Packaging
+          + Billing / Subscription MVP
+          + Customer Onboarding
+          + Support Baseline
+          + Final Launch Readiness
+        ↓
+        Paid Commercial Launch
+        ↓
+Phase 6 — Second Business Module
+        ↓
+Phase 7 — First Real Cross-Module Integration
+```
+
+This decision establishes the roadmap skeleton only.
+
+Detailed phase scope, milestone decomposition, acceptance criteria, technical design, provider selection, implementation mechanism, and internal sequencing remain deferred until the relevant phase approaches.
+
+## Phase 1 Protection
+
+DEC-007 does not revise Phase 1.
+
+Phase 1 remains governed by its already accepted:
+
+- scope,
+- architecture,
+- milestones,
+- implementation-level designs,
+- security requirements,
+- and acceptance criteria.
+
+The post-Phase-1 roadmap must not be used to add the following into Phase 1:
+
+- Module Enablement,
+- Business Modules,
+- Business Module Import / Export,
+- Marketing & Growth functionality,
+- production commercial operation,
+- Billing / Subscription,
+- or cross-module integration.
+
+Phase 1 scope and architecture are therefore frozen against roadmap-driven expansion.
+
+This does not prevent work required to satisfy already accepted Phase 1 requirements.
+
+Security defects, correctness defects, tenant-isolation defects, regressions, or implementation behavior that violates existing Phase 1 requirements must still be corrected before Phase 1 can close.
+
+## Context
+
+Kijflow is being developed incrementally under a one-person software-house constraint.
+
+Earlier accepted direction established that:
+
+- Phase 1 should build only the minimum reliable SaaS Foundation,
+- Business Modules should provide coherent standalone value,
+- Module entitlement and User authorization are separate concerns,
+- pricing, packaging, subscription mechanics, and entitlement implementation should not be prematurely encoded into Phase 1,
+- cross-module integration should follow concrete workflows rather than speculative infrastructure,
+- and complexity should be introduced only when justified by validated product, operational, or commercial needs.
+
+Post-Phase-1 planning identified several materially different responsibilities that should not be treated as one undifferentiated effort:
+
+- Organization-level Business Module enablement,
+- creation of the first valuable Business Module,
+- practical data import/export needed for adoption and portability,
+- a public marketing and organic-acquisition surface,
+- production deployment and commercial launch readiness,
+- later standalone Business Modules,
+- and real cross-module integration after concrete modules exist.
+
+A high-level roadmap is therefore useful for sequencing these responsibilities without prematurely designing future phases.
+
+## Problem
+
+How should Kijflow sequence major post-Phase-1 work so that:
+
+- Phase 1 remains protected from scope creep,
+- Business Module enablement exists before commercial module packaging depends on it,
+- the first Business Module receives focused product attention,
+- practical data migration and portability are not ignored,
+- marketing and SEO can begin before the paid commercial launch,
+- the Marketing Site can operate publicly without prematurely exposing the Business Application to customers,
+- Business Application production deployment and Billing / Subscription are completed as part of commercial launch readiness,
+- additional modules remain independently useful,
+- and real integration is implemented only after concrete participating modules exist?
+
+## Options Considered
+
+1. Keep only the previous broad sequence of SaaS Foundation followed immediately by the first Business Module and leave all later work unstructured.
+
+2. Build Module Enablement, Business Modules, Marketing, production infrastructure, Billing, and integration together as one large post-Phase-1 effort.
+
+3. Establish a staged roadmap separating Module Enablement, the first Business Module, Marketing & Growth, Commercialization & Launch, the second Business Module, and the first real cross-module integration.
+
+## Selected Option
+
+Use option 3.
+
+Adopt the seven-phase roadmap skeleton while keeping Phase 1 unchanged.
+
+## Phase 2 Direction — Module Enablement Foundation
+
+Phase 2 establishes the minimum foundation required for Kijflow to know which Business Modules an Organization may use.
+
+Conceptually, it separates:
+
+```text
+Module Entitlement
+→ may this Organization use this Business Module?
+
+Authorization
+→ may this Membership/User perform this action?
+```
+
+Phase 2 is not the Billing / Subscription phase.
+
+Its exact entitlement model, lifecycle, data structures, administration behavior, and interaction with Business Module authorization remain deferred to Phase 2 review.
+
+The phase must not become a premature pricing, packaging, or subscription platform.
+
+## Phase 3 Direction — First Business Module
+
+Phase 3 delivers the first valuable Business Module as a coherent standalone workflow consistent with DEC-006.
+
+The phase also includes minimum practical Import / Export capability where required for realistic adoption or useful portability of that module's business data.
+
+Import / Export does not imply a generic ETL platform, arbitrary transformation engine, generic connector platform, or configurable data-integration framework.
+
+The exact first Business Module boundary, workflow, capabilities, data ownership, Import / Export requirements, and acceptance criteria remain subject to product, domain, UX, architecture, and QA review.
+
+This roadmap decision does not by itself finalize the detailed Sales Management / Managed Sales scope.
+
+## Phase 4 Direction — Marketing & Growth Foundation
+
+Phase 4 establishes Kijflow's public marketing, education, trust, feedback, and organic-acquisition surface.
+
+The Kijflow Marketing Site is expected to be built and publicly deployed during Phase 4.
+
+Conceptually:
+
+```text
+www.kijflow.com
+→ public Marketing & Growth surface
+```
+
+High-level Phase 4 responsibilities may include:
+
+- product and Business Module pages,
+- SEO foundation,
+- educational and domain content,
+- product updates and development news,
+- promotions,
+- contact and customer-feedback channels,
+- and structure for genuine future Customer Reviews / Stories when real customer evidence exists.
+
+Because paid customer use does not begin before Phase 5, Phase 4 must not fabricate customer reviews, testimonials, usage claims, or customer evidence merely to fill marketing content.
+
+Marketing & Growth must not expand into a speculative:
+
+- general-purpose CMS,
+- social network,
+- customer community platform,
+- marketing-automation platform,
+- or high-volume low-value content operation
+
+without later evidence justifying that complexity.
+
+The exact repository structure, deployment topology, publishing mechanism, analytics tooling, and SEO implementation remain deferred to Phase 4 design.
+
+## Phase 5 Direction — Commercialization & Launch
+
+Phase 5 converts the developed product into a commercially operable SaaS offering and is the boundary before real paid customer use begins.
+
+High-level Phase 5 responsibilities include:
+
+- production deployment of the Kijflow Business Application,
+- production deployment/operation of its required backend/API,
+- production PostgreSQL operating model,
+- production configuration and secret management,
+- backup and restore capability,
+- monitoring and error visibility,
+- controlled deployment and database-migration procedure,
+- recovery / rollback considerations appropriate to actual operational risk,
+- production access control and operational security,
+- pricing and packaging,
+- Billing / Subscription MVP,
+- required relationship between subscription state and module entitlement,
+- customer onboarding baseline,
+- support baseline,
+- and final commercial launch review.
+
+Conceptually:
+
+```text
+Phase 4
+www.kijflow.com → public
+
+Phase 5
+app.kijflow.com + API + production data platform
+        ↓
+Commercial readiness
+        ↓
+Paid Commercial Launch
+```
+
+The exact production hosting provider, cloud architecture, payment provider, subscription lifecycle, pricing model, packaging model, deployment tooling, and CD policy remain deferred until Phase 5 review.
+
+Production readiness does not imply enterprise-scale infrastructure.
+
+Kijflow should continue to favor an operating model that one Founder can understand, deploy, monitor, recover, and support.
+
+## Phase 6 Direction — Second Business Module
+
+Phase 6 introduces the second Business Module as another coherent standalone workflow consistent with DEC-006.
+
+The exact module is not finalized by this roadmap decision.
+
+Current product/domain research may inform the choice, but validated customer value, business responsibility, workflow clarity, and one-person maintainability should drive the final selection.
+
+## Phase 7 Direction — First Real Cross-Module Integration
+
+Phase 7 implements and validates the first real integration between concrete Business Modules.
+
+The integration must provide meaningful additional business value and must not repair an incomplete standalone module.
+
+The exact integration workflow, trigger, ownership, consistency requirements, failure behavior, configuration, and implementation mechanism remain deferred until the participating Business Modules exist and their workflows are understood.
+
+This decision does not authorize a generic integration framework, event platform, plugin system, or distributed architecture.
+
+The simplest mechanism that preserves the required module boundaries should remain the default.
+
+## Import / Export Principle
+
+Import / Export is treated as a practical product capability rather than a standalone paid Business Module.
+
+Where justified by the relevant workflow, it should support concerns such as:
+
+- onboarding from existing tools,
+- migration of existing business data,
+- practical business-data portability,
+- useful downstream analysis or operational use,
+- customer trust,
+- and future offboarding requirements.
+
+Each Business Module should define Import / Export from its actual business semantics rather than from raw database tables.
+
+Kijflow should prefer simple and explicit business-meaningful formats and workflows over a generic data-integration platform unless validated requirements justify greater complexity.
+
+## Marketing Deployment Boundary
+
+The Marketing Site and the Kijflow Business Application have different operational risk profiles and therefore do not need to share the same production-launch boundary.
+
+Phase 4 may publicly deploy the Marketing Site because its primary responsibility is public content, acquisition, education, and communication.
+
+The Business Application carries materially higher operational responsibility because it will eventually contain customer identity, Organization, and business data and support real operational workflows.
+
+Its production deployment is therefore part of Phase 5 Commercialization & Launch rather than a requirement for Phase 4.
+
+## Real Customer Use Boundary
+
+DEC-007 does not establish a pilot or public free-trial period after Phase 3 or Phase 4.
+
+There is currently no planned real-customer pilot before commercial launch.
+
+Real paid customer use begins only after the required Phase 5 commercial launch criteria are satisfied.
+
+A future decision may introduce trials or other acquisition models, but this roadmap does not assume them.
+
+## Relationship to Existing Decisions
+
+DEC-007 supplements rather than replaces DEC-001 through DEC-006.
+
+In particular:
+
+- DEC-001 through DEC-005 continue to govern Phase 1,
+- DEC-006 continues to govern Business Module independence and optional integration,
+- Module entitlement remains separate from User authorization,
+- Business Module enablement does not itself determine pricing or Billing,
+- shared business concepts remain subject to validated workflow evidence,
+- and speculative generic integration infrastructure remains unnecessary.
+
+If a later phase design conflicts with an accepted decision, the conflict must return to review rather than silently overriding that decision.
+
+## Reasoning
+
+The selected sequence deliberately moves from platform capability toward product value, acquisition, commercialization, and later expansion:
+
+```text
+Reliable Foundation
+        ↓
+Module Enablement
+        ↓
+First standalone customer value
+        ↓
+Marketing / acquisition surface
+        ↓
+Commercial and production readiness
+        ↓
+Paid launch
+        ↓
+Additional module value
+        ↓
+Validated cross-module value
+```
+
+This avoids two opposite mistakes:
+
+1. building a large commercial/platform layer before there is a real Business Module to sell,
+2. building a useful Business Module but postponing acquisition, production, billing, and operational readiness until after attempting to sell it.
+
+The Marketing Site is separated from Business Application production because the two surfaces have different purposes and operational consequences.
+
+Production deployment of the Business Application remains inside Commercialization & Launch because deploying customer-data infrastructure has little standalone business value if Kijflow is not yet preparing to accept real customers.
+
+## Trade-offs
+
+### Gains
+
+- Phase 1 remains protected from future-roadmap scope creep.
+- Post-Phase-1 work has a clear sequence without prematurely fixing implementation details.
+- Module Enablement is separated from Billing / Subscription.
+- The first Business Module receives focused attention before commercialization complexity is introduced.
+- Import / Export is treated as an adoption and portability concern from the first Business Module.
+- Marketing and SEO can begin before commercial launch.
+- The public Marketing Site can accumulate visibility before the Business Application opens to customers.
+- Business Application production work is performed in the same phase as the commercial systems and operational responsibilities that depend on it.
+- Later Business Modules continue to follow the standalone-value principle.
+- Real integration is deferred until concrete modules make its semantics knowable.
+
+### Sacrifices
+
+- Paid launch occurs only after several distinct post-Phase-1 capabilities are completed.
+- A dedicated Marketing & Growth phase adds work before revenue begins.
+- Import / Export may increase the first Business Module's delivery scope where it is genuinely required.
+- Phase 5 contains several related but substantial commercialization and operational workstreams.
+- Future evidence may require changing the roadmap before all phases are executed.
+
+## Risks
+
+- Phase 2 may accidentally expand into Billing or packaging design.
+- Phase 3 Import / Export may expand into a generic data-platform project.
+- Phase 4 may consume disproportionate Founder effort through content production or unnecessary marketing infrastructure.
+- Marketing claims may get ahead of validated product capability if not reviewed carefully.
+- Phase 5 may become overly broad if production infrastructure or Billing is over-engineered.
+- Production requirements may be designed at enterprise scale despite the one-person operating constraint.
+- Later Business Module priorities may change after real customer evidence appears.
+- Optional integration combinations may eventually create excessive testing and support burden.
+
+## Guardrails
+
+- Do not add post-Phase-1 roadmap scope back into Phase 1.
+- Do not redesign accepted Phase 1 architecture merely to anticipate a later phase without validated contradiction.
+- Keep Phase 2 focused on minimum Organization-level module enablement rather than pricing or Billing.
+- Keep Phase 3 focused on one coherent Business Module and only practical Import / Export justified by real adoption and portability needs.
+- Keep Phase 4 focused on public acquisition, education, trust, feedback, and useful SEO/content capability.
+- Do not publish fabricated Customer Reviews / Stories before real customer evidence exists.
+- Keep Business Application production deployment within Phase 5 commercial readiness unless future evidence justifies a different boundary.
+- Keep Phase 5 production architecture proportionate to actual operational risk and one-person maintainability.
+- Do not introduce generic integration infrastructure before concrete integration requirements exist.
+- Reassess future phases when validated customer, commercial, operational, or technical evidence materially changes their assumptions.
+
+## Reversibility
+
+High for the detailed contents and implementation of Phases 2 through 7 because DEC-007 intentionally establishes only a roadmap skeleton.
+
+Moderate for the overall sequencing once substantial implementation begins in later phases.
+
+Phase 1 remains governed independently by its accepted decisions and is not reopened by this roadmap.
+
+## Reconsideration Trigger
+
+Reconsider the roadmap if:
+
+- validated Business Module requirements show that Module Enablement must be sequenced differently,
+- the first Business Module requires materially different adoption or Import / Export capability,
+- Marketing & Growth evidence shows that Phase 4 should be scoped or sequenced differently,
+- production operating requirements materially change the Commercialization & Launch boundary,
+- pricing or Billing requirements create a validated dependency on earlier work,
+- real customer evidence changes the priority of the second Business Module,
+- a genuine cross-module business dependency must be implemented earlier,
+- or the roadmap creates disproportionate implementation, operational, support, or cognitive burden for a one-person software house.
+
+Changing a future roadmap phase does not automatically reopen Phase 1.
+
+## Participants
+
+- Founder
+- Product Manager
+- Business Domain Consultant
+- Tech Lead / Software Architect
+- SaaS / Business Strategy Consultant
+- QA / Product Reviewer
 - Command Center
 
 ## Founder Approval
