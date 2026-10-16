@@ -108,6 +108,7 @@ As a result:
 - DEC-006 established the Business Module Independence Principle using functional and commercial independence, optional integration, and a modular-monolith default architecture.
 - DEC-007 established the post-Phase-1 roadmap skeleton while keeping Phase 1 unchanged.
 - DEC-008 revised the approved M3 password minimum length from 15 to 8 Unicode code points while preserving the other approved password-processing and authentication-security controls.
+- DEC-009 selected the M3 common/compromised-password screening approach, provider-replaceability boundary, failure behavior, internal development/testing strategy, and pre-release third-party verification gates.
 
 The revised Phase 1 Foundation architecture was accepted by the Founder on 2026-10-10.
 
@@ -116,6 +117,8 @@ DEC-006 was accepted by the Founder on 2026-10-11 and establishes the Business M
 DEC-007 was accepted by the Founder on 2026-10-15 and establishes the post-Phase-1 roadmap skeleton. It does not revise Phase 1 scope, architecture, milestones, or implementation design.
 
 DEC-008 was accepted by the Founder on 2026-10-15. It changes the approved M3 password minimum length to 8 Unicode code points after NFC normalization, while keeping the 128-code-point maximum and the remaining security controls unchanged. The Founder accepts that an 8-code-point minimum for password-only authentication does not meet the NIST SP 800-63B-4 single-factor minimum of 15 characters. DEC-008 does not expand M3 to MFA, Passkeys, Social Login, or other new authentication mechanisms.
+
+DEC-009 was accepted by the Founder on 2026-10-16. It selects local common-password screening plus HIBP Pwned Passwords Range API checks, with fail-closed behavior and a small replaceable provider boundary. Development uses deterministic mocked tests and separate live API integration tests. Commercial SaaS terms and dataset rights remain unverified; the decision does not certify third-party permission.
 
 Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
@@ -164,7 +167,7 @@ Authentication does not establish or imply Organization Membership, trusted Orga
 
 The original approved Milestone 3 implementation-level design did not itself require a new DEC entry. Its later Founder-approved password minimum-length revision is recorded separately as DEC-008 because it modifies an approved authentication-security requirement and explicitly accepts a security trade-off.
 
-If future implementation evidence conflicts with DEC-001 through DEC-008, the issue must return to review rather than silently changing an accepted decision.
+If future implementation evidence conflicts with DEC-001 through DEC-009, the issue must return to review rather than silently changing an accepted decision.
 
 ---
 
@@ -2378,3 +2381,131 @@ Separate Tech Lead / Software Architect and QA / Product Reviewer sign-off has n
 ## Founder Approval
 
 Accepted
+
+---
+
+# DEC-009 — Milestone 3 Password Blocklist Strategy and Verification Gates
+
+## Date
+
+2026-10-16
+
+## Decision
+
+For M3 password establishment, select a two-stage common/compromised-password screening strategy:
+
+1. Check the NFC-normalized password against a locally held, exact-match common-password list, initially considering SecLists `100k-most-used-passwords-NCSC.txt` subject to provenance/licensing review.
+2. Check the same normalized password against the HIBP Pwned Passwords Range API for known-compromised passwords.
+
+Reject a password when either approved check positively identifies it as blocked. If the required HIBP check is unavailable or produces an unusable response, **fail closed**: do not establish the password by silently skipping the check. Report a generic temporary failure with a retry path, without leaking the password or internal screening details.
+
+Keep a small Kijflow-owned screening boundary so the HIBP provider can be replaced by an appropriate alternative or local compromised-password checker. Do not introduce a generic plugin framework.
+
+This decision establishes an implementation direction and quality/release gates. It **does not** certify third-party licensing, assert permission on behalf of HIBP or dataset owners, or modify DEC-008.
+
+## Context
+
+The approved M3 password-processing contract requires Unicode NFC normalization, 8–128-code-point length validation, common/compromised-password screening, and Argon2id hashing for password establishment.
+
+The Founder is developing Kijflow as a **proprietary hosted SaaS** for SMEs. Kijflow customers use the service; Kijflow source code is not being sold or delivered to them. Kijflow is in internal development and has no external customer launch yet.
+
+The Founder chose the local-list plus HIBP approach after reviewing implementation simplicity, security, third-party dependency, maintenance cost, and future replaceability. The Founder subsequently challenged the proposed blanket pause for license clarification and the assumption that mock API tests would replace real HIBP testing. The accepted approach separates technical development and testing from permission verification required before external-user availability.
+
+## Problem
+
+How can Kijflow meet its approved common/compromised-password screening requirement without depending only on mocks, tying its architecture permanently to one provider, or prematurely blocking internal development on commercial-launch questions?
+
+## Options Considered
+
+1. Local-only screening using an appropriately sourced and maintainable dataset; no external runtime dependency, but dataset coverage/update responsibility falls on Kijflow.
+2. **Local common-password screening plus HIBP Pwned Passwords Range API**, with a replaceable provider boundary; added protection and live integration coverage, but an external availability and terms dependency.
+3. External-provider-only screening; a simpler local footprint, but every screening request depends on the provider and the local fast-rejection layer is lost.
+
+## Selected Option
+
+Use option 2 provisionally for implementation, subject to the evidence-based gates below.
+
+### Password Screening Contract
+
+- Apply common/compromised screening to the NFC-normalized password **at password establishment**, after the already-approved length validation and before Argon2id hashing. Do not add breach-service calls to every login.
+- Use exact-match local screening without trimming, lowercasing, case folding, or otherwise changing the approved password semantics.
+- For HIBP Range lookups, hash the normalized password with SHA-1 solely for breach-data lookup. Transmit only the first five hexadecimal hash characters over HTTPS; compare the returned suffixes and counts locally. SHA-1 must not replace Argon2id credential storage.
+- Do not transmit plaintext passwords, email addresses, or a full SHA-1 digest to HIBP. Request padded responses where supported (`Add-Padding: true`) and ignore padding entries with a zero occurrence count.
+- Bound network timeouts and handle malformed data, network errors, and temporary service failures without exposing secrets or creating an uncontrolled retry storm.
+- If HIBP cannot provide a valid required result, password establishment fails closed with a generic retryable error. This is a deliberate registration-availability trade-off.
+- Keep the provider boundary minimal and replaceable without prematurely building an extensible framework.
+
+### Development and Test Strategy
+
+- **Internal development:** Engineering Mentor may guide implementation against the real HIBP API when the use is consistent with applicable current terms and normal operational constraints. External permission is not presumed merely because an endpoint is free.
+- **Deterministic automated tests/normal CI:** use a mock/fake provider to test blocked/unblocked results, valid/invalid suffix data, zero-count padded entries, Unicode NFC behavior, timeouts, provider errors, fail-closed behavior, and absence of secret leakage. Normal tests do not need to contact HIBP.
+- **Live integration tests:** separately test real HTTPS connectivity, the five-character SHA-1 prefix request, response parsing, and a known-compromised test case using test-only passwords. Complete and record a successful live integration test before closing the M3 blocklist subtask; repeat before exposing the feature to external users.
+- **CI:** mocked tests remain the reliable push/pull-request gate. Live HIBP smoke tests may be manual or run in a separate explicitly invoked job; they are not required on every push. A real provider outage is not automatically a regression in Kijflow's own logic.
+- Tests must avoid plaintext-password, token, and credential leakage in logs, traces, failures, and CI output.
+
+### Third-Party and Release Gates
+
+- **Local dataset before commit/redistribution:** verify provenance and terms that cover the proposed SecLists NCSC file specifically, including any third-party-origin material; preserve required notices. Repository-level MIT licensing by itself is not treated as proof of every dataset contributor's rights. Until verified, use synthetic/minimal test fixtures rather than committing the candidate dataset.
+- **Dataset value review:** Engineering Mentor should assess the incremental benefit of the local list against upkeep and licensing cost before the definitive dataset commit. If it is not justified or permissions fail, escalate an alternative to the Founder rather than silently removing the approved local check.
+- **HIBP terms:** review the applicable official Terms of Use and clarify any remaining commercial SaaS / third-party-benefit restrictions before Kijflow becomes available to **any external users**, including a free beta. Contact HIBP if needed; no immediate outreach is required solely to continue permitted internal development.
+- An external-user release cannot proceed merely because mock tests and live integration tests pass. Terms/data-rights verification and the approved security checks remain separate release gates.
+- M3 development is not blocked by a pending commercial-use clarification; M3 technical acceptance still requires a working, permitted screening solution that satisfies the M3 security outcomes.
+
+## Reasoning
+
+This approach validates both Kijflow's deterministic internal behavior and its actual network integration without making every CI result dependent on HIBP uptime. A local common-password check can reject obvious choices quickly, while HIBP provides a separate known-compromised check. Separating screening behind a small adapter limits future migration cost for a one-person software house.
+
+Separating internal development from external-user release avoids premature commercial-support processes while preserving the obligation to respect current third-party terms even during development.
+
+## Trade-offs
+
+### Gains
+
+- Live API behavior is tested rather than assumed from mocks.
+- Normal CI remains deterministic and can test error modes that are difficult to induce against a real service.
+- Provider replacement remains feasible without rewriting registration.
+- Commercial licensing uncertainty does not automatically suspend unrelated M3 coding.
+
+### Sacrifices
+
+- HIBP unavailability blocks new password establishment while the fail-closed policy applies, even if the local check passes.
+- A local dataset adds provenance, update, and maintenance responsibility.
+- Separate live integration testing requires deliberate execution and evidence before blocklist completion.
+
+## Risks
+
+- HIBP terms and commercial-SaaS permissibility remain unverified for Kijflow's intended future external use.
+- The particular NCSC dataset's provenance and licensing remain unverified; it must not be committed until cleared.
+- The selected external provider can become unavailable or change its API/terms.
+- Fail-closed behavior can temporarily prevent new user registrations and other password-establishment workflows.
+- A common-password dataset may overlap with HIBP and prove insufficiently valuable for its maintenance cost.
+- A passing live integration test proves connectivity/functionality, not contractual permission or future uptime.
+
+## Reversibility
+
+Moderate.
+
+The provider can be changed behind the small screening interface, but data rights, matching semantics, test fixtures, availability behavior, and rollout must be re-evaluated. Changing from the selected two-stage approach requires Founder review when it alters the approved security behavior or accepted trade-off.
+
+## Reconsideration Trigger
+
+Revisit this decision if:
+
+- verified HIBP terms do not permit the intended SaaS use;
+- verified dataset rights do not permit the intended local-list use;
+- real service reliability or latency makes fail-closed unavailability unacceptable;
+- evidence shows negligible benefit from maintaining the local list;
+- a suitable local/alternative compromised-password checker reduces cost or dependency while meeting the approved screening requirement;
+- or a security review finds the privacy or failure handling inadequate.
+
+## Participants
+
+- Founder — choice of screening approach, test strategy, and risk acceptance.
+- Command Center — technical/product trade-off challenge and source-of-truth synchronization.
+- Engineering Mentor — implementation boundary and local dataset measurements as reported in handoff.
+
+Independent Tech Lead and QA sign-off specifically for DEC-009 has not been recorded. Their future review must not be implied by this decision's acceptance.
+
+## Founder Approval
+
+Accepted on 2026-10-16 as the M3 implementation direction **with unresolved third-party/data-rights and release gates**. This is not third-party permission approval.

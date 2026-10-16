@@ -57,7 +57,9 @@ The latest full backend regression test run passed 75 tests, including 29 email 
 
 Password NFC normalization work on commit `c6281e7` passed GitHub Actions CI, as confirmed by the Founder.
 
-The subsequent Password Length Validation subtask has passed local tests and Engineering Mentor code review. Its documentation synchronization is complete. Commit, push, and GitHub Actions CI confirmation are still pending.
+The Password Length Validation subtask is complete. Engineering Mentor reviewed the implementation; local tests passed (16 password tests and 75 full backend tests). The Founder confirmed commit `fb36c12` on `main`, a successful push, and GitHub Actions CI PASS.
+
+The current M3 subtask is Common / Compromised Password Blocklist Screening. Founder approved DEC-009: a local common-password check plus the HIBP Pwned Passwords Range API, fail-closed behavior, a replaceable provider boundary, deterministic mock tests, and separate real HIBP integration tests. Development and permitted internal live testing may proceed without awaiting a commercial-launch clarification. The candidate SecLists dataset must not be committed until its specific provenance/rights are verified. Any unresolved HIBP commercial SaaS terms must be clarified before external-user access, including free beta. Blocklist implementation has not yet been reported as started.
 
 Registration, login, common/compromised-password blocklist screening, Argon2id hashing/verification, and runtime authentication/session workflows remain incomplete.
 
@@ -685,7 +687,7 @@ Founder implementation is now the current step.
 - The subsequent password length validation work is tracked separately below.
 - Common/compromised-password blocklist checks, Argon2id hashing, and verification remain incomplete.
 
-**Password Length Validation — Implemented and Tested Locally; Commit, Push, and CI Pending**
+**Password Length Validation — Complete; CI Confirmed**
 
 - Founder implemented `prepare_password(raw_password: str) -> str` in `backend/app/auth/password.py`.
 - The implementation performs Unicode NFC normalization before password length validation.
@@ -705,20 +707,32 @@ Founder implementation is now the current step.
 - `git diff --check` reported no remaining whitespace errors.
 - A Windows LF-to-CRLF warning for `docs/DECISION_LOG.txt` and minor formatting observations were reported as non-blocking.
 - Documentation synchronization is complete and has been reviewed by Command Center.
-- Commit, Push, and GitHub Actions CI confirmation for Password Length Validation have not yet been completed.
-- Passing local tests does not constitute CI confirmation.
+- Committed on `main` as `fb36c12` (`feat(auth): add password length validation`).
+- Push succeeded; GitHub Actions CI PASS, as confirmed by the Founder.
+- Git working tree was clean at Engineering Mentor handoff.
 - This subtask covers NFC normalization and length validation only; blocklist screening, Argon2id, and registration/login integration remain separate M3 tasks.
+
+**Common / Compromised Password Blocklist — DEC-009 Approved; Development Ready, Third-Party Gates Open**
+
+- Founder approved the M3 implementation direction in DEC-009: exact-match local common-password screening plus the HIBP Pwned Passwords Range API, with fail-closed handling and a minimal replaceable provider boundary.
+- Kijflow remains an internally developed proprietary SaaS with no external customer access yet. Internal code development and testing may proceed without first contacting HIBP, subject to the applicable current Terms of Use. The free API is not a blanket contractual permission statement.
+- Internal tests must cover both deterministic mocked API behavior and real HIBP API integration. Normal push/PR CI uses mocks; live HIBP smoke/integration tests run separately and must pass before closing the blocklist subtask.
+- The proposed local dataset is `backend/app/auth/data/100k-most-used-passwords-NCSC.txt`. Engineering Mentor reported 99,840 entries, 99,839 non-empty entries, UTF-8 validation, and SHA-256 `c2e5696882c603b76bb67a47ee970897e5a76fc4c3f5547abe3d0ca340c576e0`. These measurements are reported, not independently verified by Command Center.
+- Dataset file provenance and rights remain unverified. Do not commit the candidate dataset until its specific rights and any required notices have been reviewed; use synthetic/minimal test fixtures in the meantime. Engineering Mentor should also assess whether the local list adds sufficient value for its upkeep before definitive adoption.
+- Applicable HIBP commercial SaaS / third-party-benefit terms remain unresolved. Clarify them, including contacting HIBP if needed, **before external-user access, including free beta**, rather than automatically blocking all internal development.
+- If HIBP is unavailable or returns an unusable response during required screening, fail closed: do not bypass the check; give a generic, retryable temporary error without leaking sensitive details. This can block new registrations and is an accepted availability trade-off.
+- No Blocklist Screening implementation code has yet been reported as started. DEC-009 approval does not certify licensing or mark blocklist acceptance complete.
+- Technical Security/QA review is required before closing the blocklist subtask; the independent Tech Lead/QA sign-off of this specific provider strategy has not yet been recorded. This remains in M3 and does not expand DEC-008.
 
 **Remaining M3 Work**
 
-- Common/compromised-password blocklist screening
+- Implement common/compromised-password blocklist screening under DEC-009; clear dataset provenance before committing the candidate list; pass mock and live integration tests; resolve applicable HIBP commercial SaaS terms before external-user access
 - Argon2id hashing and verification
 - Atomic user registration
 - Login and authentication failure handling
 - Server-side session issuance, validation, and logout
 - Authentication abuse protection
 - Cookie security, CSRF protection, and remaining security tests
-- Commit, Push, and GitHub Actions CI confirmation for the completed Password Length Validation subtask
 
 **Open Consideration**
 
@@ -918,11 +932,17 @@ Password establishment must reject passwords identified by the approved policy a
 - common,
 - known-compromised.
 
-An external breach-service integration is not required for Milestone 3.
+The original M3 security requirement is an effective common/compromised-password screening outcome; an external breach-service integration was not a prerequisite of that requirement. DEC-009 subsequently selects local common-password screening plus HIBP Range API for the current implementation approach, subject to its third-party gates and reconsideration triggers.
 
-The exact local/versioned dataset or suitable established dependency remains an implementation choice as long as the approved security outcome is met.
+DEC-009 screening contract:
 
-DEC-008 does not change the blocklist requirement, Argon2id policy, abuse-protection requirements, or other approved M3 security controls.
+- Check the NFC-normalized, length-validated password using exact-match local common-password screening. Preserve whitespace and case; do not silently modify user input.
+- For HIBP, compute SHA-1 solely for the range lookup, send only the first five hexadecimal characters over HTTPS, and match suffixes and nonzero occurrence counts locally. Do not send plaintext, email, or a full hash; SHA-1 is not used for stored credentials.
+- Request response padding (`Add-Padding: true`) where supported, and do not treat padded zero-count entries as compromised.
+- Use bounded network calls and safe response validation; on unavailable/malformed required HIBP results, fail closed with a generic retryable error.
+- Keep the provider boundary small and replaceable; do not introduce a generic integration/plugin framework.
+
+The chosen provider and dataset remain replaceable through a reviewed decision if new evidence changes their suitability. DEC-008 continues to govern the unchanged password-length, Argon2id, abuse-protection, and authentication-security requirements.
 
 #### Argon2id Policy
 
@@ -1372,7 +1392,7 @@ The approved design intentionally leaves several mechanism-level choices open pr
 
 - exact abuse-control storage technology,
 - exact throttling thresholds,
-- exact password blocklist dataset/dependency,
+- exact licensed local password dataset/version under DEC-009 and provider-interface implementation details (subject to the accepted local + HIBP strategy or Founder-reviewed change),
 - exact CSRF mechanism consistent with the actual deployment boundary,
 - deployment-dependent host-only / `__Host-` cookie applicability.
 
@@ -1445,6 +1465,16 @@ At minimum, Milestone 3 testing must cover the following classes.
 - canonically equivalent Unicode password verifies consistently,
 - passwords meeting the length rule remain subject to common/compromised-password blocklist screening,
 - same plaintext password produces independently salted Argon2 representations.
+
+#### Password Blocklist — Mock and Live Integration
+
+- Local common-password exact match rejects blocked values without silently trimming/case-folding the NFC-normalized password.
+- Mocked/fake HIBP provider deterministically covers compromised match, clean response, positive versus zero padding counts, malformed response, timeout, provider error, and fail-closed behavior.
+- Mocked tests check no plaintext password, email address, or full SHA-1 hash is sent to HIBP, and no secrets appear in ordinary logs/errors or CI output.
+- Separate live HIBP integration test confirms HTTPS connectivity, correct five-character prefix request, valid response parsing, and rejection of a known-compromised test password.
+- Mocked blocklist tests run in normal CI; the live test is run separately and has a recorded PASS before the blocklist subtask closes. A live HIBP outage must not falsely imply that deterministic Kijflow code tests failed.
+- Candidate local data is not committed until its specific provenance/rights have been verified. The local-list value/maintenance review and any provider-choice change return to the Founder if material.
+- External-user release, including free beta, is blocked until applicable third-party data rights and HIBP terms have been clarified, regardless of technical test results.
 
 #### Argon2id
 
@@ -1539,7 +1569,10 @@ Milestone 3 is complete when:
 - required cookie and CSRF security outcomes are validated,
 - plaintext passwords and raw session tokens do not leak through persistence, logs, traces, errors, debug output, analytics, or CI/test output,
 - the required automated/adversarial authentication regressions run in CI,
-- implementation remains within the accepted M3 boundary and preserves DEC-001 through DEC-005 and DEC-008.
+- DEC-009 mock and separate real HIBP integration tests pass before the blocklist subtask is closed,
+- no unverified third-party password dataset is committed and any data or provider substitution that changes the accepted approach is reviewed,
+- third-party rights/terms verification remains a mandatory release gate before any external-user access, including beta,
+- implementation remains within the accepted M3 boundary and preserves DEC-001 through DEC-005, DEC-008, and DEC-009.
 
 ### Relevant Decisions
 
@@ -1548,6 +1581,7 @@ Milestone 3 is complete when:
 - DEC-003
 - DEC-005
 - DEC-008
+- DEC-009
 
 ---
 
@@ -2464,7 +2498,7 @@ This prevents implementation planning from becoming speculative architecture des
 
 The approved Milestone 2 persistence subset and the approved Milestone 3 Registration & Authentication design are defined in their milestone sections above.
 
-The Milestone 3 password minimum-length requirement was revised separately by Founder Decision DEC-008.
+The Milestone 3 password minimum-length requirement was revised separately by Founder Decision DEC-008. The M3 blocklist provider/development/testing/release-gate strategy is recorded separately by Founder Decision DEC-009.
 
 Milestone 3 has resolved the password-credential and authentication-session direction, including:
 
@@ -2483,7 +2517,7 @@ Within Milestone 3, the implementation-level mechanism choices explicitly left o
 
 - exact abuse-control storage technology,
 - exact throttling thresholds,
-- exact password blocklist dataset/dependency,
+- exact licensed local blocklist dataset/version and minimal provider-adapter mechanics under DEC-009,
 - exact CSRF mechanism that satisfies the approved browser-security outcome,
 - deployment-dependent host-only / `__Host-` cookie applicability.
 
@@ -2535,7 +2569,7 @@ These should be decided only when the relevant milestone or validated requiremen
 
 # Architecture Escalation Rule
 
-Implementation must preserve applicable accepted decisions, including DEC-001 through DEC-006 and the M3 password-security revision DEC-008.
+Implementation must preserve applicable accepted decisions, including DEC-001 through DEC-007 and the M3 password-security decisions DEC-008 and DEC-009.
 
 If implementation evidence shows that an accepted decision:
 
@@ -2596,7 +2630,7 @@ AI advisory roles support:
 Phase 1 is complete only when:
 
 1. Milestones 1 through 8 satisfy their Acceptance Criteria.
-2. Revised DEC-001 through DEC-005 and M3-specific DEC-008 remain preserved.
+2. Revised DEC-001 through DEC-005 and M3-specific DEC-008 and DEC-009 remain preserved.
 3. Global Identity and multi-Organization Membership behavior are validated.
 4. Authentication is validated.
 5. Trusted Organization-context establishment is validated.
