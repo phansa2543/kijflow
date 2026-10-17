@@ -952,6 +952,9 @@ Current accepted decisions:
 - DEC-005 revalidated and revised
 - DEC-006 accepted — Business Module Independence Principle
 - DEC-007 accepted — Post-Phase-1 Roadmap Skeleton
+- DEC-008 accepted — Milestone 3 Password Minimum Length Policy
+- DEC-009 accepted — Milestone 3 Password Blocklist Strategy and Verification Gates
+- DEC-010 accepted — Phase 1 Functional Frontend Completion Requirement
 
 DEC-007 does not reopen Phase 1.
 
@@ -1034,6 +1037,49 @@ A User with zero Memberships remains a valid authenticated User.
 Milestone 3 intentionally does not introduce refresh tokens.
 
 Founder implementation is now the current engineering step.
+
+
+## Latest M3 Implementation Progress
+
+As of the Engineering Mentor handoff dated 2026-10-17:
+
+- Authentication persistence is implemented.
+- Email canonicalization and validation are implemented.
+- Password NFC normalization is implemented.
+- Password length validation is complete.
+- Local common-password screening components have been reported implemented.
+- HIBP Range API integration components have been reported implemented.
+
+The latest reported local backend regression is 114 passing tests.
+
+These additional implementation results are based on the Founder/Engineering Mentor handoff and have not yet been independently verified against the repository and CI.
+
+The current implementation step is Password Screening Pipeline integration (Step 7.25.1).
+
+Milestone 3 remains incomplete.
+
+Dataset rights, applicable HIBP terms, the latest Git/CI state, live integration testing, and independent Security/QA review require follow-up.
+
+
+## Phase 1 Functional Frontend Requirement
+
+DEC-010 was accepted by the Founder on 2026-10-17 following Product/UX, Tech Lead, and QA review.
+
+Phase 1 must conclude with a minimum functional browser frontend connected to the real backend.
+
+Approved customer-facing Foundation workflows must be operable without Swagger/Postman.
+
+Frontend implementation proceeds incrementally with M3–M7.
+
+M8 consolidates browser E2E, security, usability, and non-production deployment validation.
+
+Backend authority for authentication, authorization, trusted Organization context, tenant isolation, Membership lifecycle, invitation binding, and ownership invariants remains unchanged.
+
+Frontend protected state must remain safely isolated across security-context transitions.
+
+DEC-010 does not expand Phase 1 into Business Modules, Billing, or Marketing Site.
+
+Milestone-specific implementation details remain deferred until their relevant reviews.
 
 ---
 

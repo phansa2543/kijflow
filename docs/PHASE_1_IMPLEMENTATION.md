@@ -24,56 +24,102 @@ Phase 1 must not become:
 
 ---
 
+
 # Current Status
 
 Milestone 1 — Project Bootstrap is complete.
-
-Before Milestone 2 implementation began, the Foundation architecture was re-evaluated against Founder-approved Product Directions.
-
-The revised Phase 1 architecture establishes:
-
-- global Kijflow User Identity,
-- multi-Organization Membership,
-- Organization as the tenant/data-isolation boundary,
-- Owner / Admin / Member Foundation profiles,
-- self-service registration,
-- self-service Organization creation,
-- Membership lifecycle,
-- Organization ownership lifecycle,
-- capability-oriented authorization,
-- and revised tenant-context rules for multi-Organization Membership.
-
-The revised architecture is defined by DEC-001 through DEC-005.
-
-Implementation must proceed from the revised architecture rather than the superseded one-User/one-Organization model.
 
 Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
 Milestone 3 — Registration & Authentication is the current milestone.
 
-The Milestone 3 authentication persistence foundation, email canonicalization/validation component, password NFC normalization, and password length validation have been implemented and tested locally.
+The approved M3 implementation-level design has completed Tech Lead design, QA review, Engineering Mentor review, and Founder approval.
 
-The latest full backend regression test run passed 75 tests, including 29 email canonicalization tests and 16 password tests.
+DEC-008 and DEC-009 remain accepted decisions.
 
-Password NFC normalization work on commit `c6281e7` passed GitHub Actions CI, as confirmed by the Founder.
+## M3 Implementation Progress
 
-The Password Length Validation subtask is complete. Engineering Mentor reviewed the implementation; local tests passed (16 password tests and 75 full backend tests). The Founder confirmed commit `fb36c12` on `main`, a successful push, and GitHub Actions CI PASS.
+The following components were previously reported complete:
 
-The current M3 subtask is Common / Compromised Password Blocklist Screening. Founder approved DEC-009: a local common-password check plus the HIBP Pwned Passwords Range API, fail-closed behavior, a replaceable provider boundary, deterministic mock tests, and separate real HIBP integration tests. Development and permitted internal live testing may proceed without awaiting a commercial-launch clarification. The candidate SecLists dataset must not be committed until its specific provenance/rights are verified. Any unresolved HIBP commercial SaaS terms must be clarified before external-user access, including free beta. Blocklist implementation has not yet been reported as started.
+- Authentication credential and session persistence
+- Database migrations and persistence tests
+- Email canonicalization and validation
+- Password NFC normalization
+- Password length validation (8–128 Unicode code points)
 
-Registration, login, common/compromised-password blocklist screening, Argon2id hashing/verification, and runtime authentication/session workflows remain incomplete.
+The latest Engineering Mentor handoff dated 2026-10-17 reports additional implementation progress:
 
-The Milestone 3 implementation-level technical design has been:
+- Local common-password checker and dataset loader
+- Password SHA-1 prefix/suffix helpers
+- HIBP response parser
+- HIBP Range API client
+- Compromised-password lookup
+- Provider error handling
 
-- completed by the Tech Lead / Software Architect,
-- challenged and revised through QA review,
-- given final QA PASS,
-- reviewed with the Founder by the Engineering Mentor,
-- and explicitly approved by the Founder.
+Reported local test results:
 
-The approved M3 password minimum-length policy was subsequently revised by Founder Decision DEC-008 from 15 to 8 Unicode code points after NFC normalization.
+- Password tests: 29 passed
+- HIBP tests: 26 passed
+- Full backend regression: 114 passed
+- Failed: 0
 
-Founder implementation is now the current Milestone 3 step.
+These results were reported by the Founder through the Engineering Mentor handoff. Command Center has not independently verified the repository or executed the tests.
+
+The latest WIP commit/push and GitHub Actions CI status remain unconfirmed.
+
+## Current Implementation Step
+
+Step 7.25.1 — Password Screening Pipeline
+
+The next implementation step is to integrate:
+
+1. Unicode NFC normalization
+2. Password length validation
+3. Local common-password screening
+4. HIBP compromised-password screening
+5. Validated-password handoff to the subsequent Argon2id implementation
+
+The screening pipeline has not yet been reported complete.
+
+Registration, login, Argon2id hashing/verification, runtime authentication sessions, abuse protection, and remaining security behavior are incomplete.
+
+## Outstanding Security and Third-Party Issues
+
+The Engineering Mentor handoff reports that the candidate NCSC password dataset was already committed on `origin/main` in commit `d6dc883`.
+
+This conflicts with the pre-commit rights-verification gate established by DEC-009.
+
+The repository state and dataset rights require verification. Git history must not be rewritten automatically without a justified remediation decision.
+
+Applicable HIBP commercial SaaS terms also remain unresolved.
+
+No external-user access, including free beta, may proceed until the required third-party rights and terms are clarified.
+
+The Password Blocklist subtask still requires:
+
+- Integrated pipeline tests
+- Separate live HIBP integration test
+- Technical Security/QA review
+- Verification of applicable third-party rights and release conditions
+
+
+## Phase 1 Functional Frontend Requirement
+
+DEC-010 was accepted by the Founder on 2026-10-17 following Product/UX, Tech Lead, and QA review.
+
+Phase 1 must deliver the minimum functional browser frontend connected to the real Next.js, FastAPI, and PostgreSQL-backed Kijflow application.
+
+Approved customer-facing Foundation workflows must be operable without Swagger/Postman.
+
+Frontend delivery and browser integration testing proceed incrementally through M3–M7.
+
+M8 consolidates browser E2E, security, usability, and non-production deployment validation.
+
+Backend security authority and all previously accepted Foundation invariants remain unchanged.
+
+Milestone 3 remains the current implementation milestone.
+
+Business Modules, Billing, and Marketing Site remain outside Phase 1.
 
 ---
 
@@ -163,6 +209,35 @@ Production deployment architecture and CD policy should be finalized when Kijflo
 Technology providers such as GitHub Actions, cloud vendors, and deployment platforms are implementation choices rather than architectural requirements unless explicitly accepted later.
 
 ---
+
+# Functional Frontend Delivery — DEC-010
+
+Phase 1 must provide the minimum browser-operable interface for all approved customer-facing Foundation workflows through the real Next.js frontend, FastAPI backend, and PostgreSQL-backed state.
+
+Frontend implementation proceeds incrementally with the milestone that introduces each Foundation workflow.
+
+- M3: Registration, Login, Logout, authenticated pre-tenant state, and authentication error/recovery behavior.
+- M4: Zero-Organization experience, Organization creation, discovery, selection, switching, current Organization visibility, and minimal application shell.
+- M5: Safe tenant-context switching, stale-context recovery, and tenant-aware frontend state/cache isolation.
+- M6: Authorization-aware actions, navigation, and Access Denied handling.
+- M7: Invitation, Membership lifecycle, authorized profile management, Owner protection, and ownership transfer.
+- M8: Consolidated real-backend Browser E2E, security, usability, non-production deployment validation, and defect closure.
+
+Frontend must not establish independent authentication or authorization authority.
+
+Browser-selected Organization identifiers are selection intent only. Trusted Organization context requires backend Membership validation.
+
+Protected client state must not leak across Organization, User, session, Membership, or authorization-context changes.
+
+Cookie-authenticated state-changing Foundation operations require CSRF protection appropriate to the approved security outcome.
+
+Browser tests complement, not replace, backend/PostgreSQL security tests.
+
+A milestone introducing a customer-facing Foundation workflow is not complete until the minimum browser integration for that workflow has been exercised against the real backend.
+
+Exact routes, layouts, component architecture, cache library, API contracts, and deferred milestone implementation mechanisms are not decided by DEC-010.
+
+Business Modules, Billing, Marketing Site, and speculative frontend infrastructure remain outside Phase 1.
 
 # Implementation Milestones
 
@@ -712,21 +787,52 @@ Founder implementation is now the current step.
 - Git working tree was clean at Engineering Mentor handoff.
 - This subtask covers NFC normalization and length validation only; blocklist screening, Argon2id, and registration/login integration remain separate M3 tasks.
 
-**Common / Compromised Password Blocklist — DEC-009 Approved; Development Ready, Third-Party Gates Open**
 
-- Founder approved the M3 implementation direction in DEC-009: exact-match local common-password screening plus the HIBP Pwned Passwords Range API, with fail-closed handling and a minimal replaceable provider boundary.
-- Kijflow remains an internally developed proprietary SaaS with no external customer access yet. Internal code development and testing may proceed without first contacting HIBP, subject to the applicable current Terms of Use. The free API is not a blanket contractual permission statement.
-- Internal tests must cover both deterministic mocked API behavior and real HIBP API integration. Normal push/PR CI uses mocks; live HIBP smoke/integration tests run separately and must pass before closing the blocklist subtask.
-- The proposed local dataset is `backend/app/auth/data/100k-most-used-passwords-NCSC.txt`. Engineering Mentor reported 99,840 entries, 99,839 non-empty entries, UTF-8 validation, and SHA-256 `c2e5696882c603b76bb67a47ee970897e5a76fc4c3f5547abe3d0ca340c576e0`. These measurements are reported, not independently verified by Command Center.
-- Dataset file provenance and rights remain unverified. Do not commit the candidate dataset until its specific rights and any required notices have been reviewed; use synthetic/minimal test fixtures in the meantime. Engineering Mentor should also assess whether the local list adds sufficient value for its upkeep before definitive adoption.
-- Applicable HIBP commercial SaaS / third-party-benefit terms remain unresolved. Clarify them, including contacting HIBP if needed, **before external-user access, including free beta**, rather than automatically blocking all internal development.
-- If HIBP is unavailable or returns an unusable response during required screening, fail closed: do not bypass the check; give a generic, retryable temporary error without leaking sensitive details. This can block new registrations and is an accepted availability trade-off.
-- No Blocklist Screening implementation code has yet been reported as started. DEC-009 approval does not certify licensing or mark blocklist acceptance complete.
-- Technical Security/QA review is required before closing the blocklist subtask; the independent Tech Lead/QA sign-off of this specific provider strategy has not yet been recorded. This remains in M3 and does not expand DEC-008.
+**Common / Compromised Password Blocklist — Partially Implemented; Verification Pending**
+
+DEC-009 remains the accepted screening strategy.
+
+According to the Engineering Mentor handoff dated 2026-10-17, the Founder has implemented:
+
+- `backend/app/auth/password.py`:
+  - Local common-password checker
+  - Local dataset loader
+  - SHA-1 prefix/suffix helpers
+- `backend/app/auth/hibp.py`:
+  - HIBP response parser
+  - HIBP Range API client
+  - Compromised-password lookup
+  - Timeout, connection, HTTP, and malformed-response handling
+  - Generic `PasswordScreeningUnavailableError`
+
+Reported local validation:
+
+- 29 password tests passed
+- 26 HIBP tests passed
+- 114 full backend regression tests passed
+- No local test failures reported
+
+These results have not been independently verified by Command Center.
+
+The integrated Password Screening Pipeline is the next implementation step and remains incomplete.
+
+A separate live HIBP integration test and independent Technical Security/QA review are still required before closing the blocklist subtask.
+
+The candidate `100k-most-used-passwords-NCSC.txt` dataset is reported to exist in Git history on `origin/main`, commit `d6dc883`, despite DEC-009 requiring provenance and rights verification before commit.
+
+This discrepancy requires verification, risk assessment, and proportionate remediation. Do not rewrite repository history automatically.
+
+Dataset provenance and applicable rights remain unresolved.
+
+Applicable HIBP commercial SaaS terms must be clarified before external-user access, including free beta.
+
+The latest WIP commit/push and GitHub Actions CI results have not been confirmed.
+
+DEC-009 remains accepted. Its security requirements and release gates have not been waived.
 
 **Remaining M3 Work**
 
-- Implement common/compromised-password blocklist screening under DEC-009; clear dataset provenance before committing the candidate list; pass mock and live integration tests; resolve applicable HIBP commercial SaaS terms before external-user access
+- Complete the integrated Password Screening Pipeline and tests under DEC-009; verify dataset provenance and rights; run the separate live HIBP integration test; obtain Technical Security/QA review; and resolve applicable third-party release conditions before external-user access.
 - Argon2id hashing and verification
 - Atomic user registration
 - Login and authentication failure handling
@@ -1473,7 +1579,9 @@ At minimum, Milestone 3 testing must cover the following classes.
 - Mocked tests check no plaintext password, email address, or full SHA-1 hash is sent to HIBP, and no secrets appear in ordinary logs/errors or CI output.
 - Separate live HIBP integration test confirms HTTPS connectivity, correct five-character prefix request, valid response parsing, and rejection of a known-compromised test password.
 - Mocked blocklist tests run in normal CI; the live test is run separately and has a recorded PASS before the blocklist subtask closes. A live HIBP outage must not falsely imply that deterministic Kijflow code tests failed.
-- Candidate local data is not committed until its specific provenance/rights have been verified. The local-list value/maintenance review and any provider-choice change return to the Founder if material.
+- New or replacement third-party password datasets must have their specific provenance and applicable rights verified before being committed or redistributed.
+- The previously reported dataset commit (`d6dc883`) must be verified, its provenance and rights assessed, and any required remediation completed and documented before closing the blocklist subtask.
+- The local-list value/maintenance review and any material provider or dataset strategy change must return to the Founder for review.
 - External-user release, including free beta, is blocked until applicable third-party data rights and HIBP terms have been clarified, regardless of technical test results.
 
 #### Argon2id
@@ -1570,9 +1678,13 @@ Milestone 3 is complete when:
 - plaintext passwords and raw session tokens do not leak through persistence, logs, traces, errors, debug output, analytics, or CI/test output,
 - the required automated/adversarial authentication regressions run in CI,
 - DEC-009 mock and separate real HIBP integration tests pass before the blocklist subtask is closed,
-- no unverified third-party password dataset is committed and any data or provider substitution that changes the accepted approach is reviewed,
+- the previously reported password dataset commit has been verified, its provenance and applicable rights assessed, and any necessary remediation completed and documented,
+- the selected local password dataset is permitted for its intended M3 use, and no additional unverified third-party password datasets are committed,
+- any dataset or provider substitution that materially changes the accepted DEC-009 approach has received Founder review,
 - third-party rights/terms verification remains a mandatory release gate before any external-user access, including beta,
 - implementation remains within the accepted M3 boundary and preserves DEC-001 through DEC-005, DEC-008, and DEC-009.
+- registration, login, logout, session expiry/recovery, and authenticated pre-tenant behavior work through the real browser and backend,
+- browser authentication integration validates the approved cookie and CSRF security outcomes.
 
 ### Relevant Decisions
 
@@ -1582,6 +1694,7 @@ Milestone 3 is complete when:
 - DEC-005
 - DEC-008
 - DEC-009
+- DEC-010
 
 ---
 
@@ -1699,6 +1812,8 @@ Milestone 4 is complete when:
 - arbitrary Organization ID cannot independently establish trusted context,
 - zero-Membership User does not receive fabricated Organization context,
 - relevant bootstrap/context tests run in CI.
+- the browser supports zero-Organization state, first/additional Organization creation, accessible Organization discovery, selection, and switching,
+- the current Organization is clearly visible only after backend validation of trusted Organization context.
 
 ### Relevant Decisions
 
@@ -1706,6 +1821,7 @@ Milestone 4 is complete when:
 - DEC-002
 - DEC-003
 - DEC-005
+- DEC-010
 
 ---
 
@@ -1851,6 +1967,7 @@ Milestone 5 is complete when:
 - another User's Memberships cannot be enumerated,
 - PostgreSQL-backed isolation tests run in CI,
 - deliberate tenant-isolation regressions are detected by tests.
+- browser integration validates safe Organization switching, stale/inaccessible context recovery, and prevention of cross-tenant client-state leakage.
 
 ### Relevant Decisions
 
@@ -1858,6 +1975,7 @@ Milestone 5 is complete when:
 - DEC-002
 - DEC-003
 - DEC-005
+- DEC-010
 
 ---
 
@@ -1962,6 +2080,7 @@ Milestone 6 is complete when:
 - authorization never expands tenant boundary,
 - authorization is testable independently from authentication and tenant isolation,
 - authorization regression tests run in CI.
+- browser integration validates authorization-aware actions, safe Access Denied behavior, and recovery after authoritative privilege reduction without relying on frontend checks as security enforcement.
 
 ### Relevant Decisions
 
@@ -1969,6 +2088,7 @@ Milestone 6 is complete when:
 - DEC-003
 - DEC-004
 - DEC-005
+- DEC-010
 
 ---
 
@@ -2150,6 +2270,7 @@ Milestone 7 is complete when:
 - concurrent ownership transitions cannot create invalid ownership state,
 - cross-Organization Membership-management attempts fail,
 - Membership/ownership lifecycle regressions run in CI.
+- browser integration validates approved invitation, Membership lifecycle, and ownership-transfer workflows, including denied actions, access revocation, and Owner protection.
 
 ### Relevant Decisions
 
@@ -2158,6 +2279,7 @@ Milestone 7 is complete when:
 - DEC-003
 - DEC-004
 - DEC-005
+- DEC-010
 
 ---
 
@@ -2323,6 +2445,9 @@ Phase 1 must demonstrate that:
 - health check succeeds,
 - significant environment-specific failures are resolved or explicitly documented,
 - Foundation can support the first Business Module without redesigning core identity, Membership, ownership, authorization, or tenant boundaries.
+- a representative Browser E2E suite passes against the real Next.js frontend, FastAPI backend, and PostgreSQL-backed state,
+- the suite covers successful and adversarial Foundation workflows, including security-context changes and stale client-state recovery,
+- the core browser journey passes against the real non-production deployment, and browser testing does not replace existing backend/PostgreSQL security tests.
 
 All relevant Phase 1 source-of-truth documentation must reflect the implemented state before closure.
 
@@ -2333,6 +2458,7 @@ All relevant Phase 1 source-of-truth documentation must reflect the implemented 
 - DEC-003
 - DEC-004
 - DEC-005
+- DEC-010
 
 ---
 
@@ -2630,7 +2756,7 @@ AI advisory roles support:
 Phase 1 is complete only when:
 
 1. Milestones 1 through 8 satisfy their Acceptance Criteria.
-2. Revised DEC-001 through DEC-005 and M3-specific DEC-008 and DEC-009 remain preserved.
+2. Revised DEC-001 through DEC-005, M3-specific DEC-008 and DEC-009, and Phase 1 frontend DEC-010 remain preserved.
 3. Global Identity and multi-Organization Membership behavior are validated.
 4. Authentication is validated.
 5. Trusted Organization-context establishment is validated.
@@ -2644,6 +2770,9 @@ Phase 1 is complete only when:
 13. Relevant source-of-truth documentation reflects the implemented state.
 14. No known unresolved Foundation security issue prevents progression.
 15. The first Business Module can begin without redesigning core identity, Membership, ownership, authorization, or tenant-isolation boundaries.
+16. All approved customer-facing Foundation workflows are operable through the real browser frontend without Swagger/Postman.
+17. Minimum Browser E2E and security-context recovery tests pass against the real Kijflow backend and PostgreSQL-backed state, without replacing existing backend security tests.
+18. The core browser journey has been validated in the real non-production deployment, with no known frontend integration defect weakening accepted Foundation security invariants.
 
 Phase 1 completion does not mean Kijflow is production-ready for paying customers.
 

@@ -109,6 +109,7 @@ As a result:
 - DEC-007 established the post-Phase-1 roadmap skeleton while keeping Phase 1 unchanged.
 - DEC-008 revised the approved M3 password minimum length from 15 to 8 Unicode code points while preserving the other approved password-processing and authentication-security controls.
 - DEC-009 selected the M3 common/compromised-password screening approach, provider-replaceability boundary, failure behavior, internal development/testing strategy, and pre-release third-party verification gates.
+- DEC-010 established the minimum functional browser frontend as a Phase 1 completion requirement, with incremental M3–M7 integration, backend security authority, and consolidated M8 browser validation.
 
 The revised Phase 1 Foundation architecture was accepted by the Founder on 2026-10-10.
 
@@ -167,7 +168,7 @@ Authentication does not establish or imply Organization Membership, trusted Orga
 
 The original approved Milestone 3 implementation-level design did not itself require a new DEC entry. Its later Founder-approved password minimum-length revision is recorded separately as DEC-008 because it modifies an approved authentication-security requirement and explicitly accepts a security trade-off.
 
-If future implementation evidence conflicts with DEC-001 through DEC-009, the issue must return to review rather than silently changing an accepted decision.
+If future implementation evidence conflicts with DEC-001 through DEC-010, the issue must return to review rather than silently changing an accepted decision.
 
 ---
 
@@ -2509,3 +2510,167 @@ Independent Tech Lead and QA sign-off specifically for DEC-009 has not been reco
 ## Founder Approval
 
 Accepted on 2026-10-16 as the M3 implementation direction **with unresolved third-party/data-rights and release gates**. This is not third-party permission approval.
+
+---
+
+# DEC-010 — Phase 1 Functional Frontend Completion Requirement
+
+## Date
+
+2026-10-17
+
+## Decision
+
+Phase 1 must deliver the minimum browser-operable interface for all approved customer-facing SaaS Foundation workflows, connected to the real Next.js frontend, FastAPI backend, and PostgreSQL-backed application state.
+
+Backend APIs, database behavior, and automated backend tests alone are insufficient to close Phase 1.
+
+The frontend must remain a presentation and interaction layer. It does not become a second authority for authentication, trusted Organization context, tenant isolation, authorization, invitation binding, Membership lifecycle, or ownership invariants.
+
+## Context
+
+The Founder requires Phase 1 to conclude with a functional browser-based SaaS Foundation rather than an API-only foundation.
+
+Product Manager and Product & UX Designer reviewed the minimum browser workflows.
+
+The Founder approved Product Direction principles A–E.
+
+Tech Lead / Software Architect and QA & Product Reviewer subsequently reviewed the proposal and issued PASS WITH CONDITIONS.
+
+The technical and QA conditions are incorporated into this decision.
+
+## Problem
+
+How can Phase 1 deliver a usable, browser-operable SaaS Foundation without expanding into a complete commercial SaaS UI, duplicating backend security authority, or postponing frontend integration risks until Milestone 8?
+
+## Options Considered
+
+1. Complete only backend/API Foundation workflows and defer frontend implementation.
+2. Complete backend milestones first and implement most frontend workflows in M8.
+3. Implement the minimum frontend incrementally alongside M3–M7, with M8 consolidating integration, security, usability, and deployment validation.
+
+## Selected Option
+
+Option 3 — Incremental Minimum Functional Frontend.
+
+### Product Requirements
+
+- All approved customer-facing Foundation workflows must be operable through the browser without Swagger, Postman, or manual API requests.
+- Use the minimum screens, dialogs, and reusable states required for coherent workflows.
+- Screen count is guidance, not a fixed acceptance target.
+- M3 provides registration, authentication, logout, and relevant browser states.
+- M4 provides Organization creation, zero-Organization experience, selection/switching, visible current Organization, and a minimal application shell.
+- M5 hardens Organization switching, stale context recovery, and tenant-aware frontend state.
+- M6 provides authorization-aware actions and safe Access Denied behavior.
+- M7 provides minimum invitation, Membership lifecycle, profile management, Owner protection, and ownership-transfer workflows.
+- M8 consolidates browser E2E, security, usability, and deployment validation.
+
+### Technical and Security Requirements
+
+- FastAPI remains the authoritative security boundary.
+- Next.js must not introduce an independent authentication system, frontend-owned JWT authority, or parallel session model.
+- The frontend must support three conceptual states:
+  - unauthenticated,
+  - authenticated without trusted Organization context,
+  - authenticated with trusted Organization context.
+- These states do not require three separate visual layouts.
+- Client Organization selection represents intent only; the backend must validate usable Membership before trusted Organization context exists.
+- Current Organization visibility must reflect backend-recognized context.
+- Frontend state/cache must remain isolated across Organization switching, identity changes, session expiry, logout, Membership changes, and authorization reductions.
+- Stale or invalid security context must result in safe recovery.
+- Hidden UI controls and frontend route guards never replace backend authorization.
+- Cookie-authenticated state-changing Foundation workflows must satisfy applicable CSRF security requirements throughout M3–M7.
+- Invitation acceptance must follow M7-approved identity-binding rules and cannot rely solely on unverified login-email equality.
+- Ownership transfer must preserve backend-atomic exactly-one-Owner invariants.
+
+### Testing and Closure
+
+- Browser integration testing evolves incrementally with customer-facing workflows in M3–M7.
+- A milestone introducing a customer-facing Foundation workflow is not complete until its minimum browser integration has been exercised against the real Kijflow backend.
+- Core browser acceptance must exercise actual Next.js, FastAPI, and PostgreSQL-backed Kijflow state.
+- External third-party services may use deterministic test doubles where appropriate in normal CI. Independent live integration requirements, including DEC-009, remain unchanged.
+- Browser E2E supplements rather than replaces backend/PostgreSQL security, RLS, authorization, and concurrency testing.
+- M8 must validate representative successful and adversarial Foundation journeys, including security-context changes and stale client-state recovery.
+- The core browser journey must be exercised against the real non-production deployment.
+- Phase 1 cannot close with unresolved browser integration defects that weaken accepted Foundation security behavior.
+
+## Scope Exclusions
+
+DEC-010 does not introduce:
+
+- Business Modules
+- Billing / Subscription
+- Marketing Site
+- generic analytics Dashboard
+- generic Settings framework
+- configurable roles or Permission Builder
+- Teams / Departments
+- speculative Design System infrastructure
+- unrelated UI polish or convenience features
+
+Exact routes, component design, frontend state library, API shapes, CSRF implementation mechanism, active Organization-context storage, and later-milestone persistence details remain deferred.
+
+## Reasoning
+
+An API-only foundation does not demonstrate that real users can complete the approved Foundation workflows.
+
+Incremental frontend delivery exposes cookie, session, Organization-context, authorization, and integration failures earlier.
+
+A minimum-screen strategy controls cost and complexity for a one-person software house.
+
+Backend security remains independently testable and authoritative.
+
+## Trade-offs
+
+### Gains
+
+- Real browser usability is validated before Phase 1 closure.
+- Integration problems surface in the milestone where they originate.
+- Security-context UX becomes testable.
+- M8 remains a validation milestone rather than a large UI implementation phase.
+
+### Sacrifices
+
+- M3–M7 require additional frontend and browser-testing work.
+- Each milestone has a broader completion gate.
+- Browser security and state isolation add implementation and test complexity.
+
+## Risks
+
+- Frontend scope may expand into premature SaaS product polish.
+- Client-side authentication or authorization may accidentally duplicate backend authority.
+- Organization/User transitions may leak stale client state.
+- Cookie/CSRF integration may behave differently in deployed environments.
+- Excessive browser test coverage may increase maintenance cost.
+
+## Reversibility
+
+Moderate.
+
+Exact UI composition and implementation mechanisms remain flexible, but removing browser-operable Foundation completion would change the accepted Phase 1 delivery requirement and require Founder review.
+
+## Reconsideration Trigger
+
+Revisit this decision if:
+
+- a required workflow proves unsuitable for browser delivery,
+- security review identifies a conflict with accepted Foundation invariants,
+- a milestone requires unjustified frontend complexity,
+- or evidence shows that the selected delivery approach creates disproportionate one-person maintenance cost.
+
+## Participants
+
+- Founder — Product Direction A–E and final decision approval
+- Product Manager — minimum Foundation workflow review
+- Product & UX Designer — minimum interface and interaction review
+- Tech Lead / Software Architect — PASS WITH CONDITIONS
+- QA & Product Reviewer — PASS WITH CONDITIONS
+- Command Center — cross-role synthesis and decision coordination
+
+## Founder Approval
+
+Accepted on 2026-10-17 following Product/UX, Tech Lead, and QA review.
+
+The Founder approved proceeding with the consolidated DEC-010 proposal.
+
+DEC-001 through DEC-009 remain applicable and are not reopened by this decision.

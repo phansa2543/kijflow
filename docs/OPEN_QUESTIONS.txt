@@ -732,6 +732,43 @@ This question should be resolved when Phase 5 approaches.
 
 ---
 
+## AQ-015
+
+How should Kijflow resolve the third-party password-screening rights and repository-state discrepancy under DEC-009?
+
+Status:
+
+Open
+
+Context:
+
+DEC-009 requires verification of the candidate password dataset's provenance and rights before committing it.
+
+The Engineering Mentor handoff dated 2026-10-17 reports that the candidate dataset was already committed to `origin/main` in commit `d6dc883`.
+
+The repository state has not yet been independently verified by Command Center.
+
+The SecLists repository-level MIT license must not automatically be treated as sufficient proof of rights for all third-party-origin dataset content.
+
+Required follow-up:
+
+- Verify the reported Git state.
+- Verify the specific dataset provenance and applicable rights.
+- Assess whether remediation is required.
+- Avoid rewriting Git history without a justified decision.
+- Clarify applicable HIBP commercial SaaS terms before external-user access.
+- Preserve DEC-009 security and release requirements unless a reviewed Founder decision changes them.
+
+This issue does not automatically require replacing the approved screening strategy.
+
+Decision:
+
+DEC-009 remains accepted.
+
+No additional decision has been approved.
+
+---
+
 # UX
 
 ## UXQ-001
@@ -761,6 +798,41 @@ Which complexity should be hidden from users?
 Status:
 
 Open
+
+---
+
+
+## UXQ-004
+
+What minimum functional frontend must Kijflow provide before Phase 1 can be considered complete?
+
+Status:
+
+Resolved
+
+Resolution:
+
+Phase 1 must deliver the minimum browser-operable frontend for all approved customer-facing Foundation workflows.
+
+The frontend is implemented incrementally alongside M3–M7, with M8 providing consolidated browser E2E, security, usability, and deployment validation.
+
+The backend remains authoritative for all authentication, authorization, trusted Organization context, tenant isolation, Membership, invitation, and ownership operations.
+
+Browser acceptance must exercise the real Kijflow frontend, backend, and PostgreSQL-backed state.
+
+Frontend security-context transitions must safely isolate protected state and satisfy applicable CSRF/security requirements.
+
+Business Modules, Billing, Marketing Site, and speculative frontend infrastructure remain outside Phase 1.
+
+Milestone-specific implementation details remain deferred to their relevant design reviews.
+
+Decision:
+
+DEC-010
+
+Founder Approval:
+
+Accepted on 2026-10-17.
 
 ---
 
