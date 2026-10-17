@@ -121,6 +121,8 @@ DEC-008 was accepted by the Founder on 2026-10-15. It changes the approved M3 pa
 
 DEC-009 was accepted by the Founder on 2026-10-16. It selects local common-password screening plus HIBP Pwned Passwords Range API checks, with fail-closed behavior and a small replaceable provider boundary. Development uses deterministic mocked tests and separate live API integration tests. Commercial SaaS terms and dataset rights remain unverified; the decision does not certify third-party permission.
 
+DEC-009 received Founder Clarification on 2026-10-17. Internal use and Git commit of the selected SecLists NCSC dataset, and real HIBP API integration testing, may proceed under applicable published terms. Additional third-party confirmation is deferred to the pre-external-release gate. The intentional Git commit is not itself a repository discrepancy.
+
 Milestone 2 — Identity / Organization / Membership Foundation is complete.
 
 The Milestone 2 persistence design was:
@@ -2391,11 +2393,15 @@ Accepted
 
 2026-10-16
 
+## Founder Clarification Date
+
+2026-10-17
+
 ## Decision
 
 For M3 password establishment, select a two-stage common/compromised-password screening strategy:
 
-1. Check the NFC-normalized password against a locally held, exact-match common-password list, initially considering SecLists `100k-most-used-passwords-NCSC.txt` subject to provenance/licensing review.
+1. Check the NFC-normalized password against a locally held, exact-match common-password list, using the selected SecLists `100k-most-used-passwords-NCSC.txt` during internal development, with applicable third-party rights confirmation required before external-user release.
 2. Check the same normalized password against the HIBP Pwned Passwords Range API for known-compromised passwords.
 
 Reject a password when either approved check positively identifies it as blocked. If the required HIBP check is unavailable or produces an unusable response, **fail closed**: do not establish the password by silently skipping the check. Report a generic temporary failure with a retry path, without leaking the password or internal screening details.
@@ -2446,11 +2452,19 @@ Use option 2 provisionally for implementation, subject to the evidence-based gat
 
 ### Third-Party and Release Gates
 
-- **Local dataset before commit/redistribution:** verify provenance and terms that cover the proposed SecLists NCSC file specifically, including any third-party-origin material; preserve required notices. Repository-level MIT licensing by itself is not treated as proof of every dataset contributor's rights. Until verified, use synthetic/minimal test fixtures rather than committing the candidate dataset.
-- **Dataset value review:** Engineering Mentor should assess the incremental benefit of the local list against upkeep and licensing cost before the definitive dataset commit. If it is not justified or permissions fail, escalate an alternative to the Founder rather than silently removing the approved local check.
-- **HIBP terms:** review the applicable official Terms of Use and clarify any remaining commercial SaaS / third-party-benefit restrictions before Kijflow becomes available to **any external users**, including a free beta. Contact HIBP if needed; no immediate outreach is required solely to continue permitted internal development.
-- An external-user release cannot proceed merely because mock tests and live integration tests pass. Terms/data-rights verification and the approved security checks remain separate release gates.
-- M3 development is not blocked by a pending commercial-use clarification; M3 technical acceptance still requires a working, permitted screening solution that satisfies the M3 security outcomes.
+- **Internal Development — Local Dataset:** The Founder confirms that the selected SecLists NCSC password dataset may continue to be used and committed to the Kijflow development repository under the current internal-development approach. No additional owner confirmation is required solely to continue development or retain the existing Git commit.
+
+- **Internal Development — HIBP:** Real HIBP Pwned Passwords Range API integration testing is permitted as part of the approved M3 development workflow, subject to applicable published terms and reasonable operational limits. Deterministic mocked tests remain the normal CI strategy.
+
+- **Rights and Licensing Boundary:** Founder approval of the development approach is not a legal certification of third-party rights. Preserve applicable license notices and source attribution, respect known restrictions, and escalate any evidence of incompatible terms.
+
+- **Git Repository:** The existing dataset commit was intentionally performed by the Founder. Its existence alone is not a repository discrepancy and does not justify Git history rewriting or remediation.
+
+- **Pre-External-Release Verification:** Before making Kijflow available to external users, including a free beta or commercial launch, confirm the applicable dataset rights and HIBP commercial SaaS terms. Seek confirmation and guidance from the relevant maintainers, rights holders, or service provider where required. Unresolved incompatible terms must be addressed before release.
+
+- **M3 Technical Acceptance:** Pending commercial-launch clarification must not automatically block internal M3 development or technical completion. M3 still requires a working password-screening implementation, deterministic tests, separate live HIBP integration validation, and Technical Security/QA review.
+
+- **Dataset Strategy Changes:** Any material change to the approved local screening plus HIBP strategy, security coverage, or accepted maintenance trade-offs requires Founder review.
 
 ## Reasoning
 
@@ -2476,7 +2490,7 @@ Separating internal development from external-user release avoids premature comm
 ## Risks
 
 - HIBP terms and commercial-SaaS permissibility remain unverified for Kijflow's intended future external use.
-- The particular NCSC dataset's provenance and licensing remain unverified; it must not be committed until cleared.
+- The particular NCSC dataset's provenance and third-party rights require confirmation before external release. The existing Founder-authorized development commit alone does not establish a licensing violation or require Git remediation.
 - The selected external provider can become unavailable or change its API/terms.
 - Fail-closed behavior can temporarily prevent new user registrations and other password-establishment workflows.
 - A common-password dataset may overlap with HIBP and prove insufficiently valuable for its maintenance cost.
@@ -2511,6 +2525,17 @@ Independent Tech Lead and QA sign-off specifically for DEC-009 has not been reco
 
 Accepted on 2026-10-16 as the M3 implementation direction **with unresolved third-party/data-rights and release gates**. This is not third-party permission approval.
 
+### Founder Clarification — 2026-10-17
+
+Accepted.
+
+The Founder reconfirms that the selected SecLists NCSC dataset may be used and committed during Kijflow internal development, and that real HIBP Range API integration testing may proceed under the published applicable terms.
+
+Additional confirmation and guidance regarding commercial SaaS usage will be obtained from the relevant owners or providers before external-user release.
+
+The intentional dataset Git commit is not, by itself, a reason to reopen repository investigation or rewrite Git history.
+
+This clarification revises the previous pre-commit verification gate into a pre-external-release verification requirement. It does not waive applicable third-party rights or the accepted password-screening security controls.
 ---
 
 # DEC-010 — Phase 1 Functional Frontend Completion Requirement

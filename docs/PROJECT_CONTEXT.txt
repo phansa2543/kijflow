@@ -954,6 +954,13 @@ Current accepted decisions:
 - DEC-007 accepted — Post-Phase-1 Roadmap Skeleton
 - DEC-008 accepted — Milestone 3 Password Minimum Length Policy
 - DEC-009 accepted — Milestone 3 Password Blocklist Strategy and Verification Gates
+DEC-009 received Founder Clarification on 2026-10-17.
+
+The Founder confirmed that the selected SecLists NCSC password dataset may be used and committed during internal development, and real HIBP Pwned Passwords Range API testing may proceed under applicable published terms.
+
+Additional third-party confirmation for commercial SaaS use remains a pre-external-release requirement, not an automatic blocker for internal M3 development or technical completion.
+
+The existing dataset Git commit was intentional and is not, by itself, a repository discrepancy.
 - DEC-010 accepted — Phase 1 Functional Frontend Completion Requirement
 
 DEC-007 does not reopen Phase 1.
@@ -1058,7 +1065,19 @@ The current implementation step is Password Screening Pipeline integration (Step
 
 Milestone 3 remains incomplete.
 
-Dataset rights, applicable HIBP terms, the latest Git/CI state, live integration testing, and independent Security/QA review require follow-up.
+Under the DEC-009 Founder Clarification dated 2026-10-17:
+
+- Internal development may continue using the selected SecLists NCSC password dataset.
+- The existing dataset Git commit was intentional and does not independently require repository remediation or Git history rewriting.
+- Real HIBP Range API integration testing may proceed under applicable published terms.
+- Commercial SaaS rights and terms confirmation is deferred to the pre-external-release gate.
+- Pending commercial-use confirmation does not automatically block internal M3 technical completion.
+
+The Password Blocklist subtask still requires the integrated screening pipeline, deterministic automated tests, a separately recorded successful live HIBP integration test, and Technical Security/QA review.
+
+The latest Git/CI status remains unconfirmed.
+
+AQ-015 is Resolved. The remaining pre-external-release third-party verification is tracked under AQ-016.
 
 
 ## Phase 1 Functional Frontend Requirement
@@ -1080,6 +1099,28 @@ Frontend protected state must remain safely isolated across security-context tra
 DEC-010 does not expand Phase 1 into Business Modules, Billing, or Marketing Site.
 
 Milestone-specific implementation details remain deferred until their relevant reviews.
+
+## Password Screening Question Status
+
+AQ-015 — Resolved on 2026-10-17.
+
+The Founder clarified the accepted DEC-009 internal-development approach.
+
+The intentional SecLists dataset Git commit is not treated as an independent repository discrepancy.
+
+Internal development and real HIBP API integration testing may continue under the applicable published terms.
+
+AQ-016 — Open; Deferred to Pre-External-Release Review.
+
+Before external-user access, including free beta or commercial launch, Kijflow must confirm applicable dataset rights, attribution requirements, and HIBP commercial SaaS terms.
+
+Owner/provider confirmation or guidance should be obtained where required.
+
+AQ-016 does not automatically block Phase 1 implementation or M3 technical acceptance.
+
+Any known incompatible terms must be escalated when discovered.
+
+DEC-009 security controls, technical testing requirements, and Founder review for material strategy changes remain unchanged.
 
 ---
 

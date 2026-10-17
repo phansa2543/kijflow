@@ -734,38 +734,85 @@ This question should be resolved when Phase 5 approaches.
 
 ## AQ-015
 
-How should Kijflow resolve the third-party password-screening rights and repository-state discrepancy under DEC-009?
+How should Kijflow handle internal password-screening development, the existing dataset Git commit, and third-party commercial-use verification under DEC-009?
 
 Status:
 
-Open
+Resolved
 
-Context:
+Resolution:
 
-DEC-009 requires verification of the candidate password dataset's provenance and rights before committing it.
+DEC-009 remains accepted, including the Founder Clarification dated 2026-10-17.
 
-The Engineering Mentor handoff dated 2026-10-17 reports that the candidate dataset was already committed to `origin/main` in commit `d6dc883`.
+The Founder confirmed that:
 
-The repository state has not yet been independently verified by Command Center.
+- The selected SecLists NCSC password dataset may continue to be used during Kijflow internal development.
+- The existing dataset Git commit was intentional and does not, by itself, constitute a repository discrepancy.
+- The existing Git commit does not automatically require repository remediation or Git history rewriting.
+- Real HIBP Pwned Passwords Range API integration testing may proceed during internal development, subject to applicable published terms and reasonable operational limits.
+- Additional third-party confirmation for commercial SaaS use is not an automatic blocker for internal M3 development or technical completion.
+- Applicable dataset rights and HIBP commercial SaaS terms must be confirmed before external-user access, including free beta or commercial launch.
 
-The SecLists repository-level MIT license must not automatically be treated as sufficient proof of rights for all third-party-origin dataset content.
+Founder approval of the internal development approach does not constitute third-party licensing certification.
 
-Required follow-up:
+Known incompatible terms must still be escalated when discovered.
 
-- Verify the reported Git state.
-- Verify the specific dataset provenance and applicable rights.
-- Assess whether remediation is required.
-- Avoid rewriting Git history without a justified decision.
-- Clarify applicable HIBP commercial SaaS terms before external-user access.
-- Preserve DEC-009 security and release requirements unless a reviewed Founder decision changes them.
+DEC-009 technical security requirements remain unchanged, including deterministic tests, separate live HIBP integration testing, fail-closed behavior, and Technical Security/QA review.
 
-This issue does not automatically require replacing the approved screening strategy.
+The remaining external-release verification is tracked separately under AQ-016.
 
 Decision:
 
-DEC-009 remains accepted.
+DEC-009 — Founder Clarification dated 2026-10-17.
 
-No additional decision has been approved.
+Founder Approval:
+
+Accepted on 2026-10-17.
+
+---
+
+## AQ-016
+
+What third-party rights confirmation and provider guidance must Kijflow complete before external-user release of its password-screening functionality?
+
+Status:
+
+Open — Deferred to Pre-External-Release Review
+
+Target:
+
+Phase 5 — Commercialization & Launch, or earlier if external-user access is introduced before Phase 5.
+
+Context:
+
+DEC-009 permits the approved internal development and testing approach under applicable published terms.
+
+However, the Founder has not yet obtained final third-party confirmation regarding the intended commercial SaaS use of:
+
+- The selected SecLists NCSC common-password dataset.
+- The HIBP Pwned Passwords Range API.
+
+Required Follow-up:
+
+- Confirm applicable rights, provenance, and attribution requirements for the selected dataset.
+- Seek confirmation or guidance from the relevant dataset maintainers or rights holders where required.
+- Clarify HIBP terms applicable to Kijflow's commercial SaaS use.
+- Seek confirmation or guidance from HIBP where required.
+- Record supporting evidence, responses, and applicable conditions.
+- Resolve any identified incompatible terms before external-user access.
+- Escalate any required material implementation or provider change to the Founder.
+
+Release Boundary:
+
+This is a pre-external-release requirement, including free beta or commercial launch.
+
+It is not an automatic blocker for internal Phase 1 development or M3 technical completion.
+
+No third-party licensing approval is implied by the Founder-approved development approach.
+
+Relevant Decision:
+
+DEC-009 — Founder Clarification dated 2026-10-17.
 
 ---
 

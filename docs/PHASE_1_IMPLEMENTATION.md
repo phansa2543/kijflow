@@ -83,25 +83,35 @@ The screening pipeline has not yet been reported complete.
 
 Registration, login, Argon2id hashing/verification, runtime authentication sessions, abuse protection, and remaining security behavior are incomplete.
 
-## Outstanding Security and Third-Party Issues
+## Password Screening — Development Status and Release Gates
 
-The Engineering Mentor handoff reports that the candidate NCSC password dataset was already committed on `origin/main` in commit `d6dc883`.
+DEC-009 remains accepted, including the Founder Clarification dated 2026-10-17.
 
-This conflicts with the pre-commit rights-verification gate established by DEC-009.
+The Founder has explicitly approved continued internal development using the selected SecLists NCSC password dataset, including retaining the existing Git commit.
 
-The repository state and dataset rights require verification. Git history must not be rewritten automatically without a justified remediation decision.
+The dataset commit was intentional. Its existence alone is not a repository discrepancy and does not justify Git history rewriting or remediation.
 
-Applicable HIBP commercial SaaS terms also remain unresolved.
+Real HIBP Pwned Passwords Range API integration testing may proceed during internal development, subject to applicable published terms and reasonable operational limits.
 
-No external-user access, including free beta, may proceed until the required third-party rights and terms are clarified.
+Additional confirmation from the relevant dataset rights holders and HIBP regarding commercial SaaS usage is a pre-external-release requirement, not an automatic blocker for internal M3 development or technical completion.
+
+Before any external-user access, including free beta or commercial launch:
+
+- Confirm applicable dataset rights and attribution requirements.
+- Clarify applicable HIBP commercial SaaS terms.
+- Obtain owner/provider confirmation or guidance where required.
+- Resolve any identified incompatible terms.
+
+Known evidence of incompatible third-party terms must be escalated when discovered.
 
 The Password Blocklist subtask still requires:
 
-- Integrated pipeline tests
-- Separate live HIBP integration test
+- Integrated Password Screening Pipeline
+- Deterministic automated tests
+- Separate live HIBP integration test with recorded PASS
 - Technical Security/QA review
-- Verification of applicable third-party rights and release conditions
 
+The latest WIP commit/push and GitHub Actions CI status remain unconfirmed.
 
 ## Phase 1 Functional Frontend Requirement
 
@@ -818,21 +828,23 @@ The integrated Password Screening Pipeline is the next implementation step and r
 
 A separate live HIBP integration test and independent Technical Security/QA review are still required before closing the blocklist subtask.
 
-The candidate `100k-most-used-passwords-NCSC.txt` dataset is reported to exist in Git history on `origin/main`, commit `d6dc883`, despite DEC-009 requiring provenance and rights verification before commit.
+The Founder intentionally committed the selected SecLists NCSC password dataset during internal development.
 
-This discrepancy requires verification, risk assessment, and proportionate remediation. Do not rewrite repository history automatically.
+The DEC-009 Founder Clarification dated 2026-10-17 confirms that continued internal use and retention of this Git commit are approved under the current development approach, subject to applicable published terms.
 
-Dataset provenance and applicable rights remain unresolved.
+The existing Git commit is not, by itself, evidence of a licensing violation or a reason to initiate repository remediation.
 
-Applicable HIBP commercial SaaS terms must be clarified before external-user access, including free beta.
+Additional dataset rights confirmation and applicable HIBP commercial SaaS terms remain pre-external-release verification requirements.
+
+Pending commercial-launch clarification does not automatically block internal M3 technical acceptance.
 
 The latest WIP commit/push and GitHub Actions CI results have not been confirmed.
 
-DEC-009 remains accepted. Its security requirements and release gates have not been waived.
+DEC-009 remains accepted. Its technical security requirements and pre-external-release gates remain unchanged.
 
 **Remaining M3 Work**
 
-- Complete the integrated Password Screening Pipeline and tests under DEC-009; verify dataset provenance and rights; run the separate live HIBP integration test; obtain Technical Security/QA review; and resolve applicable third-party release conditions before external-user access.
+- Complete the integrated Password Screening Pipeline and deterministic tests under DEC-009, execute and record the separate live HIBP integration test, and obtain Technical Security/QA review. Dataset rights confirmation and applicable HIBP commercial SaaS terms remain separate pre-external-release requirements.
 - Argon2id hashing and verification
 - Atomic user registration
 - Login and authentication failure handling
@@ -1580,7 +1592,7 @@ At minimum, Milestone 3 testing must cover the following classes.
 - Separate live HIBP integration test confirms HTTPS connectivity, correct five-character prefix request, valid response parsing, and rejection of a known-compromised test password.
 - Mocked blocklist tests run in normal CI; the live test is run separately and has a recorded PASS before the blocklist subtask closes. A live HIBP outage must not falsely imply that deterministic Kijflow code tests failed.
 - New or replacement third-party password datasets must have their specific provenance and applicable rights verified before being committed or redistributed.
-- The previously reported dataset commit (`d6dc883`) must be verified, its provenance and rights assessed, and any required remediation completed and documented before closing the blocklist subtask.
+- The existing SecLists NCSC dataset commit (`d6dc883`) was intentionally performed by the Founder and is covered by the DEC-009 Founder Clarification dated 2026-10-17. Its existence alone does not block internal M3 technical acceptance or require repository remediation. Applicable third-party rights and release requirements remain subject to verification before external-user access.
 - The local-list value/maintenance review and any material provider or dataset strategy change must return to the Founder for review.
 - External-user release, including free beta, is blocked until applicable third-party data rights and HIBP terms have been clarified, regardless of technical test results.
 
@@ -1678,8 +1690,8 @@ Milestone 3 is complete when:
 - plaintext passwords and raw session tokens do not leak through persistence, logs, traces, errors, debug output, analytics, or CI/test output,
 - the required automated/adversarial authentication regressions run in CI,
 - DEC-009 mock and separate real HIBP integration tests pass before the blocklist subtask is closed,
-- the previously reported password dataset commit has been verified, its provenance and applicable rights assessed, and any necessary remediation completed and documented,
-- the selected local password dataset is permitted for its intended M3 use, and no additional unverified third-party password datasets are committed,
+- the selected SecLists NCSC dataset is integrated into the internal M3 password-screening implementation under the DEC-009 Founder Clarification dated 2026-10-17, without treating the intentional existing Git commit as an independent technical acceptance blocker,
+- any new or replacement third-party password dataset has undergone the required provenance and rights review before being committed or redistributed,
 - any dataset or provider substitution that materially changes the accepted DEC-009 approach has received Founder review,
 - third-party rights/terms verification remains a mandatory release gate before any external-user access, including beta,
 - implementation remains within the accepted M3 boundary and preserves DEC-001 through DEC-005, DEC-008, and DEC-009.
