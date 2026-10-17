@@ -1,6 +1,15 @@
 import pytest
 
-from app.auth.password import normalize_password, prepare_password
+from pathlib import Path
+
+from app.auth.password import (
+    normalize_password, 
+    prepare_password, 
+    is_common_password, 
+    load_common_passwords, 
+    get_password_sha1, 
+    get_password_hash_parts
+)
 
 def test_normalize_password_preserves_whitespace():
     raw_password = "  Hello Word  "
@@ -114,3 +123,91 @@ def test_prepare_password_never_truncates():
 
     with pytest.raises(ValueError, match="Password is too long"):
         prepare_password(raw_password)
+
+def test_is_common_password_rejects_exact_match():
+    common_passwords = {"password123", "12345678"}
+    result = is_common_password("password123", common_passwords)
+    assert result is True
+
+def test_is_common_password_accepts_non_blocklisted_password():
+    common_passwords = {"password123", "12345678"}
+    result = is_common_password("MyUniquePassword2026!", common_passwords)
+    assert result is False
+
+def test_is_common_password_preserves_case_sensitivity():
+    common_passwords = {"password123"}
+    result = is_common_password("Password123", common_passwords)
+    assert result is False
+
+def test_is_common_password_preserves_whitespace():
+    common_passwords = {"password123"}
+    result = is_common_password(" password123 ", common_passwords)
+    assert result is False
+
+def test_common_password_screening_after_nfc():
+    common_passwords = {"Café1234"}
+    raw_password = "Cafe\u03011234"
+    normalize_password = prepare_password(raw_password)
+    result = is_common_password(normalize_password, common_passwords)
+    assert result is True
+
+def test_is_common_password_does_not_modify_inputs():
+    common_passwords = {"password123"}
+    password = " Password123 "
+
+    original_password = password
+    original_blocklist = common_passwords.copy()
+
+    is_common_password(password, common_passwords)
+
+    assert password == original_password
+    assert common_passwords == original_blocklist
+
+def test_load_common_passwords_from_file():
+    file_path = Path(__file__).parent / "fixtures" / "common_passwords.txt"
+
+    result = load_common_passwords(file_path)
+
+    assert result == {"password123", "12345678", "Café1234"}
+
+def test_load_common_passwords_nomalizes_nfc(tmp_path):
+    file_path = tmp_path / "common_passwords.txt"
+    file_path.write_text("Cafe\u03011234\n", encoding="utf-8")
+
+    result = load_common_passwords(file_path)
+
+    assert result == {"Caf\u00e91234"}
+
+def test_load_common_passwords_missing_file_fails_closed(tmp_path):
+    file_path = tmp_path / "missing_passwords.txt"
+
+    with pytest.raises(FileNotFoundError):
+        load_common_passwords(file_path)
+
+def test_load_common_passwords_rejects_empty_dataset(tmp_path):
+    file_path = tmp_path / "common_passwords.txt"
+    file_path.write_text("", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Common password dataset is empty"):
+        load_common_passwords(file_path)
+
+def test_load_common_passwords_rejects_blank_lines_only(tmp_path):
+    file_path = tmp_path / "common_passwords.txt"
+    file_path.write_text("\n\n\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Common password dataset is empty"):
+        load_common_passwords(file_path)
+
+def test_get_passowrd_sha1():
+    result = get_password_sha1("password123")
+
+    assert result == "CBFDAC6008F9CAB4083784CBD1874F76618D2A97"
+    assert len(result) == 40
+
+def test_get_password_hash_parts():
+    prefix, suffix = get_password_hash_parts("password123")
+
+    assert prefix == "CBFDA"
+    assert suffix == "C6008F9CAB4083784CBD1874F76618D2A97"
+    assert len(prefix) == 5
+    assert len(suffix) == 35
