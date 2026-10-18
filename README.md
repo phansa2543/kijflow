@@ -109,6 +109,46 @@ The tests use `TEST_DATABASE_URL`.
 
 Persistence tests run against PostgreSQL and use the dedicated test database.
 
+### Optional Live HIBP Integration Test
+
+The HIBP live integration test contacts the real HIBP Pwned Passwords Range API.
+
+It is opt-in and must not run automatically during normal CI or standard backend regression tests.
+
+The test uses a public, known-compromised test password. Never use real user passwords or production credentials in integration tests.
+
+From the `backend` directory, first verify that the test is skipped by default:
+
+```bat
+python -m pytest tests/test_hibp_live.py -v
+```
+
+Expected result: `1 skipped`.
+
+To explicitly run the live integration test on Windows CMD:
+
+```bat
+set RUN_LIVE_HIBP=1
+python -m pytest tests/test_hibp_live.py -v
+set RUN_LIVE_HIBP=
+```
+
+Expected result when HIBP is available: `1 passed`.
+
+The environment variable is cleared after the test to avoid unintended external API requests.
+
+To run the normal backend regression suite:
+
+```bat
+python -m pytest -q
+```
+
+The live HIBP test should remain skipped unless explicitly enabled.
+
+A real HIBP service failure must not be treated as an automatic failure of Kijflow's deterministic mocked tests.
+
+Live integration verification is required before formal Password Blocklist acceptance and should be repeated before external-user release.
+
 ### Frontend Setup and Run
 
 From the `frontend` directory:

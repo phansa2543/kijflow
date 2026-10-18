@@ -39,49 +39,49 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
-The following components were previously reported complete:
+As of 2026-10-18, Engineering Mentor reviewed the implementation against GitHub `main` at commit `b3e7ab4`.
 
-- Authentication credential and session persistence
-- Database migrations and persistence tests
+**Implemented**
+
+- Authentication credential and session persistence models, migrations, and persistence tests
 - Email canonicalization and validation
 - Password NFC normalization
 - Password length validation (8–128 Unicode code points)
-
-The latest Engineering Mentor handoff dated 2026-10-17 reports additional implementation progress:
-
 - Local common-password checker and dataset loader
 - Password SHA-1 prefix/suffix helpers
-- HIBP response parser
-- HIBP Range API client
-- Compromised-password lookup
-- Provider error handling
+- HIBP Range API client and response parser
+- HIBP error handling and fail-closed behavior
+- Integrated Password Screening Pipeline (`backend/app/auth/screening.py`)
+- Deterministic screening tests
+- Separate opt-in live HIBP integration test (`backend/tests/test_hibp_live.py`)
 
-Reported local test results:
+**Verification**
 
-- Password tests: 29 passed
-- HIBP tests: 26 passed
-- Full backend regression: 114 passed
-- Failed: 0
+- Local live HIBP integration test: 1 passed in 1.09s (Founder-reported).
+- Local full backend regression: 131 passed, 1 skipped in 1.09s (Founder-reported).
+- GitHub Actions CI: 131 passed, 1 skipped.
+- Latest verified CI commit: `b3e7ab4`.
+- GitHub Actions run: https://github.com/phansa2543/kijflow/actions/runs/39093928975
 
-These results were reported by the Founder through the Engineering Mentor handoff. Command Center has not independently verified the repository or executed the tests.
+The Engineering Mentor verified the committed source code and GitHub Actions result. The live HIBP execution result was reported by the Founder and was not independently executed by the Engineering Mentor.
 
-The latest WIP commit/push and GitHub Actions CI status remain unconfirmed.
+Password Screening implementation and automated verification have progressed beyond the previous Step 7.25.1 status.
+
+Independent Technical Security/QA review remains pending before formal Password Blocklist subtask closure.
+
+Milestone 3 remains in progress.
 
 ## Current Implementation Step
 
-Step 7.25.1 — Password Screening Pipeline
+Argon2id Hashing & Verification is the next implementation task.
 
-The next implementation step is to integrate:
+The approved baseline is Argon2id version 19, memory cost 19456 KiB, time cost 2, and parallelism 1.
 
-1. Unicode NFC normalization
-2. Password length validation
-3. Local common-password screening
-4. HIBP compromised-password screening
-5. Validated-password handoff to the subsequent Argon2id implementation
+Implementation must include hashing, verification, safe handling of invalid stored hashes, rehash policy, runtime benchmarking, and required automated tests.
 
-The screening pipeline has not yet been reported complete.
+Password Screening must later be integrated into the actual password-establishment workflow before Argon2id hashing.
 
-Registration, login, Argon2id hashing/verification, runtime authentication sessions, abuse protection, and remaining security behavior are incomplete.
+Registration, login, runtime authentication sessions, abuse protection, cookie/CSRF security, and M3 browser workflows remain incomplete.
 
 ## Password Screening — Development Status and Release Gates
 
@@ -104,14 +104,19 @@ Before any external-user access, including free beta or commercial launch:
 
 Known evidence of incompatible third-party terms must be escalated when discovered.
 
-The Password Blocklist subtask still requires:
+The current Password Screening verification status is:
 
-- Integrated Password Screening Pipeline
-- Deterministic automated tests
-- Separate live HIBP integration test with recorded PASS
-- Technical Security/QA review
+- Integrated Password Screening Pipeline: implemented.
+- Deterministic automated tests: implemented and passing.
+- Separate live HIBP integration test: local PASS reported by the Founder.
+- Normal GitHub Actions CI: PASS at commit `b3e7ab4`.
+- Independent Technical Security/QA review: pending.
 
-The latest WIP commit/push and GitHub Actions CI status remain unconfirmed.
+The Password Blocklist subtask must not be marked formally complete until the required independent Technical Security/QA review is recorded.
+
+Integration of Password Screening into the registration password-establishment workflow remains part of the subsequent M3 implementation.
+
+The DEC-009 Founder Clarification and the pre-external-release requirements under AQ-016 remain unchanged.
 
 ## Phase 1 Functional Frontend Requirement
 
@@ -770,7 +775,7 @@ Founder implementation is now the current step.
 - At completion of NFC normalization, the full backend regression run passed 64 tests locally.
 - Password NFC normalization changes on commit `c6281e7` passed GitHub Actions CI, as confirmed by the Founder.
 - The subsequent password length validation work is tracked separately below.
-- Common/compromised-password blocklist checks, Argon2id hashing, and verification remain incomplete.
+- At the time of this NFC normalization subtask, common/compromised-password screening and Argon2id implementation were not yet complete. Their subsequent progress is tracked separately below.
 
 **Password Length Validation — Complete; CI Confirmed**
 
@@ -797,36 +802,44 @@ Founder implementation is now the current step.
 - Git working tree was clean at Engineering Mentor handoff.
 - This subtask covers NFC normalization and length validation only; blocklist screening, Argon2id, and registration/login integration remain separate M3 tasks.
 
-
-**Common / Compromised Password Blocklist — Partially Implemented; Verification Pending**
+**Common / Compromised Password Blocklist — Implemented; Independent QA Pending**
 
 DEC-009 remains the accepted screening strategy.
 
-According to the Engineering Mentor handoff dated 2026-10-17, the Founder has implemented:
+The Engineering Mentor verified the following implementation on GitHub `main`:
 
 - `backend/app/auth/password.py`:
   - Local common-password checker
   - Local dataset loader
   - SHA-1 prefix/suffix helpers
+  - NFC normalization and length validation
 - `backend/app/auth/hibp.py`:
   - HIBP response parser
   - HIBP Range API client
   - Compromised-password lookup
-  - Timeout, connection, HTTP, and malformed-response handling
-  - Generic `PasswordScreeningUnavailableError`
+  - Fail-closed handling of provider errors
+- `backend/app/auth/screening.py`:
+  - Integrated normalization, validation, local screening, and HIBP screening
+- `backend/tests/test_screening.py`:
+  - 17 automated screening tests
+- `backend/tests/test_hibp_live.py`:
+  - Separate opt-in real HIBP integration test
 
-Reported local validation:
+**Verification Results — 2026-10-18**
 
-- 29 password tests passed
-- 26 HIBP tests passed
-- 114 full backend regression tests passed
-- No local test failures reported
+- Local live HIBP integration: 1 passed (Founder-reported).
+- Local full backend regression: 131 passed, 1 skipped (Founder-reported).
+- GitHub Actions CI: 131 passed, 1 skipped.
+- Latest verified commit: `b3e7ab4`.
+- The live HIBP test is skipped by default unless `RUN_LIVE_HIBP=1`.
 
-These results have not been independently verified by Command Center.
+The Engineering Mentor completed a preliminary code review of the screening implementation and its automated tests.
 
-The integrated Password Screening Pipeline is the next implementation step and remains incomplete.
+Independent Technical Security/QA review and formal subtask acceptance remain pending.
 
-A separate live HIBP integration test and independent Technical Security/QA review are still required before closing the blocklist subtask.
+The screening functions currently accept injected dependencies. Integration with the actual registration workflow remains pending.
+
+The implementation must continue to preserve fail-closed behavior and prevent sensitive exception-context leakage through future application logging.
 
 The Founder intentionally committed the selected SecLists NCSC password dataset during internal development.
 
@@ -838,19 +851,23 @@ Additional dataset rights confirmation and applicable HIBP commercial SaaS terms
 
 Pending commercial-launch clarification does not automatically block internal M3 technical acceptance.
 
-The latest WIP commit/push and GitHub Actions CI results have not been confirmed.
-
 DEC-009 remains accepted. Its technical security requirements and pre-external-release gates remain unchanged.
 
 **Remaining M3 Work**
 
-- Complete the integrated Password Screening Pipeline and deterministic tests under DEC-009, execute and record the separate live HIBP integration test, and obtain Technical Security/QA review. Dataset rights confirmation and applicable HIBP commercial SaaS terms remain separate pre-external-release requirements.
-- Argon2id hashing and verification
-- Atomic user registration
-- Login and authentication failure handling
-- Server-side session issuance, validation, and logout
-- Authentication abuse protection
-- Cookie security, CSRF protection, and remaining security tests
+- Obtain independent Technical Security/QA review and formal acceptance of the Password Blocklist implementation.
+- Implement Argon2id hashing, verification, safe rehash policy, and runtime benchmarking.
+- Integrate the approved Password Screening Pipeline into password establishment.
+- Implement atomic global User + PasswordCredential registration.
+- Implement login and authentication failure handling.
+- Implement PostgreSQL-backed session issuance, validation, expiry, and logout.
+- Implement authentication abuse protection and account-enumeration resistance.
+- Implement secure cookie handling, CSRF protection, and remaining authentication security controls.
+- Implement the minimum functional M3 browser workflows for registration, login, logout, session expiry/recovery, and authenticated pre-tenant state.
+- Complete required backend, browser integration, and adversarial regression tests.
+- Obtain final M3 acceptance after all required criteria are met.
+
+Dataset rights confirmation and applicable HIBP commercial SaaS terms remain separate mandatory pre-external-release requirements under AQ-016.
 
 **Open Consideration**
 

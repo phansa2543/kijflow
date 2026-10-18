@@ -1045,40 +1045,49 @@ Milestone 3 intentionally does not introduce refresh tokens.
 
 Founder implementation is now the current engineering step.
 
-
 ## Latest M3 Implementation Progress
 
-As of the Engineering Mentor handoff dated 2026-10-17:
+As of 2026-10-18, Milestone 3 remains in progress.
 
-- Authentication persistence is implemented.
+The Engineering Mentor reviewed the Kijflow GitHub repository and confirmed the following implementation progress:
+
+- Authentication credential and session persistence are implemented.
 - Email canonicalization and validation are implemented.
-- Password NFC normalization is implemented.
-- Password length validation is complete.
-- Local common-password screening components have been reported implemented.
-- HIBP Range API integration components have been reported implemented.
+- Password NFC normalization and length validation are implemented.
+- Local common-password screening and HIBP integration components are implemented.
+- The integrated Password Screening Pipeline is implemented.
+- Deterministic automated screening tests are present and passing.
+- An opt-in live HIBP integration test has been added.
 
-The latest reported local backend regression is 114 passing tests.
+**Latest Verification**
 
-These additional implementation results are based on the Founder/Engineering Mentor handoff and have not yet been independently verified against the repository and CI.
+- GitHub `main` commit: `b3e7ab4`.
+- GitHub Actions CI: 131 passed, 1 skipped.
+- Founder-reported local regression: 131 passed, 1 skipped.
+- Founder-reported live HIBP test: 1 passed.
+- Independent Technical Security/QA review: pending.
 
-The current implementation step is Password Screening Pipeline integration (Step 7.25.1).
+The Password Screening implementation has passed its available automated and live integration checks, but the subtask has not received independent Technical Security/QA sign-off.
 
-Milestone 3 remains incomplete.
+The next implementation task is Argon2id Hashing & Verification.
 
-Under the DEC-009 Founder Clarification dated 2026-10-17:
+Remaining M3 work includes registration, login, runtime session management, abuse protection, cookie/CSRF security, and minimum functional browser authentication workflows.
+
+The approved M3 implementation details and acceptance criteria remain documented in `PHASE_1_IMPLEMENTATION`.
+
+**DEC-009 Founder Clarification**
 
 - Internal development may continue using the selected SecLists NCSC password dataset.
 - The existing dataset Git commit was intentional and does not independently require repository remediation or Git history rewriting.
 - Real HIBP Range API integration testing may proceed under applicable published terms.
-- Commercial SaaS rights and terms confirmation is deferred to the pre-external-release gate.
+- Commercial SaaS dataset rights and HIBP terms confirmation remains a pre-external-release requirement.
 - Pending commercial-use confirmation does not automatically block internal M3 technical completion.
 
-The Password Blocklist subtask still requires the integrated screening pipeline, deterministic automated tests, a separately recorded successful live HIBP integration test, and Technical Security/QA review.
+AQ-015 remains Resolved.
 
-The latest Git/CI status remains unconfirmed.
+AQ-016 remains Open and deferred to the pre-external-release review.
 
-AQ-015 is Resolved. The remaining pre-external-release third-party verification is tracked under AQ-016.
-
+No changes to DEC-008, DEC-009, or DEC-010 are introduced by this progress update.
 
 ## Phase 1 Functional Frontend Requirement
 
