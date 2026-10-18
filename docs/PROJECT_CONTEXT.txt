@@ -1082,7 +1082,7 @@ Atomic Registration Service/Persistence integration is implemented
 and locally tested. Commit, push, and GitHub CI verification
 for this change remain pending.
 
-Database Safe Rehash, Registration, Login, session handling,
+Database Safe Rehash, Registration HTTP API, Login, session handling,
 abuse protection, cookie/CSRF security, browser workflows,
 and independent security review remain pending.
 
@@ -1103,7 +1103,7 @@ The next implementation task is Registration HTTP API integration,
 runtime screening dependency wiring, safe public error handling,
 and registration abuse protection.
 
-Remaining M3 work includes registration, login, runtime session management, abuse protection, cookie/CSRF security, and minimum functional browser authentication workflows.
+Remaining M3 work includes Registration HTTP API integration, login, runtime session management, abuse protection, cookie/CSRF security, and minimum functional browser authentication workflows.
 
 The approved M3 implementation details and acceptance criteria remain documented in `PHASE_1_IMPLEMENTATION`.
 
@@ -1120,26 +1120,6 @@ AQ-015 remains Resolved.
 AQ-016 remains Open and deferred to the pre-external-release review.
 
 No changes to DEC-008, DEC-009, or DEC-010 are introduced by this progress update.
-
-## Phase 1 Functional Frontend Requirement
-
-DEC-010 was accepted by the Founder on 2026-10-17 following Product/UX, Tech Lead, and QA review.
-
-Phase 1 must conclude with a minimum functional browser frontend connected to the real backend.
-
-Approved customer-facing Foundation workflows must be operable without Swagger/Postman.
-
-Frontend implementation proceeds incrementally with M3–M7.
-
-M8 consolidates browser E2E, security, usability, and non-production deployment validation.
-
-Backend authority for authentication, authorization, trusted Organization context, tenant isolation, Membership lifecycle, invitation binding, and ownership invariants remains unchanged.
-
-Frontend protected state must remain safely isolated across security-context transitions.
-
-DEC-010 does not expand Phase 1 into Business Modules, Billing, or Marketing Site.
-
-Milestone-specific implementation details remain deferred until their relevant reviews.
 
 ### Atomic Registration Update — 2026-10-18
 
@@ -1165,6 +1145,26 @@ sessions, browser authentication workflows, and independent
 security review remain pending.
 
 Milestone 3 remains IN PROGRESS.
+
+## Phase 1 Functional Frontend Requirement
+
+DEC-010 was accepted by the Founder on 2026-10-17 following Product/UX, Tech Lead, and QA review.
+
+Phase 1 must conclude with a minimum functional browser frontend connected to the real backend.
+
+Approved customer-facing Foundation workflows must be operable without Swagger/Postman.
+
+Frontend implementation proceeds incrementally with M3–M7.
+
+M8 consolidates browser E2E, security, usability, and non-production deployment validation.
+
+Backend authority for authentication, authorization, trusted Organization context, tenant isolation, Membership lifecycle, invitation binding, and ownership invariants remains unchanged.
+
+Frontend protected state must remain safely isolated across security-context transitions.
+
+DEC-010 does not expand Phase 1 into Business Modules, Billing, or Marketing Site.
+
+Milestone-specific implementation details remain deferred until their relevant reviews.
 
 ## Password Screening Question Status
 

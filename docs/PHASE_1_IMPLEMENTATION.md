@@ -166,7 +166,7 @@ Implementation must include hashing, verification, safe handling of invalid stor
 Password Screening is integrated into the Registration service
 before Argon2id hashing. Production HTTP integration remains pending.
 
-Registration, login, runtime authentication sessions, abuse protection, cookie/CSRF security, and M3 browser workflows remain incomplete.
+Registration HTTP API, login, runtime authentication sessions, abuse protection, cookie/CSRF security, and M3 browser workflows remain incomplete.
 
 ## Password Screening — Development Status and Release Gates
 
@@ -199,7 +199,7 @@ The current Password Screening verification status is:
 
 The Password Blocklist subtask must not be marked formally complete until the required independent Technical Security/QA review is recorded.
 
-Integration of Password Screening into the registration password-establishment workflow remains part of the subsequent M3 implementation.
+Password Screening is integrated into the Registration service before Argon2id hashing. Registration HTTP API integration and runtime dependency wiring remain pending.
 
 The DEC-009 Founder Clarification and the pre-external-release requirements under AQ-016 remain unchanged.
 
@@ -834,7 +834,8 @@ Founder implementation is now the current step.
 
 - Implemented password-credential and authentication-session persistence models and Alembic migration.
 - Added PostgreSQL-backed persistence invariant tests.
-- Registration, login, and runtime session workflows are not yet implemented.
+- Atomic Registration Service/Persistence is implemented and locally tested.
+- Registration HTTP API, login, and runtime session workflows remain pending.
 
 **Email Canonicalization & Validation — Implemented and Tested Locally**
 
@@ -922,7 +923,7 @@ The Engineering Mentor completed a preliminary code review of the screening impl
 
 Independent Technical Security/QA review and formal subtask acceptance remain pending.
 
-The screening functions currently accept injected dependencies. Integration with the actual registration workflow remains pending.
+The screening functions accept injected dependencies and are integrated into the Atomic Registration Service/Persistence workflow. Registration HTTP API integration and runtime dependency wiring remain pending.
 
 The implementation must continue to preserve fail-closed behavior and prevent sensitive exception-context leakage through future application logging.
 
@@ -943,8 +944,8 @@ DEC-009 remains accepted. Its technical security requirements and pre-external-r
 - Obtain independent Technical Security/QA review and formal acceptance of the Password Blocklist implementation.
 - Integrate safe Argon2id rehash persistence into Login,
   ensuring failed updates preserve the existing valid credential.
-- Integrate the approved Password Screening Pipeline into password establishment.
-- Implement atomic global User + PasswordCredential registration.
+- Integrate the approved Password Screening Pipeline into the Registration HTTP API through runtime dependency wiring.
+- Expose the implemented Atomic Registration Service/Persistence workflow through the Registration HTTP API with safe public error handling.
 - Implement login and authentication failure handling.
 - Implement PostgreSQL-backed session issuance, validation, expiry, and logout.
 - Implement authentication abuse protection and account-enumeration resistance.
