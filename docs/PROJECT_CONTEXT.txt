@@ -741,6 +741,45 @@ Modules may therefore share:
 
 while maintaining deliberate logical boundaries.
 
+### Backend Architecture — DEC-011
+
+Kijflow adopts Modular Monolith with Pragmatic Clean Architecture
+as the default backend architecture.
+
+The backend uses one FastAPI application, one PostgreSQL system,
+and one deployment unit while maintaining clear module boundaries.
+
+Each implemented module may separate responsibilities into:
+
+- Presentation — HTTP endpoints, request/response schemas, and error mapping.
+- Application — Use cases and workflow orchestration.
+- Domain — Business rules and domain concepts.
+- Infrastructure — Database persistence and external integrations.
+
+Dependency principles:
+
+- Domain must not depend on FastAPI, SQLAlchemy, or external services.
+- Application must remain independent of HTTP presentation concerns.
+- Infrastructure dependencies must have explicit boundaries where needed.
+- Application bootstrap connects infrastructure to application workflows.
+- Modules must not directly access another module's internal implementation.
+
+Pragmatic constraints:
+
+- Do not create interfaces for every function or class.
+- Do not create empty layers or speculative abstractions.
+- Do not introduce Microservices or distributed infrastructure by default.
+- Maintainability for a one-person software house takes priority over architectural purity.
+
+M3 Authentication will be refactored incrementally while preserving
+existing behavior, automated tests, and approved security requirements.
+
+Exact folder placement and dependency contracts remain subject to
+implementation-level Tech Lead and QA review.
+
+DEC-011 extends DEC-006 without changing the approved Phase 1 scope
+or milestone boundaries.
+
 Shared business concepts must not be created speculatively.
 
 Concepts such as Customer or Product/Service may later prove to be shared, but their ownership must be derived from validated business workflows rather than assumed in advance.
@@ -962,6 +1001,7 @@ Additional third-party confirmation for commercial SaaS use remains a pre-extern
 
 The existing dataset Git commit was intentional and is not, by itself, a repository discrepancy.
 - DEC-010 accepted — Phase 1 Functional Frontend Completion Requirement
+- DEC-011 accepted — Modular Monolith with Pragmatic Clean Architecture
 
 DEC-007 does not reopen Phase 1.
 
@@ -1411,7 +1451,7 @@ These are not unresolved architecture direction.
 
 They are implementation decisions that should be addressed only when the relevant milestone requires them.
 
-If future implementation evidence conflicts with DEC-001 through DEC-007 or with an approved current-milestone design, the issue must return to review rather than silently changing accepted architecture or product direction.
+If future implementation evidence conflicts with DEC-001 through DEC-011 or with an approved current-milestone design, the issue must return to review rather than silently changing accepted architecture or product direction.
 
 ---
 

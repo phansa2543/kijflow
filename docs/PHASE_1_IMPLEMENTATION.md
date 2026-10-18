@@ -109,8 +109,11 @@ Limitations:
 - Independent security review remains pending.
 
 Next implementation task:
-Registration HTTP API integration, runtime screening dependencies,
-safe public error handling, and registration abuse protection.
+Review M3 Authentication module boundaries and dependencies
+under DEC-011, including Tech Lead and QA review.
+
+Refactor the existing Authentication implementation incrementally
+before resuming Registration HTTP API integration.
 
 ### Atomic Registration — Service/Persistence Implementation
 
@@ -151,9 +154,19 @@ and has passed local automated tests.
 
 Commit, push, and GitHub CI verification for this change remain pending.
 
-The next implementation task is Registration HTTP API integration,
-runtime dependency wiring, safe public error handling,
-and registration abuse protection.
+DEC-011 has established Modular Monolith with Pragmatic Clean
+Architecture as the accepted backend architecture direction.
+
+The immediate next step is implementation-level architecture
+review of M3 Authentication module boundaries and dependencies.
+
+After Tech Lead and QA review, the existing Authentication code
+will be refactored incrementally while preserving behavior,
+security requirements, and passing regression tests.
+
+Registration HTTP API integration, runtime dependency wiring,
+safe public error handling, and abuse protection will resume
+after the relevant architectural refactoring.
 
 M3 Registration atomically creates a global User and its
 PasswordCredential. Organization and initial Owner Membership
@@ -1811,6 +1824,7 @@ Milestone 3 is complete when:
 - DEC-008
 - DEC-009
 - DEC-010
+- DEC-011
 
 ---
 
@@ -2811,7 +2825,7 @@ These should be decided only when the relevant milestone or validated requiremen
 
 # Architecture Escalation Rule
 
-Implementation must preserve applicable accepted decisions, including DEC-001 through DEC-007 and the M3 password-security decisions DEC-008 and DEC-009.
+Implementation must preserve all applicable Founder-accepted decisions, including DEC-001 through DEC-011.
 
 If implementation evidence shows that an accepted decision:
 
@@ -2872,7 +2886,7 @@ AI advisory roles support:
 Phase 1 is complete only when:
 
 1. Milestones 1 through 8 satisfy their Acceptance Criteria.
-2. Revised DEC-001 through DEC-005, M3-specific DEC-008 and DEC-009, and Phase 1 frontend DEC-010 remain preserved.
+2. All applicable Founder-accepted decisions, including DEC-001 through DEC-011, remain preserved.
 3. Global Identity and multi-Organization Membership behavior are validated.
 4. Authentication is validated.
 5. Trusted Organization-context establishment is validated.

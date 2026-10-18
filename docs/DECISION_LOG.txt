@@ -110,6 +110,7 @@ As a result:
 - DEC-008 revised the approved M3 password minimum length from 15 to 8 Unicode code points while preserving the other approved password-processing and authentication-security controls.
 - DEC-009 selected the M3 common/compromised-password screening approach, provider-replaceability boundary, failure behavior, internal development/testing strategy, and pre-release third-party verification gates.
 - DEC-010 established the minimum functional browser frontend as a Phase 1 completion requirement, with incremental M3–M7 integration, backend security authority, and consolidated M8 browser validation.
+- DEC-011 established Modular Monolith with Pragmatic Clean Architecture as the default backend architecture, preserving DEC-006 and the existing Phase 1 boundaries.
 
 The revised Phase 1 Foundation architecture was accepted by the Founder on 2026-10-10.
 
@@ -170,7 +171,7 @@ Authentication does not establish or imply Organization Membership, trusted Orga
 
 The original approved Milestone 3 implementation-level design did not itself require a new DEC entry. Its later Founder-approved password minimum-length revision is recorded separately as DEC-008 because it modifies an approved authentication-security requirement and explicitly accepts a security trade-off.
 
-If future implementation evidence conflicts with DEC-001 through DEC-010, the issue must return to review rather than silently changing an accepted decision.
+If future implementation evidence conflicts with DEC-001 through DEC-011, the issue must return to review rather than silently changing an accepted decision.
 
 ---
 
@@ -2699,3 +2700,137 @@ Accepted on 2026-10-17 following Product/UX, Tech Lead, and QA review.
 The Founder approved proceeding with the consolidated DEC-010 proposal.
 
 DEC-001 through DEC-009 remain applicable and are not reopened by this decision.
+
+---
+
+# DEC-011 — Modular Monolith with Pragmatic Clean Architecture
+
+## Date
+
+2026-10-18
+
+## Decision
+
+Kijflow adopts **Modular Monolith + Pragmatic Clean Architecture** as the default backend architecture.
+
+The system will use a single FastAPI application, PostgreSQL system, and deployment unit while maintaining clear module and dependency boundaries.
+
+This decision extends DEC-006 without changing its approved Business Module Independence Principle.
+
+## Context
+
+Kijflow is developed and maintained by a one-person software house.
+
+During M3 implementation, application startup, HTTP endpoints, database dependencies, and authentication workflows began accumulating responsibilities that should be separated.
+
+Future Foundation components and Business Modules require a consistent, maintainable structure.
+
+## Problem
+
+How can Kijflow separate responsibilities, preserve module independence, and improve testability without introducing unnecessary abstractions or distributed-system complexity?
+
+## Options Considered
+
+1. Continue with loosely structured modules and minimal architectural rules.
+2. Use Modular Monolith with Pragmatic Clean Architecture.
+3. Enforce strict Clean Architecture with interfaces and abstractions for every component.
+4. Adopt Microservices with independently deployed services.
+
+## Selected Option
+
+Option 2 — Modular Monolith with Pragmatic Clean Architecture.
+
+Each module may organize its implementation into four layers:
+
+- **Presentation:** HTTP endpoints, request/response schemas, and HTTP error mapping.
+- **Application:** Use cases and workflow orchestration.
+- **Domain:** Business rules and domain concepts.
+- **Infrastructure:** Database persistence, external integrations, and technical implementations.
+
+### Dependency Rules
+
+- Domain must remain independent of FastAPI, SQLAlchemy, and external services.
+- Application must not depend directly on HTTP presentation concerns.
+- Infrastructure dependencies should be accessed through explicit boundaries where isolation is needed.
+- Application bootstrap is responsible for connecting concrete infrastructure to application workflows.
+- Modules must not depend directly on another module's internal implementation.
+- Cross-module integration must use deliberate boundaries.
+- Shared components must have validated responsibilities and ownership.
+
+### Simplicity Rules
+
+- Do not require interfaces for every function or class.
+- Do not create empty layers or speculative abstractions.
+- Do not introduce generic Repository, Event Bus, or Plugin frameworks without demonstrated requirements.
+- Keep a single backend application and deployment unless future evidence justifies separation.
+
+## Reasoning
+
+This approach provides understandable separation of responsibilities while preserving the operational simplicity required by a one-person software house.
+
+It supports independent Business Module development without requiring independent services or databases.
+
+## Trade-offs
+
+### Gains
+
+- Clearer module ownership and responsibilities.
+- Improved testability and maintainability.
+- Reduced coupling between business logic and frameworks.
+- A consistent structure for future modules.
+
+### Sacrifices
+
+- Additional folders and files.
+- Initial refactoring effort.
+- Greater discipline required to preserve dependency boundaries.
+
+## Risks
+
+- Excessive layering may slow development.
+- Unnecessary interfaces may increase maintenance costs.
+- Poorly enforced boundaries may produce only cosmetic separation.
+- Refactoring may introduce regressions into existing authentication functionality.
+
+## Implementation Approach
+
+- Apply the architecture incrementally, starting with the existing M3 Authentication implementation.
+- Preserve existing business behavior, security requirements, and approved M3 scope.
+- Refactor in small, independently testable steps.
+- Run existing regression tests throughout the migration.
+- Do not implement future Business Modules merely to establish their folder structures.
+- Keep Organization creation and Membership workflows within their approved later milestones.
+
+Exact folder placement and dependency contracts require implementation-level review before refactoring.
+
+## Reversibility
+
+Moderate.
+
+Individual layering choices can be simplified or revised without abandoning the Modular Monolith architecture.
+
+## Reconsideration Trigger
+
+Reconsider if:
+
+- Architectural overhead becomes disproportionate to maintenance benefits.
+- Dependency boundaries repeatedly obstruct simple workflows.
+- Module coupling becomes difficult to control.
+- Validated deployment or scalability requirements justify stronger separation.
+
+## Participants
+
+- Founder — Architecture direction and final approval.
+- Engineering Mentor — Architecture recommendation and trade-off discussion.
+- Tech Lead / Software Architect — Detailed design review pending.
+- QA / Quality Engineer — Refactoring and regression-risk review pending.
+
+## Founder Approval
+
+Accepted on 2026-10-18.
+
+The Founder approved Modular Monolith with Pragmatic Clean Architecture as the backend architectural direction.
+
+Detailed refactoring design and validation remain pending.
+
+DEC-006 and existing Phase 1 security and milestone boundaries remain applicable.
