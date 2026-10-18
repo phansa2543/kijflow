@@ -104,19 +104,56 @@ Limitations:
 - Verified commit: `e81107d`.
 - GitHub Actions run: https://github.com/phansa2543/kijflow/actions/runs/39109587718
 - Database persistence of replacement hashes has not been tested.
-- Password Screening is not yet connected to Registration.
+- Password Screening is integrated into the Registration service.
+- Registration HTTP endpoint and runtime dependency wiring remain pending.
 - Independent security review remains pending.
 
 Next implementation task:
-Atomic global User and PasswordCredential Registration Integration.
+Registration HTTP API integration, runtime screening dependencies,
+safe public error handling, and registration abuse protection.
+
+### Atomic Registration — Service/Persistence Implementation
+
+Status: Implemented and locally tested.
+
+Implemented:
+- Global User and PasswordCredential creation in one database transaction.
+- Email canonicalization before password processing.
+- Integration with the approved Password Screening Pipeline.
+- Argon2id hashing before database persistence.
+- Transaction ownership through `engine.begin()`.
+- Automatic rollback when credential persistence fails.
+- Database-enforced canonical email uniqueness.
+- No Organization or Membership creation.
+
+Local verification (Founder-reported):
+- Registration tests: 9 passed.
+- Full backend regression: 153 passed, 1 skipped.
+- Concurrent duplicate registration: PASS.
+- Production commit and rollback tests: PASS.
+- Invalid email and HIBP unavailable failure tests: PASS.
+
+Limitations:
+- Registration HTTP endpoint is not yet implemented.
+- Public-safe duplicate-email error mapping remains pending.
+- Runtime screening dependency wiring remains pending.
+- Registration abuse protection remains pending.
+- GitHub Actions CI verification for this change is pending.
+- Independent Security/QA review remains pending.
 
 ## Current Implementation Step
 
 Argon2id hashing and verification have passed local unit-level
 testing and development-runtime benchmarking.
 
-The next implementation task is Atomic Registration Integration,
-subject to successful commit, push, and CI verification.
+Atomic Registration Service/Persistence integration is implemented
+and has passed local automated tests.
+
+Commit, push, and GitHub CI verification for this change remain pending.
+
+The next implementation task is Registration HTTP API integration,
+runtime dependency wiring, safe public error handling,
+and registration abuse protection.
 
 M3 Registration atomically creates a global User and its
 PasswordCredential. Organization and initial Owner Membership
@@ -126,7 +163,8 @@ The approved baseline is Argon2id version 19, memory cost 19456 KiB, time cost 2
 
 Implementation must include hashing, verification, safe handling of invalid stored hashes, rehash policy, runtime benchmarking, and required automated tests.
 
-Password Screening must later be integrated into the actual password-establishment workflow before Argon2id hashing.
+Password Screening is integrated into the Registration service
+before Argon2id hashing. Production HTTP integration remains pending.
 
 Registration, login, runtime authentication sessions, abuse protection, cookie/CSRF security, and M3 browser workflows remain incomplete.
 

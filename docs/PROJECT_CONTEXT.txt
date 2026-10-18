@@ -1078,8 +1078,9 @@ Unit-level coverage includes hashing, verification, invalid
 hash handling, unique salts, NFC interoperability, outdated
 parameter detection, and best-effort rehash preparation.
 
-Registration Integration is the next task after repository
-synchronization and CI verification.
+Atomic Registration Service/Persistence integration is implemented
+and locally tested. Commit, push, and GitHub CI verification
+for this change remain pending.
 
 Database Safe Rehash, Registration, Login, session handling,
 abuse protection, cookie/CSRF security, browser workflows,
@@ -1098,8 +1099,9 @@ Milestone 3 remains IN PROGRESS.
 
 The Password Screening implementation has passed its available automated and live integration checks, but the subtask has not received independent Technical Security/QA sign-off.
 
-The next implementation task is Atomic Registration Integration,
-following code review, repository synchronization, and CI verification.
+The next implementation task is Registration HTTP API integration,
+runtime screening dependency wiring, safe public error handling,
+and registration abuse protection.
 
 Remaining M3 work includes registration, login, runtime session management, abuse protection, cookie/CSRF security, and minimum functional browser authentication workflows.
 
@@ -1138,6 +1140,31 @@ Frontend protected state must remain safely isolated across security-context tra
 DEC-010 does not expand Phase 1 into Business Modules, Billing, or Marketing Site.
 
 Milestone-specific implementation details remain deferred until their relevant reviews.
+
+### Atomic Registration Update — 2026-10-18
+
+Atomic global User and PasswordCredential Registration
+has been implemented at the Service/Persistence level.
+
+The workflow performs:
+- Email canonicalization
+- Password screening
+- Argon2id hashing
+- Atomic User and PasswordCredential persistence
+
+Local verification (Founder-reported):
+- Registration tests: 9 passed.
+- Full backend regression: 153 passed, 1 skipped.
+- Production commit and rollback tests passed.
+- Concurrent duplicate registration test passed.
+- Invalid email and HIBP failure tests passed.
+
+Registration HTTP API integration, public error handling,
+runtime dependency wiring, abuse protection, login,
+sessions, browser authentication workflows, and independent
+security review remain pending.
+
+Milestone 3 remains IN PROGRESS.
 
 ## Password Screening Question Status
 
