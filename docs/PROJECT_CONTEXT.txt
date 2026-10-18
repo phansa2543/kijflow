@@ -1059,17 +1059,46 @@ The Engineering Mentor reviewed the Kijflow GitHub repository and confirmed the 
 - Deterministic automated screening tests are present and passing.
 - An opt-in live HIBP integration test has been added.
 
-**Latest Verification**
+### Argon2id Implementation Update — 2026-10-18
 
-- GitHub `main` commit: `b3e7ab4`.
+The Founder has completed local Argon2id hashing and
+verification work.
+
+Local results:
+- 11 Argon2id unit tests passed.
+- 142 backend tests passed; 1 skipped.
+- Hash benchmark: 23.3 ms.
+- Verify benchmark: 25.0 ms.
+- argon2-cffi==25.1.0 is pinned in backend/requirements.txt.
+- The backend virtual environment was verified to use
+  backend/.venv/Scripts/python.exe.
+
+Unit-level coverage includes hashing, verification, invalid
+hash handling, unique salts, NFC interoperability, outdated
+parameter detection, and best-effort rehash preparation.
+
+Registration Integration is the next task after repository
+synchronization and CI verification.
+
+Database Safe Rehash, Registration, Login, session handling,
+abuse protection, cookie/CSRF security, browser workflows,
+and independent security review remain pending.
+
+Milestone 3 remains IN PROGRESS.
+
+**Previous Password Screening CI Verification**
+
+- Password Screening baseline commit: `b3e7ab4`.
 - GitHub Actions CI: 131 passed, 1 skipped.
-- Founder-reported local regression: 131 passed, 1 skipped.
+- Founder-reported local regression at that stage:
+  131 passed, 1 skipped.
 - Founder-reported live HIBP test: 1 passed.
 - Independent Technical Security/QA review: pending.
 
 The Password Screening implementation has passed its available automated and live integration checks, but the subtask has not received independent Technical Security/QA sign-off.
 
-The next implementation task is Argon2id Hashing & Verification.
+The next implementation task is Atomic Registration Integration,
+following code review, repository synchronization, and CI verification.
 
 Remaining M3 work includes registration, login, runtime session management, abuse protection, cookie/CSRF security, and minimum functional browser authentication workflows.
 

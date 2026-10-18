@@ -60,7 +60,7 @@ As of 2026-10-18, Engineering Mentor reviewed the implementation against GitHub 
 - Local live HIBP integration test: 1 passed in 1.09s (Founder-reported).
 - Local full backend regression: 131 passed, 1 skipped in 1.09s (Founder-reported).
 - GitHub Actions CI: 131 passed, 1 skipped.
-- Latest verified CI commit: `b3e7ab4`.
+- Password Screening baseline CI commit: `b3e7ab4`.
 - GitHub Actions run: https://github.com/phansa2543/kijflow/actions/runs/39093928975
 
 The Engineering Mentor verified the committed source code and GitHub Actions result. The live HIBP execution result was reported by the Founder and was not independently executed by the Engineering Mentor.
@@ -71,9 +71,54 @@ Independent Technical Security/QA review remains pending before formal Password 
 
 Milestone 3 remains in progress.
 
+### Argon2id Hashing & Verification — Local Implementation Progress
+
+As of 2026-10-18, the Founder reports completion of the
+Argon2id hashing and verification unit-level implementation.
+
+Implemented:
+- Argon2id v=19, memory_cost=19456 KiB, time_cost=2,
+  parallelism=1.
+- Password hashing with randomly generated salts.
+- Password verification with safe handling of invalid hashes.
+- Detection of outdated Argon2id parameters.
+- Preparation of replacement hashes only after successful
+  password verification.
+- Best-effort handling of hashing failures during rehash.
+- Unicode NFC interoperability when normalization is
+  performed by the calling authentication layer.
+
+Local verification (Founder-reported):
+- Argon2id unit tests: 11 passed.
+- Full backend regression: 142 passed, 1 skipped in 1.57s.
+- Hash benchmark: 23.3 ms per operation.
+- Verify benchmark: 25.0 ms per operation.
+- Benchmark method: Python timeit, 20 loops, 3 repetitions,
+  reporting the best repetition.
+- Python environment: backend/.venv, Python 3.13.15.
+- Dependency: argon2-cffi==25.1.0, pinned in requirements.txt.
+
+Limitations:
+- These are local development results, not production benchmarks.
+- GitHub CI verification of this implementation remains pending.
+- Database persistence of replacement hashes has not been tested.
+- Password Screening is not yet connected to Registration.
+- Independent security review remains pending.
+
+Next implementation task:
+Atomic global User and PasswordCredential Registration Integration.
+
 ## Current Implementation Step
 
-Argon2id Hashing & Verification is the next implementation task.
+Argon2id hashing and verification have passed local unit-level
+testing and development-runtime benchmarking.
+
+The next implementation task is Atomic Registration Integration,
+subject to successful commit, push, and CI verification.
+
+M3 Registration atomically creates a global User and its
+PasswordCredential. Organization and initial Owner Membership
+creation belong to Milestone 4.
 
 The approved baseline is Argon2id version 19, memory cost 19456 KiB, time cost 2, and parallelism 1.
 
@@ -856,7 +901,8 @@ DEC-009 remains accepted. Its technical security requirements and pre-external-r
 **Remaining M3 Work**
 
 - Obtain independent Technical Security/QA review and formal acceptance of the Password Blocklist implementation.
-- Implement Argon2id hashing, verification, safe rehash policy, and runtime benchmarking.
+- Integrate safe Argon2id rehash persistence into Login,
+  ensuring failed updates preserve the existing valid credential.
 - Integrate the approved Password Screening Pipeline into password establishment.
 - Implement atomic global User + PasswordCredential registration.
 - Implement login and authentication failure handling.
