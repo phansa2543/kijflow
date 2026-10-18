@@ -89,8 +89,8 @@ Implemented:
   performed by the calling authentication layer.
 
 Local verification (Founder-reported):
-- Argon2id unit tests: 11 passed.
-- Full backend regression: 142 passed, 1 skipped in 1.57s.
+- Argon2id unit tests: 13 passed.
+- Full backend regression: 144 passed, 1 skipped in 1.38s.
 - Hash benchmark: 23.3 ms per operation.
 - Verify benchmark: 25.0 ms per operation.
 - Benchmark method: Python timeit, 20 loops, 3 repetitions,
@@ -100,7 +100,9 @@ Local verification (Founder-reported):
 
 Limitations:
 - These are local development results, not production benchmarks.
-- GitHub CI verification of this implementation remains pending.
+- GitHub Actions CI: PASS.
+- Verified commit: `e81107d`.
+- GitHub Actions run: https://github.com/phansa2543/kijflow/actions/runs/39109587718
 - Database persistence of replacement hashes has not been tested.
 - Password Screening is not yet connected to Registration.
 - Independent security review remains pending.
