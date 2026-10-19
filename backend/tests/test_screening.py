@@ -2,7 +2,20 @@ import pytest
 
 from unittest.mock import Mock
 
-from app.auth.screening import screen_password
+from app.auth.application.errors import ScreeningUnavailable
+from app.auth.application.password_screening import screen_password_with_checkers
+
+from app.auth.infrastructure.common_passwords import is_common_password
+from app.auth.infrastructure.hibp import make_compromised_checker
+
+def screen_password(raw_password, common_passwords, client):
+    return screen_password_with_checkers(
+        raw_password,
+        is_common=lambda password: is_common_password(
+            password, common_passwords
+        ),
+        is_compromised=make_compromised_checker(client),
+    )
 
 def test_common_password_rejected_without_hibp_call():
     client = Mock()
@@ -18,8 +31,7 @@ def test_hibp_compromised_password_rejected():
     common_passwords = set()
     password = "password123"
 
-    # จำลอง HIBP ส่งข้อมูลว่ารหัสผ่านนี้เคยรั่วไหล
-    from app.auth.password import get_password_hash_parts
+    from app.auth.infrastructure.hibp import get_password_hash_parts
 
     _, suffix = get_password_hash_parts(password)
     client.get.return_value.text = f"{suffix}:10"
@@ -47,7 +59,7 @@ def test_clean_password_returns_normalized_password():
 
 import httpx
 
-from app.auth.hibp import PasswordScreeningUnavailableError
+from app.auth.application.errors import ScreeningUnavailable
 
 
 def test_hibp_timeout_fails_closed():
@@ -56,7 +68,7 @@ def test_hibp_timeout_fails_closed():
     common_passwords = set()
 
     with pytest.raises(
-        PasswordScreeningUnavailableError,
+        ScreeningUnavailable,
         match="Password screening temporarily unavailable",
     ):
         screen_password("SafeExample123", common_passwords, client)
@@ -69,14 +81,14 @@ def test_hibp_malformed_response_fails_closed():
     client.get.return_value.raise_for_status.return_value = None
 
     with pytest.raises(
-        PasswordScreeningUnavailableError,
+        ScreeningUnavailable,
         match="Password screening temporarily unavailable",
     ):
         screen_password("SafeExample123", set(), client)
 
     client.get.assert_called_once()
 
-from app.auth.password import get_password_hash_parts
+from app.auth.infrastructure.hibp import get_password_hash_parts
 
 
 def test_hibp_zero_count_padding_allows_password():
@@ -165,7 +177,7 @@ def test_hibp_http_error_fails_closed():
     )
 
     with pytest.raises(
-        PasswordScreeningUnavailableError,
+        ScreeningUnavailable,
         match="Password screening temporarily unavailable",
     ):
         screen_password("SafeExample123", set(), client)
@@ -195,7 +207,7 @@ def test_hibp_failure_does_not_leak_password():
         f"Connection failed while checking {password}"
     )
 
-    with pytest.raises(PasswordScreeningUnavailableError) as exc_info:
+    with pytest.raises(ScreeningUnavailable) as exc_info:
         screen_password(password, set(), client)
 
     assert str(exc_info.value) == (
@@ -212,14 +224,13 @@ def test_hibp_failure_has_suppressed_exception_context():
         f"Connection failed while checking {password}"
     )
 
-    with pytest.raises(PasswordScreeningUnavailableError) as exc_info:
+    with pytest.raises(ScreeningUnavailable) as exc_info:
         screen_password(password, set(), client)
 
     error = exc_info.value
 
-    assert error.__suppress_context__ is True
     assert error.__cause__ is None
-    assert error.__context__ is not None
+    assert error.__context__ is None
 
 import traceback
 
@@ -232,7 +243,7 @@ def test_hibp_failure_standard_traceback_does_not_leak_password():
         f"Connection failed while checking {password}"
     )
 
-    with pytest.raises(PasswordScreeningUnavailableError) as exc_info:
+    with pytest.raises(ScreeningUnavailable) as exc_info:
         screen_password(password, set(), client)
 
     formatted_traceback = "".join(
@@ -247,9 +258,62 @@ def test_hibp_connection_error_fails_closed():
     client.get.side_effect = httpx.ConnectError("Connection failed")
 
     with pytest.raises(
-        PasswordScreeningUnavailableError,
+        ScreeningUnavailable,
         match="Password screening temporarily unavailable",
     ):
         screen_password("SafeExample123", set(), client)
+
+    client.get.assert_called_once()
+
+def test_application_screening_uses_normalized_password():
+    is_common = Mock(return_value=False)
+    is_compromised = Mock(return_value=False)
+
+    result = screen_password_with_checkers(
+        "Cafe\u0301Secure123",
+        is_common=is_common,
+        is_compromised=is_compromised,
+    )
+
+    assert result == "Caf\u00e9Secure123"
+    is_common.assert_called_once_with(result)
+    is_compromised.assert_called_once_with(result)
+
+
+def test_application_common_password_short_circuits_hibp():
+    is_common = Mock(return_value=True)
+    is_compromised = Mock()
+
+    with pytest.raises(ValueError, match="Password is not allowed"):
+        screen_password_with_checkers(
+            "password123",
+            is_common=is_common,
+            is_compromised=is_compromised,
+        )
+
+    is_common.assert_called_once_with("password123")
+    is_compromised.assert_not_called()
+
+def test_application_screening_unavailable_fails_closed():
+    password = "UniqueSecretExample123"
+
+    client = Mock()
+    client.get.side_effect = httpx.ConnectError(
+        f"Connection failed while checking {password}"
+    )
+
+    with pytest.raises(ScreeningUnavailable) as exc_info:
+        screen_password_with_checkers(
+            password,
+            is_common=lambda _: False,
+            is_compromised=make_compromised_checker(client),
+        )
+
+    error = exc_info.value
+
+    assert str(error) == "Password screening temporarily unavailable"
+    assert error.__cause__ is None
+    assert error.__context__ is None
+    assert password not in "".join(traceback.format_exception(error))
 
     client.get.assert_called_once()

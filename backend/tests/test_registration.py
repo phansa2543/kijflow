@@ -7,9 +7,13 @@ from unittest.mock import Mock, patch
 from sqlalchemy import select, insert, delete, func
 from sqlalchemy.exc import IntegrityError
 
-from app.auth.hibp import PasswordScreeningUnavailableError
-from app.auth.password_hash import hash_password, verify_password
-from app.auth.registration import create_user_with_credential, register_user
+from app.auth.infrastructure.hibp import PasswordScreeningUnavailableError, make_compromised_checker
+from app.auth.infrastructure.password_hash import hash_password, verify_password
+from app.auth.infrastructure.registration_persistence import create_user_with_credential, persist_new_user_with_credential
+
+from app.auth.application.registration import register_user
+from app.auth.application.errors import ScreeningUnavailable
+from app.auth.application.password_screening import screen_password_with_checkers
 
 from app.models.user import User
 from app.models.organization import Organization
@@ -99,17 +103,19 @@ def test_register_user_integrates_email_screening_and_hashing(engine):
     user_id = None
 
     try:
-        with patch(
-            "app.auth.registration.screen_password",
-            return_value=normalized_password,
-        ) as mocked_screen:
-            user_id = register_user(
+        screen = Mock(return_value=normalized_password)
+        
+        user_id = register_user(
+            raw_email=raw_email,
+            raw_password=raw_password,
+            screen=screen,
+            hash_password=hash_password,
+            persist=lambda email, password_hash: persist_new_user_with_credential(
                 engine,
-                raw_email=raw_email,
-                raw_password=raw_password,
-                common_passwords=common_passwords,
-                client=client,
+                email=email,
+                password_hash=password_hash
             )
+        )
 
         with engine.connect() as connection:
             credential = connection.execute(
@@ -128,11 +134,7 @@ def test_register_user_integrates_email_screening_and_hashing(engine):
             credential.password_hash,
         ) is True
 
-        mocked_screen.assert_called_once_with(
-            raw_password,
-            common_passwords,
-            client,
-        )
+        screen.assert_called_once_with(raw_password)
 
     finally:
         if user_id is not None:
@@ -157,21 +159,18 @@ def test_registration_does_not_persist_when_screening_fails(engine):
             select(func.count()).select_from(UserPasswordCredential)
         ).scalar_one()
 
-    with patch(
-        "app.auth.registration.screen_password",
-        side_effect=ValueError("Password is not allowed"),
-    ) as mocked_screen, patch(
-        "app.auth.registration.hash_password"
-    ) as mocked_hash:
+    mocked_screen = Mock(side_effect=ValueError("Password is not allowed"))
+    mocked_hash = Mock()
+    mocked_persist = Mock()
 
-        with pytest.raises(ValueError, match="Password is not allowed"):
-            register_user(
-                engine,
-                raw_email="alice@example.com",
-                raw_password="BlockedPassword123!",
-                common_passwords=set(),
-                client=Mock(),
-            )
+    with pytest.raises(ValueError, match="Password is not allowed"):
+        register_user(
+            raw_email="alice@example.com",
+            raw_password="BlockedPassword123!",
+            screen=mocked_screen,
+            hash_password=mocked_hash,
+            persist=mocked_persist
+        )
 
     with engine.connect() as connection:
         users_after = connection.execute(
@@ -182,8 +181,9 @@ def test_registration_does_not_persist_when_screening_fails(engine):
             select(func.count()).select_from(UserPasswordCredential)
         ).scalar_one()
 
-    mocked_screen.assert_called_once()
+    mocked_screen.assert_called_once_with("BlockedPassword123!")
     mocked_hash.assert_not_called()
+    mocked_persist.assert_not_called()
 
     assert users_after == users_before
     assert credentials_after == credentials_before
@@ -194,26 +194,33 @@ def test_registration_commits_both_records(engine):
     user_id = None
 
     try:
-        with patch(
-            "app.auth.registration.screen_password",
-            return_value=password
-            ):
-                with engine.connect() as connection:
-                    organizations_before = connection.execute(
-                        select(func.count()).select_from(Organization)
-                    ).scalar_one()
 
-                    memberships_before = connection.execute(
-                        select(func.count()).select_from(Membership)
-                    ).scalar_one()
-            
-                user_id = register_user(
+        screen = Mock(return_value=password)
+
+        with engine.connect() as connection:
+            organizations_before = connection.execute(
+                select(func.count()).select_from(Organization)
+            ).scalar_one()
+
+            memberships_before = connection.execute(
+                select(func.count()).select_from(Membership)
+            ).scalar_one()
+    
+        user_id = register_user(
+            raw_email=email,
+            raw_password=password,
+            screen=screen,
+            hash_password=hash_password,
+            persist=lambda canonical_email, hashed_password: (
+                persist_new_user_with_credential(
                     engine,
-                    raw_email=email,
-                    raw_password=password,
-                    common_passwords=set(),
-                    client=Mock()
+                    email=canonical_email,
+                    password_hash=hashed_password,
                 )
+            ),
+        )
+
+        screen.assert_called_once_with(password)
 
         with engine.connect() as connection:
             created_user_id = connection.execute(
@@ -289,18 +296,21 @@ def test_registration_rolls_back_on_duplicate_email(engine):
                 select(func.count()).select_from(UserPasswordCredential)
             ).scalar_one()
 
-        with patch(
-            "app.auth.registration.screen_password",
-            return_value=password
-        ):
-            with pytest.raises(IntegrityError):
-                register_user(
+        screen = Mock(return_value=password)
+        with pytest.raises(IntegrityError):
+            register_user(
+                raw_email=f" {email.upper()} ",
+                raw_password=password,
+                screen=screen,
+                hash_password=hash_password,
+                persist=lambda canonical_email, hashed_password: (
+                    persist_new_user_with_credential(
                     engine,
-                    raw_email=f" {email.upper()} ",
-                    raw_password=password,
-                    common_passwords=set(),
-                    client=Mock()
+                    email=canonical_email,
+                    password_hash=hashed_password,
+                    )
                 )
+            )
 
         with engine.connect() as connection:
             users_after = connection.execute(
@@ -358,11 +368,17 @@ def test_concurrent_registration_same_email_creates_one_account(engine):
     def attempt_registration():
         try:
             user_id = register_user(
-                engine,
                 raw_email=email,
                 raw_password=password,
-                common_passwords=set(),
-                client=Mock(),
+                screen=lambda raw_password: password,
+                hash_password=hash_password,
+                persist=lambda canonical_email, hashed_password: (
+                    persist_new_user_with_credential(
+                        engine,
+                        email=canonical_email,
+                        password_hash=hashed_password,
+                    )
+                ),
             )
 
             return ("success", user_id)
@@ -372,11 +388,8 @@ def test_concurrent_registration_same_email_creates_one_account(engine):
 
     try:
         with patch(
-            "app.auth.registration.screen_password",
-            return_value=password,
-        ), patch(
-            "app.auth.registration.create_user_with_credential",
-            side_effect=synchronized_create,
+            "app.auth.infrastructure.registration_persistence.create_user_with_credential",
+            side_effect=synchronized_create
         ):
             with ThreadPoolExecutor(max_workers=2) as executor:
                 futures = [
@@ -428,52 +441,52 @@ def test_concurrent_registration_same_email_creates_one_account(engine):
                     )
                 )
 
-def test_registration_rejects_invalid_email_before_processing(engine):
-    with patch(
-        "app.auth.registration.screen_password"
-    ) as mocked_screen, patch(
-        "app.auth.registration.hash_password"
-    ) as mocked_hash, patch.object(
-        engine, "begin"
-    ) as mocked_begin:
+def test_registration_rejects_invalid_email_before_processing():
+    mocked_screen = Mock()
+    mocked_hash = Mock()
+    mocked_persist = Mock()
 
-        with pytest.raises(ValueError, match="Invalid email"):
-            register_user(
-                engine,
-                raw_email="invalid-email",
-                raw_password="ExamplePassword2026!",
-                common_passwords=set(),
-                client=Mock(),
-            )
+    with pytest.raises(ValueError, match="Invalid email"):
+        register_user(
+            raw_email="invalid-email",
+            raw_password="ExamplePassword2026!",
+            screen=mocked_screen,
+            hash_password=mocked_hash,
+            persist=mocked_persist,
+        )
 
     mocked_screen.assert_not_called()
     mocked_hash.assert_not_called()
-    mocked_begin.assert_not_called()
+    mocked_persist.assert_not_called()
 
-def test_registration_fails_closed_when_hibp_unavailable(engine):
+def test_registration_fails_closed_when_hibp_unavailable():
     client = Mock()
     client.get.side_effect = httpx.ReadTimeout(
         "Simulated HIBP timeout"
     )
 
-    with patch(
-        "app.auth.registration.hash_password"
-    ) as mocked_hash, patch.object(
-        engine, "begin"
-    ) as mocked_begin:
+    mocked_hash = Mock()
+    mocked_persist = Mock()
 
-        with pytest.raises(
-            PasswordScreeningUnavailableError,
-            match="Password screening temporarily unavailable",
-        ):
-            register_user(
-                engine,
-                raw_email="hibp-test@example.com",
-                raw_password="UniqueSecurePassword2026!",
-                common_passwords=set(),
-                client=client,
-            )
+    def screen(raw_password: str) -> str:
+        return screen_password_with_checkers(
+            raw_password,
+            is_common=lambda _: False,
+            is_compromised=make_compromised_checker(client),
+        )
+
+    with pytest.raises(
+        ScreeningUnavailable,
+        match="Password screening temporarily unavailable",
+    ):
+        register_user(
+            raw_email="hibp-test@example.com",
+            raw_password="UniqueSecurePassword2026!",
+            screen=screen,
+            hash_password=mocked_hash,
+            persist=mocked_persist,
+        )
 
     client.get.assert_called_once()
     mocked_hash.assert_not_called()
-    mocked_begin.assert_not_called()
+    mocked_persist.assert_not_called()

@@ -2,14 +2,13 @@ import pytest
 
 from pathlib import Path
 
-from app.auth.password import (
+from app.auth.domain.password import (
     normalize_password, 
-    prepare_password, 
-    is_common_password, 
-    load_common_passwords, 
-    get_password_sha1, 
-    get_password_hash_parts
+    prepare_password
 )
+
+from app.auth.infrastructure.hibp import get_password_sha1, get_password_hash_parts
+from app.auth.infrastructure.common_passwords import is_common_password, load_common_passwords
 
 def test_normalize_password_preserves_whitespace():
     raw_password = "  Hello Word  "

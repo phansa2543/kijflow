@@ -1,6 +1,6 @@
 import os, httpx, pytest
 
-from app.auth.hibp import is_password_compromised
+from app.auth.infrastructure.hibp import is_password_compromised
 
 @pytest.mark.skipif(
     os.getenv("RUN_LIVE_HIBP") != "1",

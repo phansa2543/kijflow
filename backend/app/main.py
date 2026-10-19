@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from app.auth.password import load_common_passwords
+from app.auth.infrastructure.common_passwords import load_common_passwords
 from app.db.engine import create_database_engine
 
 @asynccontextmanager

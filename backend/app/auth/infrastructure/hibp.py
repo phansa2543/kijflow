@@ -1,6 +1,8 @@
-import re, httpx
+import re, httpx, hashlib
 
-from app.auth.password import get_password_hash_parts
+from collections.abc import Callable
+
+from app.auth.application.errors import ScreeningUnavailable
 
 class PasswordScreeningUnavailableError(Exception):
     pass
@@ -68,3 +70,31 @@ def is_password_compromised(password: str, client: httpx.Client) -> bool:
         raise PasswordScreeningUnavailableError(
             "Password screening temporarily unavailable"
         ) from None
+
+def get_password_sha1(password: str) -> str:
+    return hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+
+
+def get_password_hash_parts(password: str) -> tuple[str, str]:
+    password_hash = get_password_sha1(password)
+
+    prefix = password_hash[:5]
+    suffix = password_hash[5:]
+
+    return prefix, suffix
+
+def make_compromised_checker(
+    client: httpx.Client,
+) -> Callable[[str], bool]:
+
+    def check(password: str) -> bool:
+        try:
+            return is_password_compromised(password, client)
+        except PasswordScreeningUnavailableError:
+            pass
+
+        raise ScreeningUnavailable(
+            "Password screening temporarily unavailable"
+        )
+
+    return check

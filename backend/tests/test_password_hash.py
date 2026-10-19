@@ -4,8 +4,8 @@ from argon2 import PasswordHasher
 from argon2.low_level import Type
 from argon2.exceptions import HashingError, VerificationError
 
-from app.auth.password_hash import hash_password, verify_password, needs_password_rehash, verify_and_prepare_rehash
-from app.auth.password import normalize_password
+from app.auth.infrastructure.password_hash import hash_password, verify_password, needs_password_rehash, verify_and_prepare_rehash
+from app.auth.domain.password import normalize_password
 
 def test_hash_password_uses_approved_argon2id_policy():
     password = "ExamplePasswordForTest2026!"
@@ -102,7 +102,7 @@ def test_failed_authentication_never_rehashes():
 
     old_hash = old_hasher.hash(password)
 
-    with patch("app.auth.password_hash.hash_password") as mocked_hash:
+    with patch("app.auth.infrastructure.password_hash.hash_password") as mocked_hash:
         authenticated, replacement_hash = verify_and_prepare_rehash(
             "WrongPassword2026!",
             old_hash
@@ -116,7 +116,7 @@ def test_successful_authentication_aith_current_hash_does_not_rehash():
     password = "ExamplePasswordForTest2026!"
     current_hash = hash_password(password)
 
-    with patch("app.auth.password_hash.hash_password") as mocked_hash:
+    with patch("app.auth.infrastructure.password_hash.hash_password") as mocked_hash:
         authenticated, replacement_hash = verify_and_prepare_rehash(
             password,
             current_hash
@@ -168,7 +168,7 @@ def test_rehash_failure_does_not_block_valid_authentication():
     old_hash = old_hasher.hash(password)
 
     with patch(
-        "app.auth.password_hash.hash_password",
+        "app.auth.infrastructure.password_hash.hash_password",
         side_effect=HashingError("Simulated rehash failure")
     ) as mocked_hash:
         authenticated, replacement_hash = verify_and_prepare_rehash(password, old_hash)
@@ -192,7 +192,7 @@ def test_verify_password_handles_verification_error():
     password = "ExamplePasswordForTest2026!"
     corrupted_hash = "corrupted-argon2-hash"
 
-    with patch("app.auth.password_hash.password_hasher") as mocked_hasher:
+    with patch("app.auth.infrastructure.password_hash.password_hasher") as mocked_hasher:
         mocked_hasher.verify.side_effect = VerificationError("Simulated decoding failure")
         result = verify_password(password, corrupted_hash)
 

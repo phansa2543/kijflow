@@ -1,6 +1,6 @@
 import pytest
 
-from app.auth.email import canonicalize_email
+from app.auth.domain.email import canonicalize_email
 
 def test_canonicalize_email_lowercase():
     raw_email = "Alice@example.com"

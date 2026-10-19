@@ -1,10 +1,10 @@
 import pytest, httpx
 
-from app.auth.password import get_password_sha1
-from app.auth.hibp import (
+from app.auth.infrastructure.hibp import (
     is_hash_suffix_compromised, 
     fetch_hibp_range, 
-    is_password_compromised, 
+    is_password_compromised,
+    get_password_sha1,
     PasswordScreeningUnavailableError
 )
 
