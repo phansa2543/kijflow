@@ -18,6 +18,8 @@ async def lifespan(app: FastAPI):
         with httpx.Client() as hibp_client:
             app.state.db_engine = engine
             app.state.hibp_client = hibp_client
+            app.state.registration_rate_limit_threshold = 10
+            app.state.registration_rate_limit_window_seconds = 900
             yield
     finally:
         engine.dispose()

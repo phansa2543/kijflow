@@ -129,3 +129,5 @@ class RegistrationLimitRoute(APIRoute):
             return await original_handler(
                 Request(request.scope, receive=replay_receive)
             )
+
+        return limited_handler
