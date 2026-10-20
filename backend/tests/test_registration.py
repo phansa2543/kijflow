@@ -12,7 +12,7 @@ from app.auth.infrastructure.password_hash import hash_password, verify_password
 from app.auth.infrastructure.registration_persistence import create_user_with_credential, persist_new_user_with_credential
 
 from app.auth.application.registration import register_user
-from app.auth.application.errors import ScreeningUnavailable
+from app.auth.application.errors import ScreeningUnavailable, RegistrationConflict
 from app.auth.application.password_screening import screen_password_with_checkers
 
 from app.models.user import User
@@ -297,7 +297,10 @@ def test_registration_rolls_back_on_duplicate_email(engine):
             ).scalar_one()
 
         screen = Mock(return_value=password)
-        with pytest.raises(IntegrityError):
+        with pytest.raises(
+            RegistrationConflict,
+            match="Registration could not be completed"
+        ):
             register_user(
                 raw_email=f" {email.upper()} ",
                 raw_password=password,
@@ -383,7 +386,7 @@ def test_concurrent_registration_same_email_creates_one_account(engine):
 
             return ("success", user_id)
 
-        except IntegrityError:
+        except RegistrationConflict:
             return ("duplicate", None)
 
     try:
@@ -490,3 +493,51 @@ def test_registration_fails_closed_when_hibp_unavailable():
     client.get.assert_called_once()
     mocked_hash.assert_not_called()
     mocked_persist.assert_not_called()
+
+def test_registration_does_not_translate_unrelated_integrity_error(engine):
+    original = Mock()
+    original.sqlstate = "23505"
+    original.diag.constraint_name = "uq_auth_sessions_token_digest"
+
+    integrity_error = IntegrityError(
+        statement="INSERT",
+        params={},
+        orig=original,
+    )
+
+    with patch(
+        "app.auth.infrastructure.registration_persistence.create_user_with_credential",
+        side_effect=integrity_error,
+    ):
+        with pytest.raises(IntegrityError) as exc_info:
+            persist_new_user_with_credential(
+                engine,
+                email="unrelated@example.com",
+                password_hash="test-hash",
+            )
+
+    assert exc_info.value is integrity_error
+
+def test_registration_does_not_translate_non_unique_integrity_error(engine):
+    original = Mock()
+    original.sqlstate = "23503"
+    original.diag.constraint_name = "uq_user_password_credentials_email"
+
+    integrity_error = IntegrityError(
+        statement="INSERT",
+        params={},
+        orig=original,
+    )
+
+    with patch(
+        "app.auth.infrastructure.registration_persistence.create_user_with_credential",
+        side_effect=integrity_error,
+    ):
+        with pytest.raises(IntegrityError) as exc_info:
+            persist_new_user_with_credential(
+                engine,
+                email="non-unique@example.com",
+                password_hash="test-hash",
+            )
+
+    assert exc_info.value is integrity_error
