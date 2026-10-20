@@ -717,6 +717,7 @@ The exact operating model remains unresolved, including:
 - backup strategy,
 - restore validation,
 - monitoring/error visibility,
+- scheduled operational jobs (including registration-counter cleanup), scheduled-execution/failure alerting, cleanup backlog/retention monitoring, and database access permissions,
 - application deployment procedure,
 - database migration procedure,
 - rollback/recovery approach,
@@ -727,6 +728,8 @@ The exact operating model remains unresolved, including:
 The solution should remain proportionate to actual operational risk and the one-person software-house constraint.
 
 Production readiness does not imply enterprise-scale infrastructure.
+
+**M3 Registration Counter Cleanup — Pre-External-Use Gate (Deferred):** B2 cleanup implementation received final QA **CLOSED** with C1/C2 tests and CI verified at commit `ff6bfa2d72a940c9596db1bab9b87771ada9b6c0`. This does **not** certify deployment operations. Before allowing external users, configure an external scheduler (provisional frequency: hourly), verify scheduled execution, error exit status and logs, failure alerts, cleanup backlog/retention, relevant database credentials/permissions and preservation of registration-limiter fail-closed behavior. Cleanup runs at most 20 batches of 500 rows; reaching the cap may emit a backlog warning while still returning exit code zero. Monitor backlog separately. Production scheduler/framework work is not required for internal M3 Login implementation.
 
 This question should be resolved when Phase 5 approaches.
 

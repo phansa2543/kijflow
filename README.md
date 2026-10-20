@@ -109,6 +109,20 @@ The tests use `TEST_DATABASE_URL`.
 
 Persistence tests run against PostgreSQL and use the dedicated test database.
 
+### Registration Counter Cleanup (Manual)
+
+The registration-counter cleanup runner is separate from the Registration request path. After applying database migrations, run it from the `backend` directory with the intended `DATABASE_URL` configured:
+
+```bat
+python -m app.auth.infrastructure.registration_counter_cleanup_runner
+```
+
+**This performs real deletions, not a dry run.** Check that `DATABASE_URL` targets the intended database before running.
+
+Provisional cleanup contract: expired counters are eligible for deletion **24 hours after their rate-limit window ends**; cleanup uses PostgreSQL time and `FOR UPDATE SKIP LOCKED`. The runner deletes at most **500 rows per batch** and stops after **20 batches** (10,000 rows per invocation). Uncaught failures propagate and return a non-zero process exit code. If the 20-batch ceiling is reached, the runner displays `Additional cleanup may be required`, but may still exit with status zero **while a backlog remains**.
+
+**B2 Cleanup Implementation QA: CLOSED.** No production scheduler is configured. A provisional **hourly external scheduler** and verification of job execution, failure reporting, backlog/retention monitoring and database permissions are deferred to the **Pre-External-Use Gate** under AQ-014. They are not required for internal M3 Login API work.
+
 ### Optional Live HIBP Integration Test
 
 The HIBP live integration test contacts the real HIBP Pwned Passwords Range API.

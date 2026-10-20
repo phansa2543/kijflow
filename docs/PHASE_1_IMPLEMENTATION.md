@@ -39,6 +39,19 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Verified M3 Progress — 2026-10-21
+
+This current snapshot supersedes the dated 2026-10-18 implementation-status reports below. Historical local test counts and earlier pending-work statements are retained only as historical evidence.
+
+- Registration HTTP API, runtime registration dependency wiring, public-safe error handling, atomic global User + PasswordCredential registration, password screening, Argon2id, and PostgreSQL-backed registration rate limiting are implemented.
+- Registration counter cleanup, its separate manual runner, and Alembic index `990acb220a2c` are implemented. It does not run inside the Registration request path.
+- Registration Counter Cleanup **B2 Implementation is CLOSED** following the independent QA final closure. Conditions C1 (24-hour retention measured from **window expiry**) and C2 (20-batch runner ceiling and warning) passed. The cleanup test module has **7 tests**.
+- Verified source baseline: GitHub `main` commit `ff6bfa2d72a940c9596db1bab9b87771ada9b6c0`. GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/39455823132 passed with **205 passed, 1 skipped**.
+- Cleanup implementation defaults: **24-hour retention after window expiry**, **500 rows per batch**, **20 batches per execution** (at most 10,000 rows). Cleanup uses PostgreSQL time and `FOR UPDATE SKIP LOCKED`. Uncaught runner errors propagate; reaching the batch limit warns but may exit with code 0 **while backlog remains**.
+- Production scheduler, failure alerting, backlog/retention monitoring and database access verification remain **DEFERRED to a Pre-External-Use Gate** tracked under AQ-014. An **hourly external job** is a provisional future cadence, not deployed infrastructure. These items do not reopen B2 implementation or block internal M3 Login API.
+- Next M3 implementation task: **Login API** under the existing accepted M3 design, followed by safe password-rehash database persistence, PostgreSQL-backed sessions, logout, login abuse/enumeration protection, cookies/CSRF, minimum browser authentication workflows and final security/integration QA. M3 remains **IN PROGRESS**.
+- The separate independent Password Screening Technical Security/QA acceptance and third-party pre-external-release verification under AQ-016 are not implicitly closed by B2 QA.
+
 As of 2026-10-18, Engineering Mentor reviewed the implementation against GitHub `main` at commit `b3e7ab4`.
 
 **Implemented**
@@ -146,40 +159,9 @@ Limitations:
 
 ## Current Implementation Step
 
-Argon2id hashing and verification have passed local unit-level
-testing and development-runtime benchmarking.
+**Next: M3 Login API.** Registration Cleanup B2 Implementation received final QA **CLOSED**; C1/C2, the 7 cleanup tests and the exact-commit backend CI are verified. No further B2 QA round or production scheduler is required to begin internal Login implementation.
 
-Atomic Registration Service/Persistence integration is implemented
-and has passed local automated tests.
-
-Commit, push, and GitHub CI verification for this change remain pending.
-
-DEC-011 has established Modular Monolith with Pragmatic Clean
-Architecture as the accepted backend architecture direction.
-
-The immediate next step is implementation-level architecture
-review of M3 Authentication module boundaries and dependencies.
-
-After Tech Lead and QA review, the existing Authentication code
-will be refactored incrementally while preserving behavior,
-security requirements, and passing regression tests.
-
-Registration HTTP API integration, runtime dependency wiring,
-safe public error handling, and abuse protection will resume
-after the relevant architectural refactoring.
-
-M3 Registration atomically creates a global User and its
-PasswordCredential. Organization and initial Owner Membership
-creation belong to Milestone 4.
-
-The approved baseline is Argon2id version 19, memory cost 19456 KiB, time cost 2, and parallelism 1.
-
-Implementation must include hashing, verification, safe handling of invalid stored hashes, rehash policy, runtime benchmarking, and required automated tests.
-
-Password Screening is integrated into the Registration service
-before Argon2id hashing. Production HTTP integration remains pending.
-
-Registration HTTP API, login, runtime authentication sessions, abuse protection, cookie/CSRF security, and M3 browser workflows remain incomplete.
+The Engineering Mentor should inspect the existing login/session-related code and approved M3 acceptance criteria, then guide the Founder through Login API implementation. Retain the approved security and architecture boundaries and do not introduce M4 Organization/Membership behavior or unrelated Production Infrastructure.
 
 ## Password Screening — Development Status and Release Gates
 

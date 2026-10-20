@@ -1087,104 +1087,16 @@ Founder implementation is now the current engineering step.
 
 ## Latest M3 Implementation Progress
 
-As of 2026-10-18, Milestone 3 remains in progress.
+**Verified snapshot — 2026-10-21:** Milestone 3 — Registration & Authentication is **IN PROGRESS**.
 
-The Engineering Mentor reviewed the Kijflow GitHub repository and confirmed the following implementation progress:
+- Registration HTTP API, atomic global User/PasswordCredential registration, email/password processing, screening, Argon2id and PostgreSQL registration rate limiting are implemented.
+- Registration counter cleanup logic, separate runner and migration/index `990acb220a2c` are committed. QA conditions C1 (retention from window expiry) and C2 (20-batch cap/warning) are satisfied; **B2 Implementation QA verdict: CLOSED**.
+- The GitHub `main` source baseline is `ff6bfa2d72a940c9596db1bab9b87771ada9b6c0`. The normal backend CI run https://github.com/phansa2543/kijflow/actions/runs/39455823132 completed successfully: **205 passed, 1 skipped**, including PostgreSQL-backed tests. There are **7 Registration Cleanup tests**.
+- Cleanup defaults are provisionally 24 hours after counter window expiry, 500 rows/batch, 20 batches/run; the batch-cap warning can occur with exit status zero and remaining backlog. Production external hourly scheduling, monitoring/alerting, backlog/retention verification and least-privilege DB configuration are deferred to the **Pre-External-Use Gate** under AQ-014, not internal M3.
+- **Next task:** Login API. Follow with safe password-rehash persistence, opaque PostgreSQL session issuance/validation/expiry, logout/revocation, login abuse and enumeration resistance, secure cookies/CSRF, functional browser authentication and final M3 security/integration QA.
+- Authentication remains global User identity only. M3 does not establish Organization Membership, trusted Organization context or tenant authorization. Password Screening independent security review remains separately tracked, as does DEC-009/AQ-016 third-party verification before external availability.
 
-- Authentication credential and session persistence are implemented.
-- Email canonicalization and validation are implemented.
-- Password NFC normalization and length validation are implemented.
-- Local common-password screening and HIBP integration components are implemented.
-- The integrated Password Screening Pipeline is implemented.
-- Deterministic automated screening tests are present and passing.
-- An opt-in live HIBP integration test has been added.
-
-### Argon2id Implementation Update — 2026-10-18
-
-The Founder has completed local Argon2id hashing and
-verification work.
-
-Local results:
-- 13 Argon2id unit tests passed.
-- 144 backend tests passed; 1 skipped.
-- GitHub Actions CI passed at commit `e81107d`.
-- Hash benchmark: 23.3 ms.
-- Verify benchmark: 25.0 ms.
-- argon2-cffi==25.1.0 is pinned in backend/requirements.txt.
-- The backend virtual environment was verified to use
-  backend/.venv/Scripts/python.exe.
-
-Unit-level coverage includes hashing, verification, invalid
-hash handling, unique salts, NFC interoperability, outdated
-parameter detection, and best-effort rehash preparation.
-
-Atomic Registration Service/Persistence integration is implemented
-and locally tested. Commit, push, and GitHub CI verification
-for this change remain pending.
-
-Database Safe Rehash, Registration HTTP API, Login, session handling,
-abuse protection, cookie/CSRF security, browser workflows,
-and independent security review remain pending.
-
-Milestone 3 remains IN PROGRESS.
-
-**Previous Password Screening CI Verification**
-
-- Password Screening baseline commit: `b3e7ab4`.
-- GitHub Actions CI: 131 passed, 1 skipped.
-- Founder-reported local regression at that stage:
-  131 passed, 1 skipped.
-- Founder-reported live HIBP test: 1 passed.
-- Independent Technical Security/QA review: pending.
-
-The Password Screening implementation has passed its available automated and live integration checks, but the subtask has not received independent Technical Security/QA sign-off.
-
-The next implementation task is Registration HTTP API integration,
-runtime screening dependency wiring, safe public error handling,
-and registration abuse protection.
-
-Remaining M3 work includes Registration HTTP API integration, login, runtime session management, abuse protection, cookie/CSRF security, and minimum functional browser authentication workflows.
-
-The approved M3 implementation details and acceptance criteria remain documented in `PHASE_1_IMPLEMENTATION`.
-
-**DEC-009 Founder Clarification**
-
-- Internal development may continue using the selected SecLists NCSC password dataset.
-- The existing dataset Git commit was intentional and does not independently require repository remediation or Git history rewriting.
-- Real HIBP Range API integration testing may proceed under applicable published terms.
-- Commercial SaaS dataset rights and HIBP terms confirmation remains a pre-external-release requirement.
-- Pending commercial-use confirmation does not automatically block internal M3 technical completion.
-
-AQ-015 remains Resolved.
-
-AQ-016 remains Open and deferred to the pre-external-release review.
-
-No changes to DEC-008, DEC-009, or DEC-010 are introduced by this progress update.
-
-### Atomic Registration Update — 2026-10-18
-
-Atomic global User and PasswordCredential Registration
-has been implemented at the Service/Persistence level.
-
-The workflow performs:
-- Email canonicalization
-- Password screening
-- Argon2id hashing
-- Atomic User and PasswordCredential persistence
-
-Local verification (Founder-reported):
-- Registration tests: 9 passed.
-- Full backend regression: 153 passed, 1 skipped.
-- Production commit and rollback tests passed.
-- Concurrent duplicate registration test passed.
-- Invalid email and HIBP failure tests passed.
-
-Registration HTTP API integration, public error handling,
-runtime dependency wiring, abuse protection, login,
-sessions, browser authentication workflows, and independent
-security review remain pending.
-
-Milestone 3 remains IN PROGRESS.
+B2 QA closure does not imply M3 itself is complete or that production operations are approved.
 
 ## Phase 1 Functional Frontend Requirement
 
