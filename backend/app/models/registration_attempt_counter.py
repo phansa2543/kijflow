@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, CheckConstraint
+from sqlalchemy import DateTime, Integer, CheckConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import INET
 
@@ -37,5 +37,9 @@ class RegistrationAttemptCounter(Base):
         CheckConstraint(
             "attempt_count > 0",
             name="ck_registration_attempt_count_positive",
+        ),
+        Index(
+            "ix_auth_registration_attempt_counters_window_started_at",
+            "window_started_at",
         ),
     )

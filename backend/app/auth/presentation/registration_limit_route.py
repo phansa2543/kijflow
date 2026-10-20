@@ -4,6 +4,8 @@ from starlette.concurrency import run_in_threadpool
 from fastapi import Request, HTTPException
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
 from starlette.responses import Response
 
 from app.auth.application.errors import (
@@ -125,9 +127,20 @@ class RegistrationLimitRoute(APIRoute):
 
                 return await request.receive()
 
-
-            return await original_handler(
-                Request(request.scope, receive=replay_receive)
-            )
+            try:
+                return await original_handler(
+                    Request(request.scope, receive=replay_receive)
+                )
+            except RequestValidationError:
+                return JSONResponse(
+                    status_code=422,
+                    content={
+                        "error": {
+                            "code": "REGISTRATION_FAILED",
+                            "message": "Invalid registration data"
+                        }
+                    },
+                    headers={"Cache-Control": "no-store"}
+                )
 
         return limited_handler

@@ -234,3 +234,170 @@ def test_registration_database_unavailable_fails_closed():
 
     finally:
         unavailable_engine.dispose()
+
+def test_missing_email_does_not_leak_password(caplog, capsys):
+    secret = "B1_SECRET_TEST_MARKER_123"
+
+    app = FastAPI()
+    app.include_router(router)
+
+    app.state.db_engine = Mock()
+    app.state.registration_rate_limit_threshold = 10
+    app.state.registration_rate_limit_window_seconds = 900
+
+    handler = Mock()
+
+    with (
+        patch(
+            "app.auth.presentation.registration_limit_route.make_registration_limit_checker",
+            return_value=Mock(),
+        ) as limiter,
+        patch(
+            "app.auth.presentation.routes.make_registration_handler",
+            return_value=handler,
+        ) as handler_factory,
+    ):
+        client = TestClient(
+            app,
+            client=("192.0.2.10", 12345),
+        )
+
+        response = client.post(
+            "/auth/register",
+            json={"password": secret},
+        )
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "error": {
+            "code": "REGISTRATION_FAILED",
+            "message": "Invalid registration data",
+        }
+    }
+    assert response.headers["cache-control"] == "no-store"
+
+    assert secret not in response.text
+    assert secret not in caplog.text
+
+    captured = capsys.readouterr()
+    assert secret not in captured.out
+    assert secret not in captured.err
+
+    limiter.assert_called_once()
+    handler_factory.assert_not_called()
+    handler.assert_not_called()
+
+def test_invalid_password_type_does_not_leak_password(
+    caplog, capsys
+):
+    secret = "B1_SECRET_INVALID_TYPE_123"
+
+    app = FastAPI()
+    app.include_router(router)
+
+    app.state.db_engine = Mock()
+    app.state.registration_rate_limit_threshold = 10
+    app.state.registration_rate_limit_window_seconds = 900
+
+    handler = Mock()
+
+    with (
+        patch(
+            "app.auth.presentation.registration_limit_route.make_registration_limit_checker",
+            return_value=Mock(),
+        ) as limiter,
+        patch(
+            "app.auth.presentation.routes.make_registration_handler",
+            return_value=handler,
+        ) as handler_factory,
+    ):
+        client = TestClient(
+            app,
+            client=("192.0.2.10", 12345),
+        )
+
+        response = client.post(
+            "/auth/register",
+            json={
+                "email": "alice@example.com",
+                "password": {"secret": secret},
+            },
+        )
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "error": {
+            "code": "REGISTRATION_FAILED",
+            "message": "Invalid registration data",
+        }
+    }
+    assert response.headers["cache-control"] == "no-store"
+
+    assert secret not in response.text
+    assert secret not in caplog.text
+
+    captured = capsys.readouterr()
+    assert secret not in captured.out
+    assert secret not in captured.err
+
+    limiter.assert_called_once()
+    handler_factory.assert_not_called()
+    handler.assert_not_called()
+
+def test_malformed_json_does_not_leak_password(caplog, capsys):
+    secret = "B1_SECRET_MALFORMED_JSON_123"
+
+    app = FastAPI()
+    app.include_router(router)
+
+    app.state.db_engine = Mock()
+    app.state.registration_rate_limit_threshold = 10
+    app.state.registration_rate_limit_window_seconds = 900
+
+    handler = Mock()
+
+    with (
+        patch(
+            "app.auth.presentation.registration_limit_route.make_registration_limit_checker",
+            return_value=Mock(),
+        ) as limiter,
+        patch(
+            "app.auth.presentation.routes.make_registration_handler",
+            return_value=handler,
+        ) as handler_factory,
+    ):
+        client = TestClient(
+            app,
+            client=("192.0.2.10", 12345),
+        )
+
+        malformed_body = (
+            '{"email":"alice@example.com",'
+            f'"password":"{secret}"'
+        )
+
+        response = client.post(
+            "/auth/register",
+            content=malformed_body,
+            headers={"Content-Type": "application/json"},
+        )
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "error": {
+            "code": "REGISTRATION_FAILED",
+            "message": "Invalid registration data",
+        }
+    }
+
+    assert response.headers["cache-control"] == "no-store"
+    assert secret not in response.text
+    assert secret not in caplog.text
+
+    captured = capsys.readouterr()
+    assert secret not in captured.out
+    assert secret not in captured.err
+
+    limiter.assert_called_once()
+    handler_factory.assert_not_called()
+    handler.assert_not_called()
