@@ -348,3 +348,93 @@ def test_cleanup_runner_propagates_failure():
     )
 
     engine.dispose.assert_called_once()
+
+def test_cleanup_runner_stops_at_batch_cap(capsys):
+    engine = Mock()
+
+    with (
+        patch(
+            "app.auth.infrastructure.registration_counter_cleanup_runner.create_database_engine",
+            return_value=engine,
+        ),
+        patch(
+            "app.auth.infrastructure.registration_counter_cleanup_runner.cleanup_expired_registration_counters",
+            return_value=500,
+        ) as cleanup,
+    ):
+        main()
+
+    assert cleanup.call_count == 20
+
+    cleanup.assert_called_with(
+        engine=engine,
+        retention_seconds=86_400,
+        batch_size=500,
+    )
+
+    output = capsys.readouterr().out
+
+    assert "Cleanup batch limit reached" in output
+    assert "10000 rows" in output
+    assert "Additional cleanup may be required" in output
+    assert "Cleanup completed" not in output
+
+    engine.dispose.assert_called_once()
+
+def test_cleanup_preserves_counter_within_retention(engine):
+    assert engine.url.database == "kijflow_test"
+
+    suffix = uuid.uuid4().hex[:24]
+    groups = ":".join(
+        suffix[i:i + 4] for i in range(0, 24, 4)
+    )
+    client_ip = f"2001:db8:{groups}"
+
+    try:
+        with engine.begin() as connection:
+            connection.execute(
+                text("""
+                    INSERT INTO auth_registration_attempt_counters (
+                        client_ip,
+                        window_started_at,
+                        window_seconds,
+                        attempt_count
+                    )
+                    VALUES (
+                        CAST(:client_ip AS inet),
+                        statement_timestamp()
+                            - INTERVAL '24 hours',
+                        900,
+                        1
+                    )
+                """),
+                {"client_ip": client_ip},
+            )
+
+        cleanup_expired_registration_counters(
+            engine=engine,
+            retention_seconds=86_400,
+            batch_size=500,
+        )
+
+        with engine.connect() as connection:
+            remaining = connection.execute(
+                text("""
+                    SELECT COUNT(*)
+                    FROM auth_registration_attempt_counters
+                    WHERE client_ip = CAST(:client_ip AS inet)
+                """),
+                {"client_ip": client_ip},
+            ).scalar_one()
+
+        assert remaining == 1
+
+    finally:
+        with engine.begin() as connection:
+            connection.execute(
+                text("""
+                    DELETE FROM auth_registration_attempt_counters
+                    WHERE client_ip = CAST(:client_ip AS inet)
+                """),
+                {"client_ip": client_ip},
+            )
