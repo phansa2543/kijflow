@@ -39,18 +39,32 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
-### Verified M3 Progress — 2026-10-21
+### Verified M3 Progress — 2026-10-21 (Step 5.9 Cut-off)
 
-This current snapshot supersedes the dated 2026-10-18 implementation-status reports below. Historical local test counts and earlier pending-work statements are retained only as historical evidence.
+The current snapshot supersedes dated implementation-status entries below. The 2026-10-18 records are retained as historical test evidence, not as the current task/status list.
 
-- Registration HTTP API, runtime registration dependency wiring, public-safe error handling, atomic global User + PasswordCredential registration, password screening, Argon2id, and PostgreSQL-backed registration rate limiting are implemented.
-- Registration counter cleanup, its separate manual runner, and Alembic index `990acb220a2c` are implemented. It does not run inside the Registration request path.
-- Registration Counter Cleanup **B2 Implementation is CLOSED** following the independent QA final closure. Conditions C1 (24-hour retention measured from **window expiry**) and C2 (20-batch runner ceiling and warning) passed. The cleanup test module has **7 tests**.
-- Verified source baseline: GitHub `main` commit `ff6bfa2d72a940c9596db1bab9b87771ada9b6c0`. GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/39455823132 passed with **205 passed, 1 skipped**.
-- Cleanup implementation defaults: **24-hour retention after window expiry**, **500 rows per batch**, **20 batches per execution** (at most 10,000 rows). Cleanup uses PostgreSQL time and `FOR UPDATE SKIP LOCKED`. Uncaught runner errors propagate; reaching the batch limit warns but may exit with code 0 **while backlog remains**.
-- Production scheduler, failure alerting, backlog/retention monitoring and database access verification remain **DEFERRED to a Pre-External-Use Gate** tracked under AQ-014. An **hourly external job** is a provisional future cadence, not deployed infrastructure. These items do not reopen B2 implementation or block internal M3 Login API.
-- Next M3 implementation task: **Login API** under the existing accepted M3 design, followed by safe password-rehash database persistence, PostgreSQL-backed sessions, logout, login abuse/enumeration protection, cookies/CSRF, minimum browser authentication workflows and final security/integration QA. M3 remains **IN PROGRESS**.
-- The separate independent Password Screening Technical Security/QA acceptance and third-party pre-external-release verification under AQ-016 are not implicitly closed by B2 QA.
+**Registration baseline (unchanged):**
+
+- Registration HTTP API, runtime registration wiring, public-safe error handling, atomic global User + PasswordCredential persistence, approved password screening/Argon2id and PostgreSQL registration rate limiting are implemented.
+- Registration Counter Cleanup **B2 Implementation is QA CLOSED**. C1 retention-from-window-expiry and C2 20-batch warning checks are covered by 7 cleanup tests. Cleanup runs outside the request path. Its provisional 24-hour post-window retention, 500 rows/batch and 20 batches/run remain unchanged.
+- External cleanup scheduling (provisionally hourly), deployment monitoring/alerting, backlog and retention observations, and DB permissions verification remain **DEFERRED to the Pre-External-Use Gate** under AQ-014; these do not block internal M3 work.
+
+**Step 5.9 — Login Core and Session Creation (committed and CI-verified):**
+
+- Login application/core handles canonical email lookup, NFC password normalization and Argon2id verification, including an unknown-email dummy-hash verification path.
+- Login infrastructure provides credential lookup, conditional password-rehash persistence using compare-and-swap (CAS), and credential revalidation/locking. The approved requirement to use a pre-generated dummy Argon2id hash in the eventual production runtime is **not yet verified by HTTP/runtime integration**.
+- Session infrastructure generates a cryptographically random 256-bit token, persists its SHA-256 digest (not the raw token), and supports configurable absolute expiration. Session creation verifies the expected credential hash under `SELECT FOR UPDATE` and persists the session in the same transaction as final credential revalidation.
+- Committed PostgreSQL integration tests cover successful Login + Session creation, invalid password/no session, and credential change before session creation/no session. Additional tests cover credential locks/concurrency and CAS replacement behavior; these do not prove every possible session race.
+- Verified GitHub `main` implementation commit: `aa22bae8568fc926f847db1b3085acab43d1e0db` (`feat(auth): implement login core and session creation`).
+- GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/39584813876 **PASS: 238 passed, 1 skipped**, including PostgreSQL tests. This verifies the committed suite, **not final M3 Security QA or browser integration**.
+
+**Current boundary and next work:**
+
+- M3 remains **IN PROGRESS**. There is not yet a complete public Login HTTP endpoint, production cookie/CSRF flow, or finished session lifecycle.
+- Resume at **Step 6 — Login Abuse Protection**, first reviewing existing Registration Rate Limiting for appropriate reuse. Login protection must cover account identifier and request source; registration's IP-only counter alone does not establish the accepted Login control.
+- Remaining M3 delivery: runtime Login + Session orchestration; session validation, expiry and logout/revocation; Login HTTP endpoint, safe errors and secure cookies; enumeration resistance and CSRF; minimum browser authentication workflows; complete regression, adversarial/security and integration QA.
+- Reconfirm whether existing sessions must be revoked on credential changes under the accepted M3 design; do not implement password-change functionality here. Separate Password Screening independent security acceptance and DEC-009/AQ-016 pre-external-release verification remain open.
+- Global User authentication in M3 does **not** grant Organization Membership, trusted tenant context or M4+ authorization.
 
 As of 2026-10-18, Engineering Mentor reviewed the implementation against GitHub `main` at commit `b3e7ab4`.
 
@@ -159,9 +173,11 @@ Limitations:
 
 ## Current Implementation Step
 
-**Next: M3 Login API.** Registration Cleanup B2 Implementation received final QA **CLOSED**; C1/C2, the 7 cleanup tests and the exact-commit backend CI are verified. No further B2 QA round or production scheduler is required to begin internal Login implementation.
+**Step 5.9 cut-off is committed and CI-verified. Next: Step 6 — Login Abuse Protection.**
 
-The Engineering Mentor should inspect the existing login/session-related code and approved M3 acceptance criteria, then guide the Founder through Login API implementation. Retain the approved security and architecture boundaries and do not introduce M4 Organization/Membership behavior or unrelated Production Infrastructure.
+Use the existing Registration rate limiter as the first reference for reuse, while keeping the approved Login per-account and request-source defenses distinct. Engineering Mentor guides the Founder; no new framework, production scheduler or M4+ behavior is authorized.
+
+Resume core M3 Login/Session HTTP and security integration after Step 6. The current implementation supports tested login-core/session-creation building blocks but is **not yet a complete public Login API**. Do not mark M3 complete until the approved authentication, browser and final security acceptance criteria are satisfied.
 
 ## Password Screening — Development Status and Release Gates
 
@@ -194,7 +210,7 @@ The current Password Screening verification status is:
 
 The Password Blocklist subtask must not be marked formally complete until the required independent Technical Security/QA review is recorded.
 
-Password Screening is integrated into the Registration service before Argon2id hashing. Registration HTTP API integration and runtime dependency wiring remain pending.
+Password Screening is integrated into the Registration service before Argon2id hashing. Registration HTTP API and runtime dependency wiring are now implemented; the independent Password Screening Technical Security/QA acceptance remains pending.
 
 The DEC-009 Founder Clarification and the pre-external-release requirements under AQ-016 remain unchanged.
 

@@ -1087,16 +1087,17 @@ Founder implementation is now the current engineering step.
 
 ## Latest M3 Implementation Progress
 
-**Verified snapshot — 2026-10-21:** Milestone 3 — Registration & Authentication is **IN PROGRESS**.
+**Verified snapshot — 2026-10-21 (Step 5.9 cut-off):** Milestone 3 — Registration & Authentication is **IN PROGRESS**.
 
-- Registration HTTP API, atomic global User/PasswordCredential registration, email/password processing, screening, Argon2id and PostgreSQL registration rate limiting are implemented.
-- Registration counter cleanup logic, separate runner and migration/index `990acb220a2c` are committed. QA conditions C1 (retention from window expiry) and C2 (20-batch cap/warning) are satisfied; **B2 Implementation QA verdict: CLOSED**.
-- The GitHub `main` source baseline is `ff6bfa2d72a940c9596db1bab9b87771ada9b6c0`. The normal backend CI run https://github.com/phansa2543/kijflow/actions/runs/39455823132 completed successfully: **205 passed, 1 skipped**, including PostgreSQL-backed tests. There are **7 Registration Cleanup tests**.
-- Cleanup defaults are provisionally 24 hours after counter window expiry, 500 rows/batch, 20 batches/run; the batch-cap warning can occur with exit status zero and remaining backlog. Production external hourly scheduling, monitoring/alerting, backlog/retention verification and least-privilege DB configuration are deferred to the **Pre-External-Use Gate** under AQ-014, not internal M3.
-- **Next task:** Login API. Follow with safe password-rehash persistence, opaque PostgreSQL session issuance/validation/expiry, logout/revocation, login abuse and enumeration resistance, secure cookies/CSRF, functional browser authentication and final M3 security/integration QA.
-- Authentication remains global User identity only. M3 does not establish Organization Membership, trusted Organization context or tenant authorization. Password Screening independent security review remains separately tracked, as does DEC-009/AQ-016 third-party verification before external availability.
+- Registration API, atomic registration, password screening/Argon2id, PostgreSQL registration rate limiting and Registration Counter Cleanup B2 remain implemented. **B2 Implementation QA: CLOSED**; 7 cleanup tests and original C1/C2 acceptance are preserved.
+- **Login Core:** canonical email/normalized password verification, dummy-hash verification for unknown email, credential lookup, CAS password-rehash persistence and login wiring are implemented and tested. Production pre-generated dummy-hash wiring has not yet been verified.
+- **Session Creation Foundation:** 256-bit random bearer token generation, SHA-256 token digest storage, configurable absolute expiry, credential row locking/final revalidation and transactional session persistence are implemented. PostgreSQL Login + Session tests cover success, wrong password/no session and credential change before session creation/no session.
+- **Verified GitHub source and CI:** `main` commit `aa22bae8568fc926f847db1b3085acab43d1e0db`; GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/39584813876 **PASS: 238 passed, 1 skipped**. This is a committed backend regression result, not final Security QA or HTTP/browser acceptance.
+- **Next task:** Step 6 — Login Abuse Protection, beginning with review of existing Registration Rate Limiting for safe reuse. Required Login controls include canonical account identifier and request-source dimensions.
+- **Remaining M3:** complete Login + Session runtime integration, Session Validation/Expiry, Logout/Revocation, public Login HTTP endpoint, enumeration-safe failure handling, Secure HttpOnly cookies and CSRF, minimum browser authentication workflows, and final integration/security QA. Password-change-related session-revocation rules need checking against the accepted M3 design without adding password-change scope.
+- Production Registration Cleanup scheduling/monitoring, backlog observation and database permissions are still **Pre-External-Use** items under AQ-014; DEC-009/AQ-016 third-party checks likewise remain deferred to external-release readiness. The independent Password Screening security sign-off is not implicitly granted by Login test success.
 
-B2 QA closure does not imply M3 itself is complete or that production operations are approved.
+Global authentication in M3 establishes User identity only, not trusted Organization context, Membership or tenant authorization. The complete public Login HTTP flow and M3 as a whole are **not yet complete**.
 
 ## Phase 1 Functional Frontend Requirement
 
