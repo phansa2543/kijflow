@@ -123,6 +123,8 @@ Provisional cleanup contract: expired counters are eligible for deletion **24 ho
 
 **B2 Cleanup Implementation QA: CLOSED.** No production scheduler is configured. A provisional **hourly external scheduler** and verification of job execution, failure reporting, backlog/retention monitoring and database permissions are deferred to the **Pre-External-Use Gate** under AQ-014. They are not required for internal M3 Login API work.
 
+**Login counter cleanup:** M3 Step 6 adds separate cleanup logic for `auth_login_attempt_counters`, with PostgreSQL time, `FOR UPDATE SKIP LOCKED`, 24-hour retention after window expiry, and a maximum of 500 rows/batch × 20 batches. It is not the Registration cleanup runner above; **no dedicated Login cleanup runner or scheduled operational job is established in the current pushed baseline**. The execution mechanism, failure detection and backlog monitoring remain deferred to the Pre-External-Use Gate (AQ-014). Step 6 implementation is **QA REMEDIATION REQUIRED / NOT CLOSED**; do not treat passing CI as a QA approval.
+
 ### Optional Live HIBP Integration Test
 
 The HIBP live integration test contacts the real HIBP Pwned Passwords Range API.

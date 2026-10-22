@@ -39,6 +39,32 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Current M3 Progress — 2026-10-22 (Step 6 QA Remediation Gate)
+
+**Step 6 — Login Abuse Protection: IMPLEMENTATION COMPLETE / QA REMEDIATION REQUIRED / NOT CLOSED.** This current checkpoint supersedes the older Step 5.9 task status below; previous snapshots are retained as historical evidence. **M3 itself remains IN PROGRESS.**
+
+**Pushed implementation baseline (GitHub `main`):**
+
+- Commit `460ce60d845b508780bdda72a66ce50fe1782b8e` — `feat(auth): implement login abuse protection with rate limiting and cleanup`. The implementation is now accessible in GitHub; this resolves uncertainty about whether the handoff was pushed, **not** the pending independent QA verification.
+- PostgreSQL-backed LOGIN counters use independent `SOURCE` and `ACCOUNT` dimensions with committed attempt reservations: `SOURCE` 30 attempts/60 seconds, `ACCOUNT` 10 attempts/900 seconds. Counter persistence failure fails closed.
+- `ACCOUNT` counter identifiers use HMAC-SHA256 of the canonical login identifier. Known/unknown accounts use generic authentication failure and dummy Argon2id verification-class work; equivalent observable anti-abuse behavior remains subject to independent QA acceptance.
+- The pushed work includes Login HTTP integration, secure HttpOnly session-cookie issuance on successful session creation, and release of the successful login's ACCOUNT reservation after session commit. This is **not** acceptance of the complete M3 session lifecycle, browser CSRF or final authentication security.
+- Login counter cleanup runs separately from request processing, with PostgreSQL time, `FOR UPDATE SKIP LOCKED`, 24-hour retention measured after window expiry, at most 500 rows/batch and 20 batches/invocation. **No dedicated Login cleanup runner or deployed scheduler is established by this commit.** Scheduler, execution and backlog monitoring remain a Pre-External-Use Gate under AQ-014.
+- CI for this pushed commit: https://github.com/phansa2543/kijflow/actions/runs/39762862484 — **GitHub Actions backend job SUCCESS**. Success of automated CI does **not** imply the QA gate has passed.
+
+**Founder-reported local tests (not independent QA evidence):** Login Counter Persistence 8 passed; Login Rate Limit 13 passed; Login Counter Identifier 11 passed; Login HTTP Integration 9 passed; Login Counter Cleanup 6 passed. **47 passed in these reported suites.**
+
+**Independent QA verdict: FAIL — QA Verification Gate Not Satisfied.** QA did not establish a new confirmed authentication exploit; acceptance is blocked by defects/evidence gaps. Findings:
+
+- **F1 — Confirmed defect in pushed test baseline:** `backend/tests/conftest.py` guards `TEST_DATABASE_URL` versus `DATABASE_URL` using plain string equality; different connection URL spellings can target the same development database. Require robust test/development database identity isolation.
+- **F2 — Evidence blocker at QA review:** QA had not inspected the latest local source. The implementation is now verifiably on GitHub at the commit above, so submit the **exact pushed commit** for independent QA review; do not claim F2 or the security contract verified until QA confirms.
+- **F3 — Coverage gap:** `SKIP LOCKED` cleanup test needs stronger assertions showing the locked row is skipped and subsequently deletable after the lock is released.
+- **F4 — Informational:** the reported 47 local test passes do not constitute independent QA sign-off.
+
+**Required next actions before Step 6 closure:** (1) remediate F1 safely; (2) strengthen F3; (3) review and verify startup fail-closed behavior for `LOGIN_COUNTER_HMAC_SECRET` (current runtime loading alone is not startup verification); (4) push the amended source and tests; (5) rerun relevant/full regression and CI; (6) obtain independent QA review and PASS on the exact latest code; (7) seek Founder final closure approval. **Step 6 must remain OPEN until those gates are met.**
+
+**Scope stays unchanged:** Registration Cleanup B2 remains QA CLOSED; do not reopen it. No M4, Business Module, new cleanup scheduler/framework or authentication architecture change is authorized.
+
 ### Verified M3 Progress — 2026-10-21 (Step 5.9 Cut-off)
 
 The current snapshot supersedes dated implementation-status entries below. The 2026-10-18 records are retained as historical test evidence, not as the current task/status list.
@@ -173,11 +199,11 @@ Limitations:
 
 ## Current Implementation Step
 
-**Step 5.9 cut-off is committed and CI-verified. Next: Step 6 — Login Abuse Protection.**
+**M3 Step 6 — Login Abuse Protection: IMPLEMENTATION COMPLETE; QA REMEDIATION REQUIRED; NOT CLOSED.**
 
-Use the existing Registration rate limiter as the first reference for reuse, while keeping the approved Login per-account and request-source defenses distinct. Engineering Mentor guides the Founder; no new framework, production scheduler or M4+ behavior is authorized.
+Follow the F1–F4 QA remediation and startup-secret verification checklist in the current 2026-10-22 checkpoint above. The implementation is pushed at `460ce60d845b508780bdda72a66ce50fe1782b8e`, and CI passed, but neither the reported 47 local test results nor CI success replaces independent Security/QA acceptance. Founder must approve Step 6 closure after the new committed baseline is independently reviewed.
 
-Resume core M3 Login/Session HTTP and security integration after Step 6. The current implementation supports tested login-core/session-creation building blocks but is **not yet a complete public Login API**. Do not mark M3 complete until the approved authentication, browser and final security acceptance criteria are satisfied.
+Do not proceed as though Step 6 is accepted, expand M3 scope or reopen B2. Engineering Mentor should guide the Founder through the focused fixes and tests, followed by new QA review. Other M3 authentication/session/browser/security work remains unfinished.
 
 ## Password Screening — Development Status and Release Gates
 
