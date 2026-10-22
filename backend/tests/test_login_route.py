@@ -738,3 +738,219 @@ def test_login_known_and_unknown_email_have_same_failure_response(
                     ),
                 },
             )
+
+def test_source_uses_runtime_config(monkeypatch, engine):
+    monkeypatch.setenv("LOGIN_COUNTER_HMAC_SECRET", "a1" * 32)
+    monkeypatch.setenv("LOGIN_SOURCE_LIMIT", "3")
+    monkeypatch.setenv("LOGIN_SOURCE_WINDOW_SECONDS", "60")
+    monkeypatch.setenv("LOGIN_ACCOUNT_LIMIT", "100")
+    monkeypatch.setenv("LOGIN_ACCOUNT_WINDOW_SECONDS", "900")
+
+    source = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
+
+    with patch("app.main.create_database_engine", return_value=engine):
+        with TestClient(app, client=(source, 50000)) as client:
+            responses = [
+                client.post(
+                    "/auth/login",
+                    json={
+                        "email": "unknown@example.invalid",
+                        "password": "invalid-password",
+                    },
+                )
+                for _ in range(4)
+            ]
+
+    assert [response.status_code for response in responses] == [
+        401, 401, 401, 429
+    ]
+    assert int(responses[3].headers["Retry-After"]) > 0
+    assert responses[3].json()["error"]["code"] == "LOGIN_FAILED"
+
+def test_account_uses_runtime_config(monkeypatch, engine):
+    monkeypatch.setenv("LOGIN_COUNTER_HMAC_SECRET", "a1" * 32)
+    monkeypatch.setenv("LOGIN_SOURCE_LIMIT", "100")
+    monkeypatch.setenv("LOGIN_SOURCE_WINDOW_SECONDS", "60")
+    monkeypatch.setenv("LOGIN_ACCOUNT_LIMIT", "2")
+    monkeypatch.setenv("LOGIN_ACCOUNT_WINDOW_SECONDS", "900")
+
+    email = f"unknown-{uuid.uuid4().hex}@example.invalid"
+    source = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
+
+    with patch("app.main.create_database_engine", return_value=engine):
+        with TestClient(app, client=(source, 50000)) as client:
+            responses = [
+                client.post(
+                    "/auth/login",
+                    json={
+                        "email": email,
+                        "password": "invalid-password",
+                    },
+                )
+                for _ in range(3)
+            ]
+
+    assert [r.status_code for r in responses] == [401, 401, 429]
+    assert responses[2].json()["error"] == {
+        "code": "LOGIN_FAILED",
+        "message": "Too many requests",
+    }
+    assert int(responses[2].headers["Retry-After"]) > 0
+
+def test_known_unknown_accounts_have_same_throttle_behavior(
+    monkeypatch, engine
+):
+    user_id = uuid.uuid4()
+    known_email = f"known-{uuid.uuid4().hex}@example.com"
+    unknown_email = f"unknown-{uuid.uuid4().hex}@example.com"
+
+    secret = bytes(range(32))
+    password = "CorrectPassword2026!"
+    wrong_password = "wrong-password"
+
+    monkeypatch.setenv("LOGIN_COUNTER_HMAC_SECRET", secret.hex())
+    monkeypatch.setenv("LOGIN_SOURCE_LIMIT", "100")
+    monkeypatch.setenv("LOGIN_SOURCE_WINDOW_SECONDS", "60")
+    monkeypatch.setenv("LOGIN_ACCOUNT_LIMIT", "10")
+    monkeypatch.setenv("LOGIN_ACCOUNT_WINDOW_SECONDS", "900")
+
+    known_identifier = make_account_counter_identifier(
+        known_email, secret
+    )
+    unknown_identifier = make_account_counter_identifier(
+        unknown_email, secret
+    )
+
+    # Create a real account.
+    with engine.begin() as connection:
+        connection.execute(insert(User).values(id=user_id))
+        connection.execute(
+            insert(UserPasswordCredential).values(
+                user_id=user_id,
+                email=known_email,
+                password_hash=hash_password(password),
+            )
+        )
+
+    try:
+        results = []
+
+        with patch(
+            "app.main.create_database_engine",
+            return_value=engine,
+        ):
+            for email, source in [
+                (known_email, "198.51.100.241"),
+                (unknown_email, "198.51.100.242"),
+            ]:
+                with TestClient(
+                    app, client=(source, 50000)
+                ) as client:
+                    responses = [
+                        client.post(
+                            "/auth/login",
+                            json={
+                                "email": email,
+                                "password": wrong_password,
+                            },
+                        )
+                        for _ in range(11)
+                    ]
+
+                    results.append(responses)
+
+        for responses in results:
+            assert [r.status_code for r in responses] == (
+                [401] * 10 + [429]
+            )
+
+            for response in responses[:10]:
+                assert response.json()["error"] == {
+                    "code": "LOGIN_FAILED",
+                    "message": "Invalid email or password",
+                }
+                assert "Retry-After" not in response.headers
+
+            assert responses[10].json()["error"] == {
+                "code": "LOGIN_FAILED",
+                "message": "Too many requests",
+            }
+            assert int(responses[10].headers["Retry-After"]) > 0
+
+            for response in responses:
+                assert "kijflow_session" not in response.cookies
+                assert "set-cookie" not in response.headers
+
+        # Both account types expose identical response contracts.
+        for known_response, unknown_response in zip(*results):
+            assert known_response.status_code == unknown_response.status_code
+            assert known_response.json() == unknown_response.json()
+            assert (
+                "Retry-After" in known_response.headers
+            ) == (
+                "Retry-After" in unknown_response.headers
+            )
+
+        with engine.connect() as connection:
+            counters = connection.execute(
+                text("""
+                    SELECT identifier, window_seconds,
+                           SUM(attempt_count) AS total
+                    FROM auth_login_attempt_counters
+                    WHERE dimension = 'ACCOUNT'
+                      AND identifier IN (:known, :unknown)
+                    GROUP BY identifier, window_seconds
+                """),
+                {
+                    "known": known_identifier,
+                    "unknown": unknown_identifier,
+                },
+            ).all()
+
+            sessions = connection.execute(
+                select(AuthSession.id).where(
+                    AuthSession.user_id == user_id
+                )
+            ).all()
+
+        counts = {
+            row.identifier: (row.window_seconds, row.total)
+            for row in counters
+        }
+
+        assert counts[known_identifier] == (900, 11)
+        assert counts[unknown_identifier] == (900, 11)
+        assert sessions == []
+
+    finally:
+        with engine.begin() as connection:
+            connection.execute(
+                delete(AuthSession).where(
+                    AuthSession.user_id == user_id
+                )
+            )
+            connection.execute(
+                delete(UserPasswordCredential).where(
+                    UserPasswordCredential.user_id == user_id
+                )
+            )
+            connection.execute(
+                delete(User).where(User.id == user_id)
+            )
+            connection.execute(
+                text("""
+                    DELETE FROM auth_login_attempt_counters
+                    WHERE
+                        (dimension = 'ACCOUNT'
+                         AND identifier IN (:known, :unknown))
+                        OR
+                        (dimension = 'SOURCE'
+                         AND identifier IN (:source1, :source2))
+                """),
+                {
+                    "known": known_identifier,
+                    "unknown": unknown_identifier,
+                    "source1": "198.51.100.241",
+                    "source2": "198.51.100.242",
+                },
+            )

@@ -1,8 +1,9 @@
-import httpx
+import httpx, os
 
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from pathlib import Path
+from dotenv import load_dotenv
 
 from app.auth.infrastructure.common_passwords import load_common_passwords
 from app.auth.infrastructure.password_hash import hash_password
@@ -13,10 +14,34 @@ from app.auth.presentation.login_route import login_router
 
 from app.db.engine import create_database_engine
 
+def read_positive_int(name: str, default: int) -> int:
+    raw = os.getenv(name, str(default))
+
+    try:
+        value = int(raw)
+    except ValueError:
+        raise ValueError(f"Invalid configuration: {name}") from None
+
+    if value <= 0:
+        raise ValueError(f"Invalid configuration: {name}")
+
+    return value
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    project_root = Path(__file__).resolve().parents[2]
+    load_dotenv(project_root / ".env")
+    load_dotenv(project_root / ".env")
+
     load_login_counter_hmac_secret()
+
+    source_limit = read_positive_int("LOGIN_SOURCE_LIMIT", 30)
+    source_window = read_positive_int("LOGIN_SOURCE_WINDOW_SECONDS", 60)
+    account_limit = read_positive_int("LOGIN_ACCOUNT_LIMIT", 10)
+    account_window = read_positive_int("LOGIN_ACCOUNT_WINDOW_SECONDS", 900)
+
     engine = create_database_engine()
+    load_login_counter_hmac_secret()
 
     try:
         with httpx.Client() as hibp_client:
@@ -27,7 +52,10 @@ async def lifespan(app: FastAPI):
             app.state.dummy_password_hash = hash_password(
                 "kijflow-login-dummy-password-not-a-real-credential"
             )
-
+            app.state.login_source_limit = source_limit
+            app.state.login_source_window_seconds = source_window
+            app.state.login_account_limit = account_limit
+            app.state.login_account_window_seconds = account_window
             yield
     finally:
         engine.dispose()

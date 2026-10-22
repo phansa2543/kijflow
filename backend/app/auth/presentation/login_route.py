@@ -77,8 +77,8 @@ async def login(payload: LoginRequest, request: Request):
             engine,
             dimension="ACCOUNT",
             identifier=identifier,
-            window_seconds=900,
-            limit=10,
+            window_seconds=request.app.state.login_account_window_seconds,
+            limit=request.app.state.login_account_limit,
         )
 
     except (LoginLimiterUnavailable, ValueError):

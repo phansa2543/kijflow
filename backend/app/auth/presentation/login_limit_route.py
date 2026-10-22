@@ -41,8 +41,8 @@ class LoginLimitRoute(APIRoute):
                     engine,
                     dimension="SOURCE",
                     identifier=client_ip,
-                    window_seconds=60,
-                    limit=30
+                    window_seconds=request.app.state.login_source_window_seconds,
+                    limit=request.app.state.login_source_limit,
                 )
 
                 if not reservation.allowed:
