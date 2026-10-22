@@ -5,8 +5,10 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from app.auth.infrastructure.common_passwords import load_common_passwords
+from app.auth.infrastructure.password_hash import hash_password
 
 from app.auth.presentation.routes import router as auth_router
+from app.auth.presentation.login_route import login_router
 
 from app.db.engine import create_database_engine
 
@@ -20,6 +22,9 @@ async def lifespan(app: FastAPI):
             app.state.hibp_client = hibp_client
             app.state.registration_rate_limit_threshold = 10
             app.state.registration_rate_limit_window_seconds = 900
+            app.state.dummy_password_hash = hash_password(
+                "kijflow-login-dummy-password-not-a-real-credential"
+            )
             yield
     finally:
         engine.dispose()
@@ -28,6 +33,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth_router)
+app.include_router(login_router)
 
 common_password_file = (
     Path(__file__).resolve().parent
