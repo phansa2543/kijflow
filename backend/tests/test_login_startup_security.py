@@ -29,6 +29,6 @@ def test_startup_accepts_valid_login_hmac_secret(monkeypatch):
         with TestClient(app):
             pass
 
-    assert create_engine.call_count >= 1
+    create_engine.assert_called_once_with()
 
     create_engine.return_value.dispose.assert_called_once()

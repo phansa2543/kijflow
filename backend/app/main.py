@@ -15,6 +15,7 @@ from app.db.engine import create_database_engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    load_login_counter_hmac_secret()
     engine = create_database_engine()
 
     try:
@@ -26,9 +27,6 @@ async def lifespan(app: FastAPI):
             app.state.dummy_password_hash = hash_password(
                 "kijflow-login-dummy-password-not-a-real-credential"
             )
-
-            load_login_counter_hmac_secret()
-            engine = create_database_engine()
 
             yield
     finally:
