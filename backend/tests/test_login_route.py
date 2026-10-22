@@ -21,14 +21,18 @@ from app.auth.infrastructure.login_counter_identifier import (
 from app.auth.infrastructure.password_hash import hash_password
 from app.auth.infrastructure.login_rate_limit import LoginLimiterUnavailable
 
-def test_invalid_json_consumes_source_reservation(engine):
+def test_invalid_json_consumes_source_reservation(monkeypatch, engine):
+    monkeypatch.setenv(
+        "LOGIN_COUNTER_HMAC_SECRET",
+        "a1" * 32,
+    )
+    
     source = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
 
     original_engine = getattr(app.state, "db_engine", None)
 
     try:
         with TestClient(app, client=(source, 50000)) as client:
-            # บังคับให้ Login ใช้ฐานข้อมูล Test เท่านั้น
             app.state.db_engine = engine
 
             try:
@@ -67,7 +71,11 @@ def test_invalid_json_consumes_source_reservation(engine):
                 {"identifier": source},
             )
 
-def test_login_source_rate_limit_returns_429(engine):
+def test_login_source_rate_limit_returns_429(monkeypatch, engine):
+    monkeypatch.setenv(
+        "LOGIN_COUNTER_HMAC_SECRET",
+        "a1" * 32,
+    )
     source = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
     original_engine = getattr(app.state, "db_engine", None)
 

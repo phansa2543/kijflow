@@ -6,6 +6,7 @@ from pathlib import Path
 
 from app.auth.infrastructure.common_passwords import load_common_passwords
 from app.auth.infrastructure.password_hash import hash_password
+from app.auth.infrastructure.login_counter_identifier import load_login_counter_hmac_secret
 
 from app.auth.presentation.routes import router as auth_router
 from app.auth.presentation.login_route import login_router
@@ -25,6 +26,10 @@ async def lifespan(app: FastAPI):
             app.state.dummy_password_hash = hash_password(
                 "kijflow-login-dummy-password-not-a-real-credential"
             )
+
+            load_login_counter_hmac_secret()
+            engine = create_database_engine()
+
             yield
     finally:
         engine.dispose()

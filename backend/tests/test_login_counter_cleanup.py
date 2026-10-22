@@ -170,29 +170,33 @@ def test_cleanup_respects_batch_and_max_batches(engine):
             )
 
 def test_cleanup_skips_locked_counter(engine):
-    identifier = f"test-locked-{uuid.uuid4().hex}"
+    locked_identifier = f"test-locked-{uuid.uuid4().hex}"
+    expired_identifier = f"test-expired-{uuid.uuid4().hex}"
+
+    identifiers = [locked_identifier, expired_identifier]
 
     try:
         with engine.begin() as connection:
-            connection.execute(
-                text("""
-                    INSERT INTO auth_login_attempt_counters (
-                        dimension,
-                        identifier,
-                        window_started_at,
-                        window_seconds,
-                        attempt_count
-                    )
-                    VALUES (
-                        'SOURCE',
-                        :identifier,
-                        statement_timestamp() - INTERVAL '3 days',
-                        60,
-                        1
-                    )
-                """),
-                {"identifier": identifier},
-            )
+            for identifier in identifiers:
+                connection.execute(
+                    text("""
+                        INSERT INTO auth_login_attempt_counters (
+                            dimension,
+                            identifier,
+                            window_started_at,
+                            window_seconds,
+                            attempt_count
+                        )
+                        VALUES (
+                            'SOURCE',
+                            :identifier,
+                            statement_timestamp() - INTERVAL '3 days',
+                            60,
+                            1
+                        )
+                    """),
+                    {"identifier": identifier},
+                )
 
         with engine.begin() as locked_connection:
             locked_connection.execute(
@@ -203,35 +207,60 @@ def test_cleanup_skips_locked_counter(engine):
                       AND identifier = :identifier
                     FOR UPDATE
                 """),
-                {"identifier": identifier},
+                {"identifier": locked_identifier},
+            ).all()
+
+            deleted = cleanup_expired_login_counters(
+                engine=engine,
+                batch_size=500,
+                max_batches=1,
             )
 
-            def set_cleanup_timeout(conn, cursor, statement, parameters, context, executemany):
-                if statement.lstrip().upper().startswith("WITH EXPIRED AS"):
-                    cursor.execute("SET LOCAL lock_timeout = '200ms'")
+            assert deleted >= 1
 
-            event.listen(engine, "before_cursor_execute", set_cleanup_timeout)
+            with engine.connect() as check_connection:
+                locked_count = check_connection.execute(
+                    text("""
+                        SELECT COUNT(*)
+                        FROM auth_login_attempt_counters
+                        WHERE dimension = 'SOURCE'
+                          AND identifier = :identifier
+                    """),
+                    {"identifier": locked_identifier},
+                ).scalar_one()
 
-            try:
-                cleanup_expired_login_counters(
-                    engine=engine,
-                    batch_size=500,
-                    max_batches=1,
-                )
-            finally:
-                event.remove(engine, "before_cursor_execute", set_cleanup_timeout)
+                expired_count = check_connection.execute(
+                    text("""
+                        SELECT COUNT(*)
+                        FROM auth_login_attempt_counters
+                        WHERE dimension = 'SOURCE'
+                          AND identifier = :identifier
+                    """),
+                    {"identifier": expired_identifier},
+                ).scalar_one()
 
-            count = locked_connection.execute(
+                assert locked_count == 1
+                assert expired_count == 0
+
+        deleted_after_unlock = cleanup_expired_login_counters(
+            engine=engine,
+            batch_size=500,
+            max_batches=1,
+        )
+
+        with engine.connect() as connection:
+            remaining = connection.execute(
                 text("""
                     SELECT COUNT(*)
                     FROM auth_login_attempt_counters
                     WHERE dimension = 'SOURCE'
                       AND identifier = :identifier
                 """),
-                {"identifier": identifier},
+                {"identifier": locked_identifier},
             ).scalar_one()
 
-            assert count == 1
+        assert deleted_after_unlock >= 1
+        assert remaining == 0
 
     finally:
         with engine.begin() as connection:
@@ -239,9 +268,15 @@ def test_cleanup_skips_locked_counter(engine):
                 text("""
                     DELETE FROM auth_login_attempt_counters
                     WHERE dimension = 'SOURCE'
-                      AND identifier = :identifier
+                      AND identifier IN (
+                          :locked_identifier,
+                          :expired_identifier
+                      )
                 """),
-                {"identifier": identifier},
+                {
+                    "locked_identifier": locked_identifier,
+                    "expired_identifier": expired_identifier,
+                },
             )
 
 def test_login_cleanup_does_not_delete_registration_counters(engine):
