@@ -39,6 +39,17 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Session Validation Persistence — 2026-10-23 (CI Verified; QA Pending)
+
+**Status:** Founder implemented and pushed Session Validation Persistence at GitHub `main` commit `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58` (`feat(auth): validate active sessions`). GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/39972021451 completed **SUCCESS** at that exact commit. **Independent QA acceptance PENDING; do not mark this subtask CLOSED. M3 remains IN PROGRESS.**
+
+- `backend/app/auth/infrastructure/session_persistence.py` implements `find_valid_session_user_id(connection, *, token_digest) -> UUID | None`. The lookup verifies matching token digest, non-expired and non-revoked session, and existing referenced User via an INNER JOIN. Unknown/invalid session returns `None`. This is digest-level persistence validation, **not** raw cookie/token validation or Trusted Current-User Resolution.
+- `backend/tests/test_session_persistence.py` includes six focused cases covering valid, expired, revoked, unknown-digest, referenced-User foreign-key and multiple-session independence behavior. Founder reports **6 focused tests passed** and **325 passed, 1 skipped** in local full regression. These counts are Founder-reported, not independent QA sign-off.
+- **Parallel QA assignments requested:** independent focused reviews for Session Validation Persistence at the exact reviewed commit and the previous Session Lifetime change at `a37823064e490e444a4b2e39c5171ebea433061e`. CI success for either does not close its acceptance gate.
+- **Configuration follow-up resolved by source inspection:** root `.env.example` contains `SESSION_LIFETIME_SECONDS=86400`; no change required for this example entry.
+- **Authorized next slice:** Raw Session Token validation and SHA-256 digest resolution, then Trusted Global Current-User Resolution and fail-closed tests. Continue logout/revocation, cookie/CSRF and Next.js integration within existing M3 acceptance criteria. No M4 or new framework/infrastructure.
+- Step 6 Login Abuse Protection and Registration Cleanup B2 remain CLOSED.
+
 ### Session Lifetime Implementation — 2026-10-23 (Verification Pending Independent QA)
 
 **Status: Founder-implemented, pushed and GitHub CI-confirmed; independent Session Lifetime QA/acceptance PENDING.** This checkpoint is newer than the Step 6 closure snapshot below; **M3 remains IN PROGRESS**.
@@ -196,11 +207,13 @@ Limitations:
 
 ## Current Implementation Step
 
-**Step 6 — Login Abuse Protection: CLOSED** (Independent QA PASS, Founder Approved; implementation commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952`).
+**M3 remains IN PROGRESS.** Step 6 Login Abuse Protection remains **CLOSED** (Independent QA PASS; Founder Approved). Registration Counter Cleanup B2 remains CLOSED.
 
-**Session Lifetime: implemented, pushed and CI SUCCESS at `a37823064e490e444a4b2e39c5171ebea433061e`; independent QA acceptance pending.** Default 86400 seconds (24 hours) is applied consistently to server Session lifetime and cookie `max_age`; configuration must be a positive integer. Follow up on the missing `SESSION_LIFETIME_SECONDS` entry in the root `.env.example`.
+**Session Lifetime:** implemented at `a37823064e490e444a4b2e39c5171ebea433061e`, CI successful; Independent QA acceptance pending. Default `SESSION_LIFETIME_SECONDS=86400` and synchronized session expiry/cookie lifetime are implemented. The root `.env.example` now includes the setting.
 
-**Next: Session Validation / Expiration.** Engineering Mentor should inspect the approved M3 session validity/fail-closed contract and latest implementation before guiding Founder changes. Subsequent M3 work includes trusted current User, current-session logout/revocation, cookie/CSRF and browser integration, Password Screening technical QA and final M3 QA. Do not reopen closed Step 6 or B2 without a verified new defect.
+**Session Validation Persistence:** implemented at `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58`, GitHub Actions run `39972021451` SUCCESS; Independent QA pending. The current function validates an already-computed digest, not the raw cookie/token. Founder reports 6 focused tests and local full regression 325 passed, 1 skipped.
+
+**Next:** Engineering Mentor may guide Founder on Raw Session Token validation / SHA-256 digest resolution and Trusted Global Current-User Resolution, with explicit fail-closed tests, while both QA reviews proceed separately. Later M3 tasks remain logout/revocation, cookie/CSRF, browser integration and final QA. Do not mark pending subtasks CLOSED or expand to M4.
 
 ## Password Screening — Development Status and Release Gates
 
