@@ -39,31 +39,17 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
-### Current M3 Progress — 2026-10-22 (Step 6 QA Remediation Gate)
+### Current M3 Progress — 2026-10-23 (Step 6 Founder Closure)
 
-**Step 6 — Login Abuse Protection: IMPLEMENTATION COMPLETE / QA REMEDIATION REQUIRED / NOT CLOSED.** This current checkpoint supersedes the older Step 5.9 task status below; previous snapshots are retained as historical evidence. **M3 itself remains IN PROGRESS.**
+**Step 6 — Login Abuse Protection: CLOSED — Founder Approved.** Independent QA focused delta review **PASS** on exact GitHub `main` commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952`; corresponding GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/39890237054 **SUCCESS — 315 passed, 1 skipped**. Founder explicitly authorized Step 6 closure on 2026-10-23. **M3 remains IN PROGRESS**; this closure is only for Step 6.
 
-**Pushed implementation baseline (GitHub `main`):**
-
-- Commit `460ce60d845b508780bdda72a66ce50fe1782b8e` — `feat(auth): implement login abuse protection with rate limiting and cleanup`. The implementation is now accessible in GitHub; this resolves uncertainty about whether the handoff was pushed, **not** the pending independent QA verification.
-- PostgreSQL-backed LOGIN counters use independent `SOURCE` and `ACCOUNT` dimensions with committed attempt reservations: `SOURCE` 30 attempts/60 seconds, `ACCOUNT` 10 attempts/900 seconds. Counter persistence failure fails closed.
-- `ACCOUNT` counter identifiers use HMAC-SHA256 of the canonical login identifier. Known/unknown accounts use generic authentication failure and dummy Argon2id verification-class work; equivalent observable anti-abuse behavior remains subject to independent QA acceptance.
-- The pushed work includes Login HTTP integration, secure HttpOnly session-cookie issuance on successful session creation, and release of the successful login's ACCOUNT reservation after session commit. This is **not** acceptance of the complete M3 session lifecycle, browser CSRF or final authentication security.
-- Login counter cleanup runs separately from request processing, with PostgreSQL time, `FOR UPDATE SKIP LOCKED`, 24-hour retention measured after window expiry, at most 500 rows/batch and 20 batches/invocation. **No dedicated Login cleanup runner or deployed scheduler is established by this commit.** Scheduler, execution and backlog monitoring remain a Pre-External-Use Gate under AQ-014.
-- CI for this pushed commit: https://github.com/phansa2543/kijflow/actions/runs/39762862484 — **GitHub Actions backend job SUCCESS**. Success of automated CI does **not** imply the QA gate has passed.
-
-**Founder-reported local tests (not independent QA evidence):** Login Counter Persistence 8 passed; Login Rate Limit 13 passed; Login Counter Identifier 11 passed; Login HTTP Integration 9 passed; Login Counter Cleanup 6 passed. **47 passed in these reported suites.**
-
-**Independent QA verdict: FAIL — QA Verification Gate Not Satisfied.** QA did not establish a new confirmed authentication exploit; acceptance is blocked by defects/evidence gaps. Findings:
-
-- **F1 — Confirmed defect in pushed test baseline:** `backend/tests/conftest.py` guards `TEST_DATABASE_URL` versus `DATABASE_URL` using plain string equality; different connection URL spellings can target the same development database. Require robust test/development database identity isolation.
-- **F2 — Evidence blocker at QA review:** QA had not inspected the latest local source. The implementation is now verifiably on GitHub at the commit above, so submit the **exact pushed commit** for independent QA review; do not claim F2 or the security contract verified until QA confirms.
-- **F3 — Coverage gap:** `SKIP LOCKED` cleanup test needs stronger assertions showing the locked row is skipped and subsequently deletable after the lock is released.
-- **F4 — Informational:** the reported 47 local test passes do not constitute independent QA sign-off.
-
-**Required next actions before Step 6 closure:** (1) remediate F1 safely; (2) strengthen F3; (3) review and verify startup fail-closed behavior for `LOGIN_COUNTER_HMAC_SECRET` (current runtime loading alone is not startup verification); (4) push the amended source and tests; (5) rerun relevant/full regression and CI; (6) obtain independent QA review and PASS on the exact latest code; (7) seek Founder final closure approval. **Step 6 must remain OPEN until those gates are met.**
-
-**Scope stays unchanged:** Registration Cleanup B2 remains QA CLOSED; do not reopen it. No M4, Business Module, new cleanup scheduler/framework or authentication architecture change is authorized.
+- PostgreSQL-backed Login `SOURCE` and `ACCOUNT` throttling is implemented, with independently committed reservations, fail-closed persistence, HMAC-SHA256 account keys, generic known/unknown failure handling, successful-session ACCOUNT reservation release and separate Login counter cleanup.
+- Default thresholds are SOURCE **30 attempts/60 seconds** and ACCOUNT **10 attempts/900 seconds**, now adjustable using validated positive runtime configuration.
+- **F1, F2, F3: RESOLVED.** Test DB isolation protects against alternate URL spellings; exact pushed source was independently reviewed; PostgreSQL `SKIP LOCKED` test confirms locked-row skipping and subsequent deletion after unlock. The original 47 passed was Founder-reported local evidence, not independent acceptance.
+- **B1, B2, B3: RESOLVED / QA PASS.** Root `.env` loads before secret and limiter configuration validation and before database engine creation; missing/invalid HMAC secret fails closed; database engine creates/disposes exactly once. Rate thresholds/windows load from runtime settings and are exercised in HTTP tests. Adversarial repeated known/unknown account attempts produce equivalent 401 through attempts 1–10 and 429 on attempt 11, without session issuance or account-enumeration disclosure.
+- **No remaining Step 6 blockers.** The QA PASS is limited to Step 6 and is not final M3 Session, browser/CSRF, Password Screening, or full M3 acceptance.
+- **Next Engineering Mentor work:** review the remaining accepted M3 Session contract and existing source before new implementation. In particular, resolve the known mismatch: current session lifetime and cookie `max_age` are **7 days**, whereas the approved default is approximately **24 hours**, configurable, with consistent authoritative server expiry and cookie lifetime. Then continue session validation/expiry, trusted current-User, current-session logout/revocation, CSRF and minimum browser auth integration with their required tests/QA. Do not imply that any of those are already complete.
+- Registration Counter Cleanup B2 remains CLOSED. External Registration/Login cleanup scheduling and monitoring remain the AQ-014 Pre-External-Use Gate; no new worker/scheduler framework, M4, or architecture change is authorized.
 
 ### Verified M3 Progress — 2026-10-21 (Step 5.9 Cut-off)
 
@@ -199,11 +185,11 @@ Limitations:
 
 ## Current Implementation Step
 
-**M3 Step 6 — Login Abuse Protection: IMPLEMENTATION COMPLETE; QA REMEDIATION REQUIRED; NOT CLOSED.**
+**M3 Step 6 — Login Abuse Protection: CLOSED (Independent QA PASS; Founder Approved 2026-10-23).** Verified implementation commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952` and CI run `39890237054` (315 passed, 1 skipped). F1–F3 and B1–B3 are resolved. This does not close M3.
 
-Follow the F1–F4 QA remediation and startup-secret verification checklist in the current 2026-10-22 checkpoint above. The implementation is pushed at `460ce60d845b508780bdda72a66ce50fe1782b8e`, and CI passed, but neither the reported 47 local test results nor CI success replaces independent Security/QA acceptance. Founder must approve Step 6 closure after the new committed baseline is independently reviewed.
+**Next: remaining M3 Session work.** Engineering Mentor should first inspect existing session/login implementation and approved M3 Session acceptance criteria, then address the 7-day versus configurable approximately 24-hour initial-default session lifetime mismatch, ensuring server `expires_at` and cookie `max_age` are consistent. Continue session validation, expiry, current User, server-side logout/revocation, CSRF and browser authentication integration as scheduled by the approved M3 scope. Request independent verification at the relevant gates.
 
-Do not proceed as though Step 6 is accepted, expand M3 scope or reopen B2. Engineering Mentor should guide the Founder through the focused fixes and tests, followed by new QA review. Other M3 authentication/session/browser/security work remains unfinished.
+Do not reopen B2/Step 6, add M4 functionality or treat pending external cleanup operations as a blocker to internal M3.
 
 ## Password Screening — Development Status and Release Gates
 

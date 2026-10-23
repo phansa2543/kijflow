@@ -1087,17 +1087,14 @@ Founder implementation is now the current engineering step.
 
 ## Latest M3 Implementation Progress
 
-**2026-10-22 — Step 6 Login Abuse Protection: IMPLEMENTATION COMPLETE / QA REMEDIATION REQUIRED / NOT CLOSED. M3 remains IN PROGRESS.**
+**2026-10-23 — Step 6 Login Abuse Protection CLOSED — Independent QA PASS and Founder Approval. M3 remains IN PROGRESS.**
 
-- **Pushed baseline:** GitHub `main` commit `460ce60d845b508780bdda72a66ce50fe1782b8e` (`feat(auth): implement login abuse protection with rate limiting and cleanup`). The code is accessible for QA review. GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/39762862484 **SUCCESS**, but CI is not independent QA acceptance.
-- Step 5.9 Login Core and transactional Session Creation foundation remain implemented. Step 6 introduces PostgreSQL SOURCE (30/60s) and ACCOUNT (10/900s) login counters, committed reservations, fail-closed limiter persistence, HMAC-SHA256 account identifiers, enumeration-conscious login errors/dummy Argon2id work, Login HTTP integration and Secure HttpOnly session cookie issuance.
-- Login counter cleanup is implemented outside the Login request path (24 hours after window expiry, PostgreSQL time, `FOR UPDATE SKIP LOCKED`, 500 rows/batch, 20 batches/run); a dedicated runner/deployed scheduler is not established. Registration Counter Cleanup **B2 remains QA CLOSED**. Deployment of cleanup execution/monitoring is deferred under AQ-014.
-- **Founder-reported local Step 6 tests: 47 passed** across Login Counter Persistence (8), Login Rate Limit (13), Login Counter Identifier (11), Login HTTP Integration (9) and Login Counter Cleanup (6). These are local evidence, not independent QA sign-off.
-- **Independent QA verdict: FAIL — QA Verification Gate Not Satisfied.** F1: test database guard only compares URL strings and may permit access to the development DB under alternate URL forms (confirmed defect). F2: latest source still requires direct QA review, although it is now pushed. F3: `SKIP LOCKED` test does not yet fully prove locked-row skip and later deletion. F4: local 47 PASS is informational, not QA sign-off.
-- **Next:** fix F1; strengthen F3; verify startup fail-closed for `LOGIN_COUNTER_HMAC_SECRET`; push updated source/tests; rerun regression/CI; obtain independent QA PASS; and request Founder approval to close Step 6. No scope change or architecture redesign.
-- Other M3 session validation/expiry, logout/revocation, CSRF/browser integration and final security acceptance remain pending. DEC-009/AQ-016 third-party pre-external-release obligations and separate Password Screening security sign-off remain tracked independently.
-
-**Step 6 is OPEN.** Do not describe CI success as QA PASS or proceed as if the step has final acceptance. Global M3 authentication remains distinct from Organization Membership and tenant authorization.
+- **Verified source:** GitHub `main` commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952`. GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/39890237054 **SUCCESS: 315 passed, 1 skipped**.
+- Independent QA focused delta review accepted Step 6: F1/F2/F3 and B1/B2/B3 **RESOLVED**. The Founder explicitly approved Step 6 closure on 2026-10-23. Previous 47 passed was Founder-reported local evidence, not the QA verdict.
+- Login protections cover independently committed PostgreSQL `SOURCE` and `ACCOUNT` counters; default SOURCE 30/60s and ACCOUNT 10/900s thresholds/windows now have validated runtime configuration. HMAC-SHA256 account identifiers, fail-closed startup/persistence, equivalent known/unknown throttling, HTTP session issuance, success-path ACCOUNT release and separate counter cleanup are implemented and covered by the Step 6 acceptance.
+- **Known outstanding M3 Session mismatch:** Login currently uses 7-day server Session lifetime and cookie `max_age`, while approved Session design requires configurable absolute lifetime with an initial default of approximately 24 hours. This was explicitly excluded from Step 6 closure and must be fixed before final M3 acceptance.
+- **Next:** Engineering Mentor should inspect accepted M3 Session design/current code and guide the Founder through the Session lifetime correction, session validation/expiry, trusted current-User, current-session logout/revocation and remaining CSRF/browser/security integration. Do not treat Step 6 QA PASS as full M3 acceptance.
+- Registration Counter Cleanup B2 stays CLOSED. External cleanup scheduling/monitoring and third-party screening release obligations remain separately deferred under AQ-014/AQ-016. Do not introduce M4, Business Modules or unrelated infrastructure.
 
 ## Phase 1 Functional Frontend Requirement
 
