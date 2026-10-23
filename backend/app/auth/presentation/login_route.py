@@ -114,7 +114,9 @@ async def login(payload: LoginRequest, request: Request):
 
     session_handler = make_session_creation_handler(
         engine=engine,
-        session_lifetime=timedelta(days=7),
+        session_lifetime=timedelta(
+            seconds=request.app.state.session_lifetime_seconds
+        ),
     )
 
     try:
@@ -152,7 +154,7 @@ async def login(payload: LoginRequest, request: Request):
         httponly=True,
         secure=True,
         samesite="lax",
-        max_age=7 * 24 * 60 * 60,
+        max_age=request.app.state.session_lifetime_seconds,
         path="/",
     )
 

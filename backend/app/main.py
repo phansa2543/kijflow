@@ -32,6 +32,11 @@ async def lifespan(app: FastAPI):
     project_root = Path(__file__).resolve().parents[2]
     load_dotenv(project_root / ".env")
 
+    session_lifetime_seconds = read_positive_int(
+        "SESSION_LIFETIME_SECONDS",
+        86400,
+    )
+
     load_login_counter_hmac_secret()
 
     source_limit = read_positive_int("LOGIN_SOURCE_LIMIT", 30)
@@ -54,6 +59,7 @@ async def lifespan(app: FastAPI):
             app.state.login_source_window_seconds = source_window
             app.state.login_account_limit = account_limit
             app.state.login_account_window_seconds = account_window
+            app.state.session_lifetime_seconds = session_lifetime_seconds
             yield
     finally:
         engine.dispose()
