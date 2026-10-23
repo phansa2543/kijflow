@@ -1087,14 +1087,13 @@ Founder implementation is now the current engineering step.
 
 ## Latest M3 Implementation Progress
 
-**2026-10-23 — Step 6 Login Abuse Protection CLOSED — Independent QA PASS and Founder Approval. M3 remains IN PROGRESS.**
+**2026-10-23 — Session Lifetime pushed / CI confirmed; independent QA PENDING. M3 remains IN PROGRESS.**
 
-- **Verified source:** GitHub `main` commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952`. GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/39890237054 **SUCCESS: 315 passed, 1 skipped**.
-- Independent QA focused delta review accepted Step 6: F1/F2/F3 and B1/B2/B3 **RESOLVED**. The Founder explicitly approved Step 6 closure on 2026-10-23. Previous 47 passed was Founder-reported local evidence, not the QA verdict.
-- Login protections cover independently committed PostgreSQL `SOURCE` and `ACCOUNT` counters; default SOURCE 30/60s and ACCOUNT 10/900s thresholds/windows now have validated runtime configuration. HMAC-SHA256 account identifiers, fail-closed startup/persistence, equivalent known/unknown throttling, HTTP session issuance, success-path ACCOUNT release and separate counter cleanup are implemented and covered by the Step 6 acceptance.
-- **Known outstanding M3 Session mismatch:** Login currently uses 7-day server Session lifetime and cookie `max_age`, while approved Session design requires configurable absolute lifetime with an initial default of approximately 24 hours. This was explicitly excluded from Step 6 closure and must be fixed before final M3 acceptance.
-- **Next:** Engineering Mentor should inspect accepted M3 Session design/current code and guide the Founder through the Session lifetime correction, session validation/expiry, trusted current-User, current-session logout/revocation and remaining CSRF/browser/security integration. Do not treat Step 6 QA PASS as full M3 acceptance.
-- Registration Counter Cleanup B2 stays CLOSED. External cleanup scheduling/monitoring and third-party screening release obligations remain separately deferred under AQ-014/AQ-016. Do not introduce M4, Business Modules or unrelated infrastructure.
+- Step 6 Login Abuse Protection remains **CLOSED** following Independent QA PASS and Founder approval; Registration Counter Cleanup B2 also remains CLOSED.
+- **Verified GitHub source:** `a37823064e490e444a4b2e39c5171ebea433061e`, Actions https://github.com/phansa2543/kijflow/actions/runs/39960308775 **SUCCESS**.
+- Founder implemented validated `SESSION_LIFETIME_SECONDS` with **86400 seconds / 24 hours** as initial default. Session `expires_at` and HTTP cookie `max_age` use the shared configured lifetime. Invalid configuration fails before database-engine creation. Founder reported **6 focused tests passed** and full local backend regression **321 passed, 1 skipped**; formal independent QA acceptance is not yet evidenced.
+- **Follow-up:** root `.env.example` currently does not contain `SESSION_LIFETIME_SECONDS`, despite the handoff claiming an example update. Engineering Mentor should verify/update this documentation/configuration example during follow-up.
+- **Next:** Session Validation / Expiration, trusted current User, logout/revocation and remaining cookie/CSRF/browser authentication and security QA. Password Screening independent technical QA remains separately pending. External cleanup scheduling and commercial screening terms remain AQ-014/AQ-016 gates; do not expand into M4.
 
 ## Phase 1 Functional Frontend Requirement
 

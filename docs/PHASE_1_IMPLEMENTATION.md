@@ -39,6 +39,17 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Session Lifetime Implementation — 2026-10-23 (Verification Pending Independent QA)
+
+**Status: Founder-implemented, pushed and GitHub CI-confirmed; independent Session Lifetime QA/acceptance PENDING.** This checkpoint is newer than the Step 6 closure snapshot below; **M3 remains IN PROGRESS**.
+
+- Latest reviewed source on GitHub `main`: `a37823064e490e444a4b2e39c5171ebea433061e` (`fix(auth): configure consistent session lifetime`). GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/39960308775 completed **SUCCESS** at that exact head SHA.
+- `SESSION_LIFETIME_SECONDS` is a validated positive-integer runtime setting, initially **86400 seconds (24 hours)**. Login applies the configured duration to persisted Session expiry and the cookie `max_age`; invalid configuration fails startup before database-engine creation. These implementation statements are supported by the pushed source and tests, but are **not independent QA acceptance**.
+- Founder-reported local evidence: **6 session-lifetime tests passed**; full backend regression **321 passed, 1 skipped**. This full-suite count is Founder-reported and is not substituted for an independent QA review.
+- **Documentation/reproducibility follow-up:** the latest root `.env.example` was inspected and does **not** list `SESSION_LIFETIME_SECONDS`, contrary to the Engineer Mentor handoff. Verify/add this optional runtime setting to the example and relevant setup guidance, with no secret value.
+- **Next:** Engineering Mentor to obtain focused review of Session Lifetime and configuration example, then proceed within approved M3 scope to **Session Validation / Expiration**, trusted current-User resolution, current-session logout/revocation, browser cookie/CSRF integration and required regression/security QA. Do not mark Session Lifetime formally CLOSED until its applicable acceptance gate passes.
+- Step 6 Login Abuse Protection and Registration Counter Cleanup B2 remain CLOSED; no M4 or unrelated infrastructure work.
+
 ### Current M3 Progress — 2026-10-23 (Step 6 Founder Closure)
 
 **Step 6 — Login Abuse Protection: CLOSED — Founder Approved.** Independent QA focused delta review **PASS** on exact GitHub `main` commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952`; corresponding GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/39890237054 **SUCCESS — 315 passed, 1 skipped**. Founder explicitly authorized Step 6 closure on 2026-10-23. **M3 remains IN PROGRESS**; this closure is only for Step 6.
@@ -185,11 +196,11 @@ Limitations:
 
 ## Current Implementation Step
 
-**M3 Step 6 — Login Abuse Protection: CLOSED (Independent QA PASS; Founder Approved 2026-10-23).** Verified implementation commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952` and CI run `39890237054` (315 passed, 1 skipped). F1–F3 and B1–B3 are resolved. This does not close M3.
+**Step 6 — Login Abuse Protection: CLOSED** (Independent QA PASS, Founder Approved; implementation commit `b7aac2eae0b8bbf8f163992e2f3eda9f62f4d952`).
 
-**Next: remaining M3 Session work.** Engineering Mentor should first inspect existing session/login implementation and approved M3 Session acceptance criteria, then address the 7-day versus configurable approximately 24-hour initial-default session lifetime mismatch, ensuring server `expires_at` and cookie `max_age` are consistent. Continue session validation, expiry, current User, server-side logout/revocation, CSRF and browser authentication integration as scheduled by the approved M3 scope. Request independent verification at the relevant gates.
+**Session Lifetime: implemented, pushed and CI SUCCESS at `a37823064e490e444a4b2e39c5171ebea433061e`; independent QA acceptance pending.** Default 86400 seconds (24 hours) is applied consistently to server Session lifetime and cookie `max_age`; configuration must be a positive integer. Follow up on the missing `SESSION_LIFETIME_SECONDS` entry in the root `.env.example`.
 
-Do not reopen B2/Step 6, add M4 functionality or treat pending external cleanup operations as a blocker to internal M3.
+**Next: Session Validation / Expiration.** Engineering Mentor should inspect the approved M3 session validity/fail-closed contract and latest implementation before guiding Founder changes. Subsequent M3 work includes trusted current User, current-session logout/revocation, cookie/CSRF and browser integration, Password Screening technical QA and final M3 QA. Do not reopen closed Step 6 or B2 without a verified new defect.
 
 ## Password Screening — Development Status and Release Gates
 
