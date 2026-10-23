@@ -31,7 +31,6 @@ def read_positive_int(name: str, default: int) -> int:
 async def lifespan(app: FastAPI):
     project_root = Path(__file__).resolve().parents[2]
     load_dotenv(project_root / ".env")
-    load_dotenv(project_root / ".env")
 
     load_login_counter_hmac_secret()
 
@@ -41,7 +40,6 @@ async def lifespan(app: FastAPI):
     account_window = read_positive_int("LOGIN_ACCOUNT_WINDOW_SECONDS", 900)
 
     engine = create_database_engine()
-    load_login_counter_hmac_secret()
 
     try:
         with httpx.Client() as hibp_client:
