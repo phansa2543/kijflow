@@ -475,3 +475,144 @@ def test_oversized_registration_body_consumes_quota(engine, monkeypatch):
                 """),
                 {"client_ip": client_ip},
             )
+
+def test_csrf_rejected_registration_consumes_source_quota(
+    engine, monkeypatch
+):
+    from ipaddress import ip_address
+
+    suffix = uuid.uuid4().hex[:24]
+    groups = ":".join(
+        suffix[i:i + 4] for i in range(0, 24, 4)
+    )
+    client_ip = str(ip_address(f"2001:db8:{groups}"))
+
+    monkeypatch.setattr(app.state, "db_engine", engine, raising=False)
+    monkeypatch.setattr(
+        app.state, "registration_rate_limit_threshold", 10,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        app.state, "registration_rate_limit_window_seconds", 900,
+        raising=False,
+    )
+
+    try:
+        client = TestClient(
+            app,
+            client=(client_ip, 12345),
+        )
+
+        try:
+            response = client.post(
+                "/auth/register",
+                json={
+                    "email": "csrf-registration@example.com",
+                    "password": "ExamplePassword123!",
+                },
+                headers={"Origin": "https://evil.example"},
+            )
+        finally:
+            client.close()
+
+        assert response.status_code == 403
+        assert "set-cookie" not in response.headers
+
+        with engine.connect() as connection:
+            count = connection.execute(
+                text("""
+                    SELECT COALESCE(SUM(attempt_count), 0)
+                    FROM auth_registration_attempt_counters
+                    WHERE client_ip = CAST(:client_ip AS inet)
+                      AND window_seconds = 900
+                """),
+                {"client_ip": client_ip},
+            ).scalar_one()
+
+        assert count == 1
+
+    finally:
+        with engine.begin() as connection:
+            connection.execute(
+                text("""
+                    DELETE FROM auth_registration_attempt_counters
+                    WHERE client_ip = CAST(:client_ip AS inet)
+                """),
+                {"client_ip": client_ip},
+            )
+
+def test_csrf_rejected_registration_does_not_create_user_or_credential(
+    engine, monkeypatch
+):
+    from ipaddress import ip_address
+
+    suffix = uuid.uuid4().hex[:24]
+    groups = ":".join(
+        suffix[i:i + 4] for i in range(0, 24, 4)
+    )
+    client_ip = str(ip_address(f"2001:db8:{groups}"))
+    email = f"csrf-rejected-{uuid.uuid4().hex}@example.com"
+
+    monkeypatch.setattr(app.state, "db_engine", engine, raising=False)
+    monkeypatch.setattr(
+        app.state, "registration_rate_limit_threshold", 10,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        app.state, "registration_rate_limit_window_seconds", 900,
+        raising=False,
+    )
+
+    with engine.connect() as connection:
+        users_before = connection.execute(
+            select(func.count()).select_from(User)
+        ).scalar_one()
+        credentials_before = connection.execute(
+            select(func.count()).select_from(UserPasswordCredential)
+        ).scalar_one()
+
+    try:
+        client = TestClient(app, client=(client_ip, 12345))
+
+        try:
+            response = client.post(
+                "/auth/register",
+                json={
+                    "email": email,
+                    "password": "ExamplePassword123!",
+                },
+                headers={"Origin": "https://evil.example"},
+            )
+        finally:
+            client.close()
+
+        assert response.status_code == 403
+        assert "set-cookie" not in response.headers
+
+        with engine.connect() as connection:
+            users_after = connection.execute(
+                select(func.count()).select_from(User)
+            ).scalar_one()
+            credentials_after = connection.execute(
+                select(func.count()).select_from(UserPasswordCredential)
+            ).scalar_one()
+
+            matching_credential = connection.execute(
+                select(UserPasswordCredential.user_id).where(
+                    UserPasswordCredential.email == email
+                )
+            ).scalar_one_or_none()
+
+        assert users_after == users_before
+        assert credentials_after == credentials_before
+        assert matching_credential is None
+
+    finally:
+        with engine.begin() as connection:
+            connection.execute(
+                text("""
+                    DELETE FROM auth_registration_attempt_counters
+                    WHERE client_ip = CAST(:client_ip AS inet)
+                """),
+                {"client_ip": client_ip},
+            )

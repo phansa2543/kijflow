@@ -1,5 +1,6 @@
 import uuid, pytest
 
+from ipaddress import ip_address
 from types import SimpleNamespace
 from unittest.mock import patch
 from functools import partial
@@ -1086,3 +1087,144 @@ def test_duplicate_origin_cannot_reach_login_handler():
     source_limiter.assert_called_once()
     handler_factory.assert_not_called()
     assert "set-cookie" not in response.headers
+
+def test_csrf_rejected_login_consumes_source_quota(engine, monkeypatch):
+    suffix = uuid.uuid4().hex[:24]
+    groups = ":".join(
+        suffix[i:i + 4] for i in range(0, 24, 4)
+    )
+    source = str(ip_address(f"2001:db8:{groups}"))
+
+    monkeypatch.setenv("LOGIN_COUNTER_HMAC_SECRET", "a1" * 32)
+    monkeypatch.setattr(
+        app.state, "db_engine", engine, raising=False
+    )
+    monkeypatch.setattr(
+        app.state,
+        "login_source_window_seconds",
+        60,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        app.state,
+        "login_source_limit",
+        30,
+        raising=False,
+    )
+
+    query = text("""
+        SELECT COALESCE(SUM(attempt_count), 0)
+        FROM auth_login_attempt_counters
+        WHERE dimension = 'SOURCE'
+          AND identifier = :source
+    """)
+
+    try:
+        with engine.connect() as connection:
+            before = connection.execute(
+                query, {"source": source}
+            ).scalar_one()
+
+        assert before == 0
+
+        client = TestClient(
+            app,
+            client=(source, 50000),
+        )
+
+        try:
+            response = client.post(
+                "/auth/login",
+                json={
+                    "email": "csrf-test@example.com",
+                    "password": "ExamplePassword123!",
+                },
+                headers={"Origin": "https://evil.example"},
+            )
+        finally:
+            client.close()
+
+        assert response.status_code == 403
+        assert "set-cookie" not in response.headers
+
+        with engine.connect() as connection:
+            after = connection.execute(
+                query, {"source": source}
+            ).scalar_one()
+
+        assert after == 1
+
+    finally:
+        with engine.begin() as connection:
+            connection.execute(
+                text("""
+                    DELETE FROM auth_login_attempt_counters
+                    WHERE dimension = 'SOURCE'
+                      AND identifier = :source
+                """),
+                {"source": source},
+            )
+
+def test_csrf_rejected_login_does_not_create_session(engine, monkeypatch):
+    from ipaddress import ip_address
+    from sqlalchemy import func
+
+    suffix = uuid.uuid4().hex[:24]
+    groups = ":".join(
+        suffix[i:i + 4] for i in range(0, 24, 4)
+    )
+    source = str(ip_address(f"2001:db8:{groups}"))
+
+    email = f"csrf-login-{uuid.uuid4().hex}@example.com"
+
+    monkeypatch.setattr(app.state, "db_engine", engine, raising=False)
+    monkeypatch.setattr(
+        app.state, "login_source_window_seconds", 60, raising=False
+    )
+    monkeypatch.setattr(
+        app.state, "login_source_limit", 30, raising=False
+    )
+
+    with engine.connect() as connection:
+        before = connection.execute(
+            select(func.count()).select_from(AuthSession)
+        ).scalar_one()
+
+    try:
+        client = TestClient(
+            app,
+            client=(source, 50000),
+        )
+
+        try:
+            response = client.post(
+                "/auth/login",
+                json={
+                    "email": email,
+                    "password": "ExamplePassword123!",
+                },
+                headers={"Origin": "https://evil.example"},
+            )
+        finally:
+            client.close()
+
+        assert response.status_code == 403
+        assert "set-cookie" not in response.headers
+
+        with engine.connect() as connection:
+            after = connection.execute(
+                select(func.count()).select_from(AuthSession)
+            ).scalar_one()
+
+        assert after == before
+
+    finally:
+        with engine.begin() as connection:
+            connection.execute(
+                text("""
+                    DELETE FROM auth_login_attempt_counters
+                    WHERE dimension = 'SOURCE'
+                      AND identifier = :source
+                """),
+                {"source": source},
+            )
