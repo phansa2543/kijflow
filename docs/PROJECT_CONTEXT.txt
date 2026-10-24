@@ -1438,3 +1438,15 @@ When these documents conflict, the conflict must be resolved rather than silentl
 Accepted Founder decisions recorded in DECISION_LOG are authoritative for architecture and product direction.
 
 Approved implementation-level design for the current milestone must remain consistent with those decisions.
+
+---
+
+# Current Checkpoint — M3 Frontend Foundation Pause (2026-10-24)
+
+Founder requested a pause before further handoffs or frontend implementation. M3 remains IN PROGRESS; M4 is NOT authorized.
+
+M3 Browser Authentication UX direction (Register, Login, authenticated pre-tenant and recovery behavior) passed Independent QA and received Founder approval. FD-1 GET /auth/session was also Founder-approved as a minimal read-only contract (204 / 401 / 503, no-store, existing PostgreSQL session authority). Neither approval establishes frontend implementation completion.
+
+Founder selected a visual direction in principle: **modern minimal purple**, **light mode first**, with a **custom MUI theme rather than a custom theme engine**. Founder proposed **Material UI** as Kijflow's UI component library; its technical adoption is **pending Tech Lead compatibility/maintainability review and final approval**. Tech Lead's earlier Tailwind CSS v4 + native-components proposal is a reviewed recommendation, not an accepted foundation decision.
+
+To resume: Tech Lead MUI technical review -> Product/UX concrete theme specification -> Independent QA combined review -> Founder approval -> Engineering Mentor-guided Founder implementation. No UI implementation is authorized during this pause. Detailed rationale and pending gates are in DECISION_LOG.
