@@ -1451,3 +1451,19 @@ Founder explicitly APPROVED the M3 Frontend Design Package and authorized **Foun
 - **Implementation gates remain:** rendered border/focus-ring contrast after alpha blending, Thai/English font loading, mobile keyboard/touch/keyboard accessibility, backend authoritative NFC-normalized Unicode code-point password limits (do not substitute JavaScript string.length/HTML maxlength), and actual FD-1/CSRF/cookie/browser regression. No raw session token access or frontend authentication authority.
 - **Next:** Engineering Mentor guides Founder to verify package versions, install MUI/Emotion official App Router integration, implement one theme and verify `npm ci`, `npm run lint`, `npm run build` prior to incremental M3 Register/Login/Pre-tenant/Logout/recovery interfaces. FD-1 contract was design-approved separately; verify its implementation before frontend session-state integration. Independent implementation/browser QA and Founder closure are still required.
 
+
+---
+
+# Current Checkpoint — M3 Frontend Theme Foundation Paused (2026-10-24)
+
+**M3 IN PROGRESS — FOUNDER-REQUESTED IMPLEMENTATION PAUSE. MUI Theme Foundation IMPLEMENTED / ACCEPTANCE PENDING.** This is a work-status checkpoint; it does not revoke the earlier Founder-approved M3 frontend design, reopen closed backend security workstreams, or authorize M4.
+
+**Implementation repository evidence:** Founder pushed frontend Theme Foundation commit `5fb676bfaab0ba7e54436243b36104d691c47074` to `main`. Commit changes are limited to `frontend/app/globals.css`, `frontend/app/layout.tsx`, `frontend/app/page.tsx`, `frontend/app/theme.ts`, `frontend/package.json`, and `frontend/package-lock.json`. It adds MUI/Emotion, official Next.js App Router provider wiring, one custom light Kijflow theme, Noto Sans Thai and a temporary MUI smoke-test page. The smoke test is **not** an approved M3 Registration/Login screen.
+
+**Founder / Engineering Mentor local verification evidence:** `npm ci`, `npm run lint`, `npm run build` reportedly passed; Next.js dev page rendered MUI components, primary purple, light background and Thai text. Desktop and 375x812 mobile layouts were visually reviewed without apparent horizontal overflow. Desktop measured viewport/document/body heights 1014px, no vertical overflow; mobile overflow not independently measured. A previous `sw.js` browser error disappeared after unregistering an existing service worker, with no confirmed MUI/Emotion defect. Versions reported: Next 16.4.3; React/React DOM 19.3.0; Material UI and MUI Next.js 9.5.0; Emotion react 11.14.0, styled 11.14.1, cache 11.14.0.
+
+**Acceptance boundary:** Pushed implementation is not equivalent to Independent QA PASS. No independent accessibility/browser acceptance or Theme Foundation closure is established. Do not silently mark this slice CLOSED. CI outcome for the implementation commit has not been established in this checkpoint.
+
+**Resume point, only when Founder lifts pause:** `M3 Frontend → MUI Theme Foundation → Focus State / Accessibility Verification`. Check actual rendered TextField normal/hover/focus border and focus ring contrast after alpha blending, visible keyboard focus, accessible names, remaining mobile/responsive and SSR/hydration behavior. Review pushed diff and CI evidence; request Independent QA. Do not repeat completed install/build activity without evidence of need. Do not begin Register/Login/Logout screens before the Foundation review gate is satisfied.
+
+**Scope remains:** M3 only; no Organization/Membership/tenant UI, M4, Tailwind/MUI X/custom theme engine, or backend authentication architecture changes.
