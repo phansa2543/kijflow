@@ -1087,15 +1087,12 @@ Founder implementation is now the current engineering step.
 
 ## Latest M3 Implementation Progress
 
-**2026-10-24 — Current-session Logout / Server-side Revocation implemented / pushed / GitHub CI SUCCESS / Independent QA PENDING. M3 remains IN PROGRESS.**
+**2026-10-24 — Cookie/CSRF Backend Security CLOSED — Independent Security QA PASS / Founder Approved at `aee8453e7efeab7c51d21894b1d1932e82fd222d`. M3 remains IN PROGRESS.**
 
-- Registration Counter Cleanup B2 and Login Abuse Protection Step 6 remain **CLOSED**.
-- **Session Lifetime:** `a378230` CI SUCCESS / Independent QA PENDING.
-- **Session Validation Persistence:** `5a36cc2` CI SUCCESS / Independent QA PENDING.
-- **Raw Session Token Validation + Resolution:** `f1ca0cc` CI SUCCESS / Independent QA PENDING.
-- **Trusted Current-User HTTP Dependency:** `f742d4f` CI SUCCESS / Independent QA PENDING.
-- **Current-session Logout / Revocation:** `b6ff4007600efa16aa8edbf0fc6d183b3c8eb1df`; GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/40056785711 **SUCCESS**. Founder implemented PostgreSQL revocation of the active current Session, invalidation of its raw token, preservation of other Sessions and cookie clearing only after committed revocation. Founder-reported local full regression **380 passed, 1 skipped**. Independent QA PENDING.
-- **Next:** Cookie / CSRF Security for state-changing registration, login and logout endpoints, then minimum real Next.js browser workflows, recovery, browser integration and final M3 QA. SameSite alone is not the accepted CSRF solution; independent Password Screening technical QA remains pending. AQ-014/AQ-016 release gates unchanged.
+- Backend strict trusted-Origin protection for Registration, Login and Logout, cross-site persistence-negative tests, SOURCE counter accounting, fail-closed trusted-Origin startup and required cookie attributes passed focused Independent Security QA. CI run https://github.com/phansa2543/kijflow/actions/runs/40073114863 **SUCCESS**; Founder-reported local regression **447 passed, 1 skipped**.
+- **M3 Browser Integration remains OPEN:** approved development direction Browser/Next.js `http://localhost:3000` → Next.js Same-Origin Rewrite/Proxy → FastAPI `http://127.0.0.1:8000`; `TRUSTED_FRONTEND_ORIGIN=http://localhost:3000`. Rewrite, real-browser workflows, actual Origin/Cookie forwarding, Secure cookie behavior, browser CSRF checks, authenticated pre-tenant state and session expiry/recovery are not accepted by backend closure.
+- Registration Counter Cleanup B2 and Login Abuse Protection Step 6 remain CLOSED. Session Lifetime (`a378230`), Session Validation Persistence (`5a36cc2`), Raw Token/Resolution (`f1ca0cc`), Trusted Current-User HTTP (`f742d4f`), Logout/Revocation (`b6ff400`) and Password Screening Technical Security retain their independent QA gates.
+- **Next:** Engineering Mentor guides Founder in small M3 browser integration slices. No M4, new framework or production deployment topology decision. AQ-014/AQ-016 release gates unchanged.
 
 ## Phase 1 Functional Frontend Requirement
 

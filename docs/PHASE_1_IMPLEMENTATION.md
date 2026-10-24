@@ -39,6 +39,18 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Cookie / CSRF Backend Security — 2026-10-24 (Founder Closure)
+
+**Status: CLOSED — Independent Security QA PASS / Founder APPROVED. Accepted implementation baseline `aee8453e7efeab7c51d21894b1d1932e82fd222d`. M3 remains IN PROGRESS.**
+
+- Strict trusted Origin validation on `POST /auth/register`, `POST /auth/login` and `POST /auth/logout` rejects untrusted/missing/null/duplicate Origin before the authentication handlers. Backend cross-site Login/Registration persistence-negative tests and Logout session-preservation tests were accepted by Independent QA.
+- PostgreSQL SOURCE abuse-counter accounting on CSRF rejection was independently reviewed and accepted; missing/invalid `TRUSTED_FRONTEND_ORIGIN` fails startup before engine creation. Required backend session-cookie contract: HttpOnly, Secure, SameSite=Lax, Path=/.
+- Implementation `0d5816c342937b04586b18fda846ed15a3bc30d3`, test configuration CI remediation `52ce266835868ea6a4ab0958cb456cd16ff4cf50` and focused security regression `aee8453e7efeab7c51d21894b1d1932e82fd222d`. GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/40073114863 **SUCCESS** on accepted baseline; Founder-reported local regression **447 passed, 1 skipped**.
+- Historical Login SOURCE counter discrepancy was not reproducible on the accepted baseline; no verified production defect was established. No need to reopen CLOSED Step 6 Login Abuse Protection or Registration Counter Cleanup B2.
+- **Closure boundary:** backend Cookie/CSRF Security only. **OPEN:** Next.js Same-Origin Rewrite/Proxy, real-browser registration/login/logout, browser cookies, Origin forwarding and browser CSRF/security regression, authenticated pre-tenant state and session expiry/recovery. Do not claim M3 or browser acceptance.
+- **Approved M3 development direction (not production topology):** Browser `http://localhost:3000` → Next.js same-origin rewrite/proxy → FastAPI `http://127.0.0.1:8000`; `TRUSTED_FRONTEND_ORIGIN=http://localhost:3000`. Browser integration must verify actual Origin/Cookie/Set-Cookie handling and Secure cookie behavior on localhost.
+- Session Lifetime, Session Validation Persistence, Raw Token/Resolution, Trusted Current-User HTTP Dependency, Logout/Revocation and Password Screening Technical Security retain their respective Independent QA gates unless separately accepted. AQ-014/AQ-016 pre-external-use gates unchanged; no M4 or additional architecture.
+
 ### Current-session Logout / Server-side Revocation — 2026-10-24
 
 **Status: Founder-implemented / pushed / GitHub CI SUCCESS / Independent QA PENDING — NOT CLOSED. M3 remains IN PROGRESS.**
@@ -247,7 +259,7 @@ Limitations:
 
 **Session Validation Persistence:** implemented at `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58`, GitHub Actions run `39972021451` SUCCESS; Independent QA pending. The current function validates an already-computed digest, not the raw cookie/token. Founder reports 6 focused tests and local full regression 325 passed, 1 skipped.
 
-**Raw Session Token Validation + Session Resolution:** implemented at `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`; CI run `40054387449` SUCCESS; Independent QA PENDING. These functions validate/resolve at infrastructure level and do not yet extract the HTTP session cookie. Founder-reported local regression: 350 passed, 1 skipped. **Trusted Current-User HTTP Dependency:** implemented and CI SUCCESS at `f742d4f1386ef63395cdc215ab4f126beb17d5e8` (run `40055301574`); Independent QA PENDING. **Current-session Logout / Revocation:** implemented and CI SUCCESS at `b6ff4007600efa16aa8edbf0fc6d183b3c8eb1df` (run `40056785711`), independent QA PENDING. **Next:** Cookie / CSRF Security for registration, login and logout, followed by Next.js browser integration. Do not mark pending subtasks CLOSED or expand to M4.
+**Raw Session Token Validation + Session Resolution:** implemented at `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`; CI run `40054387449` SUCCESS; Independent QA PENDING. These functions validate/resolve at infrastructure level and do not yet extract the HTTP session cookie. Founder-reported local regression: 350 passed, 1 skipped. **Trusted Current-User HTTP Dependency:** implemented and CI SUCCESS at `f742d4f1386ef63395cdc215ab4f126beb17d5e8` (run `40055301574`); Independent QA PENDING. **Current-session Logout / Revocation:** implemented and CI SUCCESS at `b6ff4007600efa16aa8edbf0fc6d183b3c8eb1df` (run `40056785711`), independent QA PENDING. **Cookie/CSRF Backend Security:** CLOSED — Independent Security QA PASS / Founder Approved at `aee8453e7efeab7c51d21894b1d1932e82fd222d`; CI run `40073114863` SUCCESS. **Next:** M3 Next.js Same-Origin Rewrite/Proxy and browser authentication integration. Browser security acceptance and M3 remain OPEN; do not mark other pending session QA subtasks CLOSED or expand to M4.
 
 ## Password Screening — Development Status and Release Gates
 
