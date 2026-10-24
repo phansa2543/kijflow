@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 
 from app.auth.infrastructure.registration_wiring import (
     make_registration_handler,
 )
 
+from app.auth.presentation.csrf import require_trusted_origin
 from app.auth.presentation.registration_limit_route import RegistrationLimitRoute
 from app.auth.presentation.schemas import (
     RegistrationRequest,
@@ -41,6 +42,7 @@ def registration_error(
     "/register",
     status_code=201,
     response_model=RegistrationResponse,
+    dependencies=[Depends(require_trusted_origin)],
 )
 def register(
     payload: RegistrationRequest,

@@ -1,4 +1,6 @@
-import uuid, httpx
+import uuid, httpx, pytest
+
+from functools import partial
 from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
@@ -9,6 +11,22 @@ from app.main import app
 from app.models.user import User
 from app.models.password_credential import UserPasswordCredential
 
+TRUSTED_TEST_ORIGIN = "http://localhost:3100"
+
+
+@pytest.fixture(autouse=True)
+def trusted_registration_origin(monkeypatch):
+    monkeypatch.setattr(
+        app.state,
+        "trusted_frontend_origin",
+        TRUSTED_TEST_ORIGIN,
+        raising=False,
+    )
+
+TestClient = partial(
+    TestClient,
+    headers={"Origin": TRUSTED_TEST_ORIGIN},
+)
 
 def test_http_registration_persists_user_and_credential(engine, monkeypatch):
 

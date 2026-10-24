@@ -1,5 +1,6 @@
 import pytest
 
+from functools import partial
 from sqlalchemy import create_engine
 
 from fastapi import FastAPI
@@ -14,6 +15,14 @@ from app.auth.application.errors import (
 )
 from app.auth.presentation.routes import router
 
+TRUSTED_TEST_ORIGIN = "http://localhost:3100"
+
+OriginalTestClient = TestClient
+
+TestClient = partial(
+    OriginalTestClient,
+    headers={"Origin": TRUSTED_TEST_ORIGIN},
+)
 
 @pytest.mark.parametrize(
     "error, status_code, message",
@@ -47,6 +56,7 @@ from app.auth.presentation.routes import router
 )
 def test_registration_error_mapping(error, status_code, message):
     app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
 
     app.state.db_engine = Mock()
@@ -91,6 +101,7 @@ def test_registration_error_mapping(error, status_code, message):
 
 def test_registration_success_response():
     app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
 
     app.state.db_engine = Mock()
@@ -138,6 +149,7 @@ def test_registration_success_response():
 
 def test_registration_limiter_unavailable_fails_closed():
     app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
 
     app.state.db_engine = Mock()
@@ -188,6 +200,7 @@ def test_registration_limiter_unavailable_fails_closed():
 
 def test_registration_database_unavailable_fails_closed():
     app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
 
     unavailable_engine = create_engine(
@@ -239,6 +252,7 @@ def test_missing_email_does_not_leak_password(caplog, capsys):
     secret = "B1_SECRET_TEST_MARKER_123"
 
     app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
 
     app.state.db_engine = Mock()
@@ -293,6 +307,7 @@ def test_invalid_password_type_does_not_leak_password(
     secret = "B1_SECRET_INVALID_TYPE_123"
 
     app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
 
     app.state.db_engine = Mock()
@@ -348,6 +363,7 @@ def test_malformed_json_does_not_leak_password(caplog, capsys):
     secret = "B1_SECRET_MALFORMED_JSON_123"
 
     app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
 
     app.state.db_engine = Mock()
@@ -401,3 +417,87 @@ def test_malformed_json_does_not_leak_password(caplog, capsys):
     limiter.assert_called_once()
     handler_factory.assert_not_called()
     handler.assert_not_called()
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        None,
+        "https://evil.example",
+        "null",
+        "http://localhost:3000",
+    ],
+)
+def test_untrusted_origin_cannot_reach_registration_handler(origin):
+    from fastapi.testclient import TestClient as RawTestClient
+
+    test_app = FastAPI()
+    test_app.state.trusted_frontend_origin = "http://localhost:3100"
+    test_app.state.db_engine = Mock()
+    test_app.state.registration_rate_limit_threshold = 10
+    test_app.state.registration_rate_limit_window_seconds = 900
+    test_app.include_router(router)
+
+    with (
+        patch(
+            "app.auth.presentation.registration_limit_route.make_registration_limit_checker",
+            return_value=Mock(),
+        ),
+        patch(
+            "app.auth.presentation.routes.make_registration_handler",
+        ) as handler_factory,
+    ):
+        headers = {} if origin is None else {"Origin": origin}
+
+        with RawTestClient(
+            test_app,
+            client=("192.0.2.40", 12345),
+        ) as client:
+            response = client.post(
+                "/auth/register",
+                json={
+                    "email": "alice@example.com",
+                    "password": "ExamplePassword123!",
+                },
+                headers=headers,
+            )
+
+    assert response.status_code == 403
+    handler_factory.assert_not_called()
+
+def test_duplicate_origin_cannot_reach_registration_handler():
+    from fastapi.testclient import TestClient as RawTestClient
+
+    test_app = FastAPI()
+    test_app.state.trusted_frontend_origin = "http://localhost:3100"
+    test_app.state.db_engine = Mock()
+    test_app.state.registration_rate_limit_threshold = 10
+    test_app.state.registration_rate_limit_window_seconds = 900
+    test_app.include_router(router)
+
+    with (
+        patch(
+            "app.auth.presentation.registration_limit_route.make_registration_limit_checker",
+            return_value=Mock(),
+        ),
+        patch(
+            "app.auth.presentation.routes.make_registration_handler",
+        ) as handler_factory,
+    ):
+        with RawTestClient(
+            test_app,
+            client=("192.0.2.40", 12345),
+        ) as client:
+            response = client.post(
+                "/auth/register",
+                json={
+                    "email": "alice@example.com",
+                    "password": "ExamplePassword123!",
+                },
+                headers=[
+                    ("Origin", "http://localhost:3100"),
+                    ("Origin", "https://evil.example"),
+                ],
+            )
+
+    assert response.status_code == 403
+    handler_factory.assert_not_called()

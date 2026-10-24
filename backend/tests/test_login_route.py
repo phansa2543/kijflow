@@ -1,6 +1,8 @@
-import uuid
+import uuid, pytest
 
+from types import SimpleNamespace
 from unittest.mock import patch
+from functools import partial
 
 from fastapi.testclient import TestClient
 
@@ -20,6 +22,27 @@ from app.auth.infrastructure.login_counter_identifier import (
 )
 from app.auth.infrastructure.password_hash import hash_password
 from app.auth.infrastructure.login_rate_limit import LoginLimiterUnavailable
+
+OriginalTestClient = TestClient
+
+TestClient = partial(
+    OriginalTestClient,
+    headers={"Origin": "http://localhost:3100"}
+)
+
+@pytest.fixture(autouse=True)
+def trusted_login_origin(monkeypatch):
+    monkeypatch.setenv(
+        "TRUSTED_FRONTEND_ORIGIN",
+        "http://localhost:3100",
+    )
+
+    monkeypatch.setattr(
+        app.state,
+        "trusted_frontend_origin",
+        "http://localhost:3100",
+        raising=False,
+    )
 
 def test_invalid_json_consumes_source_reservation(monkeypatch, engine):
     monkeypatch.setenv(
@@ -77,6 +100,22 @@ def test_login_source_rate_limit_returns_429(monkeypatch, engine):
         "a1" * 32,
     )
     source = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
+
+    with engine.connect() as connection:
+        existing_attempts = connection.execute(
+            text("""
+                SELECT COALESCE(SUM(attempt_count), 0)
+                FROM auth_login_attempt_counters
+                WHERE dimension = 'SOURCE'
+                AND identifier = :identifier
+            """),
+            {"identifier": source},
+        ).scalar_one()
+
+    assert existing_attempts == 0, (
+        "Test source IP already has login attempts"
+    )
+
     original_engine = getattr(app.state, "db_engine", None)
 
     try:
@@ -954,3 +993,96 @@ def test_known_unknown_accounts_have_same_throttle_behavior(
                     "source2": "198.51.100.242",
                 },
             )
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [None, "https://evil.example", "null", "http://localhost:3000"],
+)
+def test_untrusted_origin_cannot_reach_login_handler(
+    monkeypatch,
+    origin,
+):
+    from fastapi import FastAPI
+    from app.auth.presentation.login_route import login_router
+
+    test_app = FastAPI()
+    test_app.state.trusted_frontend_origin = "http://localhost:3100"
+    test_app.include_router(login_router)
+
+    with (
+        patch(
+            "app.auth.presentation.login_limit_route.reserve_login_attempt",
+            return_value=SimpleNamespace(allowed=True),
+        ) as source_limiter,
+        patch(
+            "app.auth.presentation.login_route.make_login_handler"
+        ) as handler_factory):
+
+        test_app.state.db_engine = object()
+        test_app.state.login_source_window_seconds = 60
+        test_app.state.login_source_limit = 30
+
+        with OriginalTestClient(
+            test_app,
+            client=("198.51.100.246", 50000)
+        ) as client:
+            headers = (
+                {} if origin is None else {"Origin": origin}
+            )
+
+            response = client.post(
+                "/auth/login",
+                json={
+                    "email": "alice@example.com",
+                    "password": "ExamplePassword123!",
+                },
+                headers=headers,
+            )
+        
+    assert source_limiter.call_count == 1, response.json()
+    assert response.status_code == 403
+    source_limiter.assert_called_once()
+    handler_factory.assert_not_called()
+
+def test_duplicate_origin_cannot_reach_login_handler():
+    from types import SimpleNamespace
+    from fastapi import FastAPI
+    from app.auth.presentation.login_route import login_router
+
+    test_app = FastAPI()
+    test_app.state.trusted_frontend_origin = "http://localhost:3100"
+    test_app.state.db_engine = object()
+    test_app.state.login_source_window_seconds = 60
+    test_app.state.login_source_limit = 30
+    test_app.include_router(login_router)
+
+    with (
+        patch(
+            "app.auth.presentation.login_limit_route.reserve_login_attempt",
+            return_value=SimpleNamespace(allowed=True),
+        ) as source_limiter,
+        patch(
+            "app.auth.presentation.login_route.make_login_handler",
+        ) as handler_factory,
+    ):
+        with OriginalTestClient(
+            test_app,
+            client=("198.51.100.247", 50000),
+        ) as client:
+            response = client.post(
+                "/auth/login",
+                json={
+                    "email": "alice@example.com",
+                    "password": "ExamplePassword123!",
+                },
+                headers=[
+                    ("Origin", "http://localhost:3100"),
+                    ("Origin", "https://evil.example"),
+                ],
+            )
+
+    assert response.status_code == 403
+    source_limiter.assert_called_once()
+    handler_factory.assert_not_called()
+    assert "set-cookie" not in response.headers

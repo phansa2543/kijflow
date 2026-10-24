@@ -52,6 +52,11 @@ def test_session_and_cookie_share_lifetime(
     monkeypatch.setenv("LOGIN_SOURCE_LIMIT", "100")
     monkeypatch.setenv("LOGIN_ACCOUNT_LIMIT", "100")
 
+    monkeypatch.setenv(
+        "TRUSTED_FRONTEND_ORIGIN",
+        "http://localhost:3100"
+    )
+
     with engine.begin() as connection:
         connection.execute(
             insert(User).values(id=user_id)
@@ -75,6 +80,7 @@ def test_session_and_cookie_share_lifetime(
             with TestClient(
                 app,
                 client=("198.51.100.245", 50000),
+                headers={"Origin": "http://localhost:3100"}
             ) as client:
                 response = client.post(
                     "/auth/login",

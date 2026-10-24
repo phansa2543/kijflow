@@ -12,6 +12,7 @@ from app.auth.infrastructure.login_counter_identifier import load_login_counter_
 from app.auth.presentation.routes import router as auth_router
 from app.auth.presentation.login_route import login_router
 from app.auth.presentation.logout_route import logout_router
+from app.auth.presentation.csrf import normalize_trusted_origin
 
 from app.db.engine import create_database_engine
 
@@ -32,6 +33,15 @@ def read_positive_int(name: str, default: int) -> int:
 async def lifespan(app: FastAPI):
     project_root = Path(__file__).resolve().parents[2]
     load_dotenv(project_root / ".env")
+
+    raw_trusted_origin = os.getenv("TRUSTED_FRONTEND_ORIGIN")
+
+    if raw_trusted_origin is None:
+        raise ValueError(
+            "Missing configuration: TRUSTED_FRONTEND_ORIGIN"
+        )
+
+    trusted_frontend_origin = normalize_trusted_origin(raw_trusted_origin)
 
     session_lifetime_seconds = read_positive_int(
         "SESSION_LIFETIME_SECONDS",
@@ -61,6 +71,7 @@ async def lifespan(app: FastAPI):
             app.state.login_account_limit = account_limit
             app.state.login_account_window_seconds = account_window
             app.state.session_lifetime_seconds = session_lifetime_seconds
+            app.state.trusted_frontend_origin = trusted_frontend_origin
             yield
     finally:
         engine.dispose()

@@ -26,12 +26,14 @@ from app.auth.infrastructure.session_resolution import (
 @pytest.fixture
 def client(engine):
     test_app = FastAPI()
+    test_app.state.trusted_frontend_origin = "http://localhost:3100"
     test_app.state.db_engine = engine
     test_app.include_router(logout_router)
 
     with TestClient(
         test_app,
         base_url="https://testserver",
+        headers={"Origin": "http://localhost:3100"},
     ) as test_client:
         yield test_client
 
@@ -219,4 +221,70 @@ def test_logout_cannot_select_session_via_query_or_header(
         assert resolve_session_user_id(
             connection,
             raw_token=second_token,
+        ) == user_id
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        None,
+        "https://evil.example",
+        "null",
+        "http://localhost:3000",
+    ],
+)
+def test_untrusted_origin_cannot_revoke_session(
+    client,
+    engine,
+    session_data,
+    origin,
+):
+    user_id, first_token, _ = session_data
+
+    headers = {
+        "Cookie": f"kijflow_session={first_token}",
+    }
+
+    if origin is not None:
+        headers["Origin"] = origin
+
+    # Explicitly override the trusted default for each request.
+    client.headers.pop("Origin", None)
+
+    response = client.post(
+        "/auth/logout",
+        headers=headers,
+    )
+
+    assert response.status_code == 403
+    assert "Set-Cookie" not in response.headers
+
+    with engine.connect() as connection:
+        assert resolve_session_user_id(
+            connection,
+            raw_token=first_token,
+        ) == user_id
+
+def test_duplicate_origin_cannot_revoke_session(
+    client,
+    engine,
+    session_data,
+):
+    user_id, first_token, _ = session_data
+
+    response = client.post(
+        "/auth/logout",
+        headers=[
+            ("Origin", "http://localhost:3100"),
+            ("Origin", "https://evil.example"),
+            ("Cookie", f"kijflow_session={first_token}"),
+        ],
+    )
+
+    assert response.status_code == 403
+    assert "set-cookie" not in response.headers
+
+    with engine.connect() as connection:
+        assert resolve_session_user_id(
+            connection,
+            raw_token=first_token,
         ) == user_id

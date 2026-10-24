@@ -2,7 +2,7 @@ import logging
 
 from datetime import timedelta
 
-from fastapi import Request, APIRouter
+from fastapi import Request, APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -23,6 +23,8 @@ from app.auth.infrastructure.login_wiring import make_login_handler
 from app.auth.infrastructure.session_wiring import (
     make_session_creation_handler,
 )
+
+from app.auth.presentation.csrf import require_trusted_origin
 from app.auth.presentation.login_limit_route import LoginLimitRoute
 from app.auth.presentation.schemas import LoginRequest, LoginResponse
 
@@ -55,7 +57,11 @@ def login_error(
         headers=headers,
     )
 
-@login_router.post("/login", response_model=LoginResponse)
+@login_router.post(
+        "/login", 
+        response_model=LoginResponse,
+        dependencies=[Depends(require_trusted_origin)],
+)
 async def login(payload: LoginRequest, request: Request):
     engine = request.app.state.db_engine
 

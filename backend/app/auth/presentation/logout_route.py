@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
+
 from sqlalchemy.exc import SQLAlchemyError
+
 from starlette.concurrency import run_in_threadpool
+
+from app.auth.presentation.csrf import require_trusted_origin
 
 from app.auth.infrastructure.session_resolution import (
     revoke_session_by_raw_token,
@@ -18,7 +22,10 @@ def _revoke_session(engine, raw_token: object) -> bool:
         )
 
 
-@logout_router.post("/logout")
+@logout_router.post(
+        "/logout",
+        dependencies=[Depends(require_trusted_origin)]
+)
 async def logout(request: Request):
     raw_token = request.cookies.get("kijflow_session")
 
