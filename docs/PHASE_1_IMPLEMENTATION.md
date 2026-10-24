@@ -2998,3 +2998,17 @@ Phase 1 is complete only when:
 Phase 1 completion does not mean Kijflow is production-ready for paying customers.
 
 Production readiness must be established separately before real customer use.
+
+---
+
+# M3 Browser UI Foundation — Paused Checkpoint (2026-10-24)
+
+**Milestone:** M3 Registration & Authentication — IN PROGRESS. **Founder-directed pause** before frontend implementation. M4 remains out of scope.
+
+**Approved design scope:** Three M3 browser screens (Register, Login, Authenticated Pre-tenant) and the logout/checking/invalid-session/retry interactions, incorporating Tech Lead's generic recovery wording. Independent QA PASS, then Founder acceptance. Backend security and same-origin rewrite previously CLOSED are not reopened by this UI design.
+
+**FD-1 approved contract, NOT yet implemented:** read-only GET /auth/session, 204 valid, 401 invalid/missing, 503 verification unavailable; no-store, no body/user/profile/Organization/Membership/token on 204; no Set-Cookie or session mutation, no Login/Registration rate-limit route behavior; server-side PostgreSQL validation remains authoritative. Detailed implementation and browser QA are still required.
+
+**Frontend foundation still pending:** Founder prefers MUI as the UI component library and accepts a custom modern-minimal-purple/light-first MUI visual direction in principle. Concrete theme values and final MUI technical adoption are NOT approved. Tech Lead's Tailwind v4 + native proposal was received, then challenged due to lifetime M3–M7 component/refactor costs. Do not interpret it as the final stack.
+
+**Resume order:** Tech Lead reviews MUI feasibility/trade-offs (Next.js App Router SSR, compatibility, ownership/upgrade, accessibility and licensing) -> Product/UX specifies palette, typography, tokens, and M3 visuals -> Independent QA -> Founder final approval -> Engineering Mentor guides Founder implementation and acceptance tests. Do not install UI dependencies or implement browser screens before that gate. No M4 behavior.
