@@ -39,6 +39,17 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Current-session Logout / Server-side Revocation — 2026-10-24
+
+**Status: Founder-implemented / pushed / GitHub CI SUCCESS / Independent QA PENDING — NOT CLOSED. M3 remains IN PROGRESS.**
+
+- GitHub `main` exact implementation commit `b6ff4007600efa16aa8edbf0fc6d183b3c8eb1df` (`feat(auth): implement current-session logout and revocation`); GitHub Actions https://github.com/phansa2543/kijflow/actions/runs/40056785711 **SUCCESS** at the exact SHA.
+- Founder implemented PostgreSQL current-session revocation (`revoke_current_session`), raw-token revocation (`revoke_session_by_raw_token`) and `POST /auth/logout` using the authoritative session-cookie/token digest path. An eligible current Session is revoked transactionally before a successful Logout response clears its cookie; other concurrent Sessions remain valid. Invalid/expired/revoked tokens return HTTP 401; database failures return HTTP 503. This implementation still needs independent QA verification.
+- Founder-reported focused results: Session Persistence **9 passed**, Session Resolution **18 passed**, Logout HTTP **10 passed**; full local backend regression **380 passed, 1 skipped**. These are local evidence, not Independent QA acceptance.
+- **Pending QA:** Session Lifetime (`a378230`), Session Validation Persistence (`5a36cc2`), Raw Session Token Validation/Resolution (`f1ca0cc`), Trusted Current-User HTTP Dependency (`f742d4f`), this Logout/Revocation slice (`b6ff400`) and independent Password Screening technical security.
+- **Next authorized M3 task:** Cookie / CSRF Security. Validate all state-changing browser authentication entry points (registration, login, logout) against untrusted cross-site requests; maintain secure HttpOnly, Secure, SameSite=Lax, Path=/ cookie contract. SameSite alone is insufficient. Test safe Origin/CSRF policy against intended Next.js/FastAPI deployment topology and avoid new infrastructure or expanding architecture.
+- **Still pending:** Next.js Registration/Login/Logout and pre-tenant UI, browser session expiry/recovery, browser integration and final M3 QA. Login Abuse Protection Step 6 and Registration Counter Cleanup B2 remain CLOSED. AQ-014/AQ-016 external-release gates unchanged.
+
 ### Trusted Current-User HTTP Dependency — 2026-10-24
 
 **Status: Founder-implemented / pushed / GitHub CI SUCCESS / Independent QA PENDING — NOT CLOSED. M3 remains IN PROGRESS.**
@@ -236,7 +247,7 @@ Limitations:
 
 **Session Validation Persistence:** implemented at `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58`, GitHub Actions run `39972021451` SUCCESS; Independent QA pending. The current function validates an already-computed digest, not the raw cookie/token. Founder reports 6 focused tests and local full regression 325 passed, 1 skipped.
 
-**Raw Session Token Validation + Session Resolution:** implemented at `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`; CI run `40054387449` SUCCESS; Independent QA PENDING. These functions validate/resolve at infrastructure level and do not yet extract the HTTP session cookie. Founder-reported local regression: 350 passed, 1 skipped. **Trusted Current-User HTTP Dependency:** implemented and CI SUCCESS at `f742d4f1386ef63395cdc215ab4f126beb17d5e8` (run `40055301574`); Independent QA PENDING. **Next:** Current-session Logout / Server-side Revocation, followed by cookie/CSRF and browser integration. Do not mark pending subtasks CLOSED or expand to M4.
+**Raw Session Token Validation + Session Resolution:** implemented at `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`; CI run `40054387449` SUCCESS; Independent QA PENDING. These functions validate/resolve at infrastructure level and do not yet extract the HTTP session cookie. Founder-reported local regression: 350 passed, 1 skipped. **Trusted Current-User HTTP Dependency:** implemented and CI SUCCESS at `f742d4f1386ef63395cdc215ab4f126beb17d5e8` (run `40055301574`); Independent QA PENDING. **Current-session Logout / Revocation:** implemented and CI SUCCESS at `b6ff4007600efa16aa8edbf0fc6d183b3c8eb1df` (run `40056785711`), independent QA PENDING. **Next:** Cookie / CSRF Security for registration, login and logout, followed by Next.js browser integration. Do not mark pending subtasks CLOSED or expand to M4.
 
 ## Password Screening — Development Status and Release Gates
 
