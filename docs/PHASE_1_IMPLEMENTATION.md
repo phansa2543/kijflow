@@ -3011,3 +3011,17 @@ Founder explicitly APPROVED the M3 Frontend Design Package and authorized **Foun
 - **Implementation gates remain:** rendered border/focus-ring contrast after alpha blending, Thai/English font loading, mobile keyboard/touch/keyboard accessibility, backend authoritative NFC-normalized Unicode code-point password limits (do not substitute JavaScript string.length/HTML maxlength), and actual FD-1/CSRF/cookie/browser regression. No raw session token access or frontend authentication authority.
 - **Next:** Engineering Mentor guides Founder to verify package versions, install MUI/Emotion official App Router integration, implement one theme and verify `npm ci`, `npm run lint`, `npm run build` prior to incremental M3 Register/Login/Pre-tenant/Logout/recovery interfaces. FD-1 contract was design-approved separately; verify its implementation before frontend session-state integration. Independent implementation/browser QA and Founder closure are still required.
 
+
+---
+
+# M3 Frontend — Theme Foundation Implementation Checkpoint / Founder Pause (2026-10-24)
+
+**Current status:** M3 IN PROGRESS; Founder requested IMPLEMENTATION PAUSE. MUI Theme Foundation code is pushed but **Independent QA / closure PENDING**. This supersedes any implication in the prior Design Authorization checkpoint that installation is still the next task; that design approval remains valid.
+
+**Implementation commit:** `5fb676bfaab0ba7e54436243b36104d691c47074` on `main` (frontend/app/globals.css, layout.tsx, page.tsx, theme.ts, package.json, package-lock.json). The temporary MUI Theme Smoke Test is not an Auth screen. Founder reports Next 16.4.3, React 19.3.0, MUI/MUI Next.js 9.5.0, Emotion 11.14.x and working MUI Theme/Next.js integration with Noto Sans Thai.
+
+**Reported local verification:** `npm ci`, `npm run lint`, `npm run build` PASS; dev-browser Typography, TextField, Button, purple/light theme and Thai text render; desktop/mobile (375x812) initial visual smoke checks no visible horizontal overflow. Desktop height measures 1014px without overflow. Mobile overflow has not been independently measured. Browser `sw.js` error cleared after old service-worker unregistration; no verified MUI defect. Local reports are not independent QA. CI outcome is not established here.
+
+**Next task upon explicit Founder resumption — Focus State / Accessibility Verification:** inspect actual normal/hover/focus TextField borders and focus ring including alpha-blended contrast, keyboard focus visibility, accessible labels; remaining responsive/mobile keyboard and SSR/hydration checks; inspect diff/CI and obtain Independent QA acceptance. Do not repeat already verified setup/build without a specific trigger.
+
+**Gate:** Theme Foundation may close only after evidence and Independent QA. Do not start Registration/Login/Logout screens until gate is satisfied. Do not implement M4 Organization/Membership/Tenant UI or introduce Tailwind, MUI X, theme engine, new auth authority or other unapproved changes during pause.
