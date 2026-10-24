@@ -39,6 +39,17 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### M3 Same-Origin Next.js Rewrite/Proxy — 2026-10-24 (Founder Closure)
+
+**Status: CLOSED — Independent QA PASS / Founder APPROVED. Accepted implementation commit `ed75f6320ea13b50e9dff75bf3c4ae1cb2cdce92`. M3 Browser Authentication Integration and M3 overall remain OPEN / IN PROGRESS.**
+
+- Development topology: Browser `http://localhost:3000` → Next.js rewrite of `/auth/:path` → FastAPI `http://127.0.0.1:8000`; `TRUSTED_FRONTEND_ORIGIN=http://localhost:3000`. This is not a production deployment topology decision.
+- GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/40079051775 **SUCCESS** at accepted commit. Changes limited to `frontend/next.config.ts`, `frontend/package.json` and `frontend/package-lock.json`. Independent QA PASS accepted the focused source/framework review and Founder-reported browser evidence, with no confirmed blocker for this development slice.
+- Backend Cookie/CSRF Security remains CLOSED; Origin validation, authoritative PostgreSQL session behavior and HttpOnly/Secure/SameSite=Lax/Path=/ cookie contract were not changed.
+- **Open browser follow-up:** minimum real Next.js Registration/Login/Logout UI; authenticated pre-tenant state; session expiry/recovery; automated frontend build and browser regression; adversarial real-browser CSRF checks. Browser security and M3 have **not** received final acceptance.
+- Non-blocking follow-ups: CI currently validates backend but not `npm ci` / `npm run build`; Next.js proxy can collapse backend SOURCE network identity to proxy/loopback for shared/deployed topologies (never blindly trust `X-Forwarded-For`); Safari may not honor Secure cookie on HTTP localhost; `eslint-config-next` is 16.4.0 while runtime Next.js is 16.4.3. Revisit in their applicable M3 integration / deployment-maintenance gates, not by reopening this closed slice.
+- Other session-related Independent QA and Password Screening Technical Security remain pending unless accepted separately. Step 6 and Registration Cleanup B2 stay CLOSED. No M4 or speculative infrastructure.
+
 ### Cookie / CSRF Backend Security — 2026-10-24 (Founder Closure)
 
 **Status: CLOSED — Independent Security QA PASS / Founder APPROVED. Accepted implementation baseline `aee8453e7efeab7c51d21894b1d1932e82fd222d`. M3 remains IN PROGRESS.**
