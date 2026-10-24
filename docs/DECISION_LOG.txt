@@ -2834,3 +2834,24 @@ The Founder approved Modular Monolith with Pragmatic Clean Architecture as the b
 Detailed refactoring design and validation remain pending.
 
 DEC-006 and existing Phase 1 security and milestone boundaries remain applicable.
+
+---
+
+# M3 Frontend Foundation — Founder Direction / Pause Note (2026-10-24)
+
+Status: PARTIAL APPROVAL / TECHNICAL REVIEW PENDING — not a new finalized architecture DEC.
+
+Founder-approved:
+- M3 Browser Authentication UX direction as revised by Tech Lead (Register, Login, authenticated pre-tenant, logout and session recovery); Independent QA design PASS.
+- FD-1: read-only GET /auth/session: 204 authenticated, 401 unauthenticated, 503 verification unavailable/retry; Cache-Control: no-store; no profile/Organization/Membership payload, no session mutation and no registration/login rate-limit side effects.
+- Visual direction in principle: modern minimal purple, customized with MUI's Theme System, light mode first. Exact colors, typography, and component details remain subject to Product/UX review.
+
+Founder preference (NOT YET TECHNICALLY APPROVED): Material UI (MUI) as Kijflow's foundational UI component library, to reduce ad hoc component creation and likely future refactoring across M3–M7. This supersedes treating Tailwind + native as the unchallenged preferred path, but DOES NOT approve MUI installation or reject alternatives on technical grounds.
+
+Pending gates on resume:
+1. Tech Lead reviews MUI + custom Theme integration with current Next.js/React setup, SSR/App Router, dependency and upgrade footprint, accessibility, license/MUI X boundary, and suitability for one-person maintenance; compares against Tailwind/shadcn recommendation.
+2. Product/UX defines concrete modern-minimal-purple light-theme palette, Thai/Latin typography, contrast, tokens, and M3 component visuals.
+3. Independent QA reviews combined technical and visual foundation.
+4. Founder explicitly approves final technical UI Foundation and concrete theme before frontend implementation.
+
+Implementation is PAUSED by Founder at this checkpoint. No MUI/Tailwind installation, UI code, new theme files, or M4 scope is authorized by this note. FD-1 approval is a design/API contract decision, not a statement that endpoint has been implemented.
