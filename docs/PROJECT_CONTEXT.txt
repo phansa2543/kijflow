@@ -1087,13 +1087,15 @@ Founder implementation is now the current engineering step.
 
 ## Latest M3 Implementation Progress
 
-**2026-10-23 — Session Validation Persistence pushed and CI SUCCESS; Independent QA PENDING. M3 remains IN PROGRESS.**
+**2026-10-24 — Raw Session Token Validation + Session Resolution pushed / GitHub CI SUCCESS / Independent QA PENDING. M3 IN PROGRESS.**
 
-- Step 6 Login Abuse Protection and Registration Counter Cleanup B2 remain **CLOSED**.
-- **Session Lifetime:** source commit `a37823064e490e444a4b2e39c5171ebea433061e`, CI SUCCESS; 24-hour configurable initial default. Formal independent QA acceptance pending.
-- **Session Validation Persistence:** GitHub `main` commit `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58`, Actions https://github.com/phansa2543/kijflow/actions/runs/39972021451 **SUCCESS**. Digest-based lookup requires unexpired/unrevoked session and existing referenced global User. This does not yet validate raw cookie tokens or establish a trusted current-User dependency. Founder reported 6 focused tests passed; full local regression 325 passed, 1 skipped. Independent QA pending.
-- Root `.env.example` **does contain** `SESSION_LIFETIME_SECONDS=86400`, resolving the earlier documentation follow-up.
-- **Next:** conduct independent focused QA for Session Lifetime and Session Validation Persistence. Engineering Mentor is authorized to continue raw-token digest resolution and Trusted Global Current-User implementation under accepted M3 scope in parallel. Logout/revocation, cookie/CSRF, browser and Password Screening technical QA remain outstanding. AQ-014/AQ-016 deferred obligations unchanged; no M4 expansion.
+- Login Abuse Protection Step 6 and Registration Counter Cleanup B2 remain **CLOSED**.
+- **Session Lifetime:** commit `a378230`, CI SUCCESS, Independent QA PENDING; 24-hour configurable default with consistent Session/Cookie lifetime.
+- **Session Validation Persistence:** commit `5a36cc2`, CI SUCCESS, Independent QA PENDING.
+- **Raw Token Validation + Session Resolution:** commit `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`, Actions https://github.com/phansa2543/kijflow/actions/runs/40054387449 **SUCCESS**. Existing token generation/digest and PostgreSQL validity lookup are reused; this is infrastructure-level resolution, not FastAPI cookie extraction or a trusted current-User HTTP dependency. Founder reported 17 token tests, 11 resolver integration tests and local backend regression **350 passed, 1 skipped**. Independent QA PENDING.
+- Root `.env.example` contains `SESSION_LIFETIME_SECONDS=86400`.
+- **Next:** Engineering Mentor guides Founder on Trusted Current-User HTTP Dependency with secure cookie-only identity resolution, fail-closed invalid-session behavior and identity-override tests. Then logout/revocation, cookie/CSRF, Next.js browser workflows, Password Screening technical QA and final M3 acceptance.
+- AQ-014/AQ-016 release gates remain unchanged. No M4 or architecture expansion.
 
 ## Phase 1 Functional Frontend Requirement
 

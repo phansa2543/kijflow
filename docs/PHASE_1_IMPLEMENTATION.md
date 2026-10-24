@@ -39,6 +39,18 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Raw Session Token Validation and Session Resolution — 2026-10-24
+
+**Status: Founder-implemented / pushed / GitHub CI SUCCESS / Independent QA PENDING. NOT CLOSED. M3 remains IN PROGRESS.**
+
+- Exact implementation commit on `main`: `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1` (`feat(auth): resolve authenticated user from session token`). GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/40054387449 **SUCCESS** at that same commit.
+- `backend/app/auth/infrastructure/session_token.py` introduces raw token format validation, rejecting missing, malformed, incorrect-type and oversized values; the existing session SHA-256 digest function is reused.
+- `backend/app/auth/infrastructure/session_resolution.py` resolves a validated raw token through SHA-256 digest and authoritative PostgreSQL session lookup into global User ID or `None`. This is **infrastructure-level** resolution; FastAPI cookie extraction and trusted current-User HTTP dependency are **not implemented by this slice**.
+- Founder-reported local verification: **17 token tests passed**, **11 resolver integration tests passed**, **350 passed, 1 skipped** full backend regression. Local counts are not independent QA evidence.
+- Test setup corrections address isolated startup-secret configuration and revoked-session timestamp constraints. No database schema migration or new infrastructure was introduced.
+- **Next Engineering Mentor task authorized:** inspect current code and implement Trusted Current-User HTTP Dependency using exclusively the authentication cookie, the existing resolver, fail-closed behavior for invalid/expired/revoked sessions and tests preventing client-supplied identity override.
+- Independent QA reviews remain pending for Session Lifetime, Session Validation Persistence and this new raw-token/resolution slice. Do not mark these subtasks CLOSED until their acceptance gates are satisfied.
+
 ### Session Validation Persistence — 2026-10-23 (CI Verified; QA Pending)
 
 **Status:** Founder implemented and pushed Session Validation Persistence at GitHub `main` commit `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58` (`feat(auth): validate active sessions`). GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/39972021451 completed **SUCCESS** at that exact commit. **Independent QA acceptance PENDING; do not mark this subtask CLOSED. M3 remains IN PROGRESS.**
@@ -213,7 +225,7 @@ Limitations:
 
 **Session Validation Persistence:** implemented at `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58`, GitHub Actions run `39972021451` SUCCESS; Independent QA pending. The current function validates an already-computed digest, not the raw cookie/token. Founder reports 6 focused tests and local full regression 325 passed, 1 skipped.
 
-**Next:** Engineering Mentor may guide Founder on Raw Session Token validation / SHA-256 digest resolution and Trusted Global Current-User Resolution, with explicit fail-closed tests, while both QA reviews proceed separately. Later M3 tasks remain logout/revocation, cookie/CSRF, browser integration and final QA. Do not mark pending subtasks CLOSED or expand to M4.
+**Raw Session Token Validation + Session Resolution:** implemented at `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`; CI run `40054387449` SUCCESS; Independent QA PENDING. These functions validate/resolve at infrastructure level and do not yet extract the HTTP session cookie. Founder-reported local regression: 350 passed, 1 skipped. **Next:** Trusted Current-User HTTP Dependency, followed by logout/revocation, cookie/CSRF and browser integration. Do not mark pending subtasks CLOSED or expand to M4.
 
 ## Password Screening — Development Status and Release Gates
 
