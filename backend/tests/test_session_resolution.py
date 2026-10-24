@@ -7,6 +7,7 @@ from sqlalchemy import insert, update
 
 from app.auth.infrastructure.session_resolution import (
     resolve_session_user_id,
+    revoke_session_by_raw_token
 )
 from app.auth.infrastructure.session_token import (
     digest_session_token,
@@ -125,6 +126,62 @@ def test_multiple_sessions_are_independent(db_connection):
         .where(AuthSession.token_digest == digest_session_token(first_token))
         .values(revoked_at=datetime.now(timezone.utc))
     )
+
+    assert resolve_session_user_id(
+        db_connection,
+        raw_token=first_token,
+    ) is None
+
+    assert resolve_session_user_id(
+        db_connection,
+        raw_token=second_token,
+    ) == user_id
+
+def test_revoke_valid_raw_token(db_connection):
+    user_id = uuid.uuid4()
+
+    db_connection.execute(insert(User).values(id=user_id))
+    token = create_session(db_connection, user_id)
+
+    assert revoke_session_by_raw_token(
+        db_connection,
+        raw_token=token,
+    ) is True
+
+    assert resolve_session_user_id(
+        db_connection,
+        raw_token=token,
+    ) is None
+
+    assert revoke_session_by_raw_token(
+        db_connection,
+        raw_token=token,
+    ) is False
+
+
+@pytest.mark.parametrize(
+    "token",
+    [None, "", "short", "a" * 44, 123],
+)
+def test_revoke_invalid_raw_token(db_connection, token):
+    assert revoke_session_by_raw_token(
+        db_connection,
+        raw_token=token,
+    ) is False
+
+
+def test_revoke_one_of_multiple_sessions(db_connection):
+    user_id = uuid.uuid4()
+
+    db_connection.execute(insert(User).values(id=user_id))
+
+    first_token = create_session(db_connection, user_id)
+    second_token = create_session(db_connection, user_id)
+
+    assert revoke_session_by_raw_token(
+        db_connection,
+        raw_token=first_token,
+    ) is True
 
     assert resolve_session_user_id(
         db_connection,

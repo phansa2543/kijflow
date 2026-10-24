@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.auth.infrastructure.session_persistence import (
     find_valid_session_user_id,
+    revoke_current_session
 )
 from app.auth.infrastructure.session_token import (
     digest_session_token,
@@ -178,6 +179,78 @@ def test_multiple_sessions_are_independent(
         .where(AuthSession.token_digest == first_digest)
         .values(revoked_at=datetime.now(timezone.utc))
     )
+
+    assert find_valid_session_user_id(
+        db_connection,
+        token_digest=first_digest,
+    ) is None
+
+    assert find_valid_session_user_id(
+        db_connection,
+        token_digest=second_digest,
+    ) == user_id
+
+def test_revoke_current_session(db_connection):
+    user_id = create_user(db_connection)
+    digest = create_session(db_connection, user_id)
+
+    assert revoke_current_session(
+        db_connection,
+        token_digest=digest,
+    ) is True
+
+    assert find_valid_session_user_id(
+        db_connection,
+        token_digest=digest,
+    ) is None
+
+    # Revocation must be idempotent at the persistence level.
+    assert revoke_current_session(
+        db_connection,
+        token_digest=digest,
+    ) is False
+
+
+def test_revoke_unknown_or_expired_session(db_connection):
+    unknown_digest = digest_session_token(
+        generate_session_token()
+    )
+
+    assert revoke_current_session(
+        db_connection,
+        token_digest=unknown_digest,
+    ) is False
+
+    user_id = create_user(db_connection)
+    expired_digest = create_session(db_connection, user_id)
+
+    now = datetime.now(timezone.utc)
+
+    db_connection.execute(
+        update(AuthSession)
+        .where(AuthSession.token_digest == expired_digest)
+        .values(
+            created_at=now - timedelta(hours=2),
+            expires_at=now - timedelta(hours=1),
+        )
+    )
+
+    assert revoke_current_session(
+        db_connection,
+        token_digest=expired_digest,
+    ) is False
+
+
+def test_revoke_only_current_session(db_connection):
+    user_id = create_user(db_connection)
+
+    first_digest = create_session(db_connection, user_id)
+    second_digest = create_session(db_connection, user_id)
+
+    assert revoke_current_session(
+        db_connection,
+        token_digest=first_digest,
+    ) is True
 
     assert find_valid_session_user_id(
         db_connection,

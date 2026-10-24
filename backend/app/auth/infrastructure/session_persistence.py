@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 import uuid
 
-from sqlalchemy import Connection, insert, select, func
+from sqlalchemy import Connection, insert, select, update, func
 
 from app.models.auth_session import AuthSession
 from app.models.user import User
@@ -44,3 +44,22 @@ def find_valid_session_user_id(
     )
 
     return connection.execute(statement).scalar_one_or_none()
+
+def revoke_current_session(
+    connection: Connection,
+    *,
+    token_digest: bytes,
+) -> bool:
+    statement = (
+        update(AuthSession)
+        .where(
+            AuthSession.token_digest == token_digest,
+            AuthSession.revoked_at.is_(None),
+            AuthSession.expires_at > func.now(),
+        )
+        .values(revoked_at=func.now())
+    )
+
+    result = connection.execute(statement)
+
+    return result.rowcount == 1
