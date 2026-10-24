@@ -39,6 +39,17 @@ DEC-008 and DEC-009 remain accepted decisions.
 
 ## M3 Implementation Progress
 
+### Trusted Current-User HTTP Dependency — 2026-10-24
+
+**Status: Founder-implemented / pushed / GitHub CI SUCCESS / Independent QA PENDING — NOT CLOSED. M3 remains IN PROGRESS.**
+
+- Exact implementation commit `f742d4f1386ef63395cdc215ab4f126beb17d5e8` (`feat(auth): add trusted current-user HTTP dependency`) is on GitHub `main`. GitHub Actions run https://github.com/phansa2543/kijflow/actions/runs/40055301574 completed **SUCCESS** at that exact head SHA.
+- `backend/app/auth/presentation/current_user.py` introduces `require_current_user_id(request: Request) -> UUID` and the authentication-cookie-only path to global User ID through existing authoritative PostgreSQL Session Resolution. Invalid authentication produces HTTP 401, and authoritative persistence unavailability is surfaced as HTTP 503. No client body/query/header identity claim can override the session-based User.
+- Founder-reported local focused HTTP integration: **10 passed**. Founder-reported full backend regression: **360 passed, 1 skipped**. These results and CI success do not constitute Independent QA acceptance.
+- Independent QA remains **PENDING** for Session Lifetime (`a378230`), Session Validation Persistence (`5a36cc2`), Raw Session Token Validation and Session Resolution (`f1ca0cc`), and this HTTP dependency (`f742d4f`). Password Screening independent technical-security acceptance also remains pending.
+- **Next authorized M3 slice:** Current-session Logout / Server-side Revocation. Reuse the authoritative PostgreSQL Session model. Successful logout must revoke only the current Session and render its original raw token unusable; cookie deletion alone is insufficient. Other concurrent Sessions for the same User must remain valid. Include PostgreSQL and HTTP/security regression, fail-closed behavior and cookie/CSRF review within the accepted M3 contract.
+- Registration Cleanup B2 and Step 6 Login Abuse Protection remain CLOSED. Do not introduce M4, new session frameworks, Redis, JWT, refresh tokens, or unrelated authentication scope.
+
 ### Raw Session Token Validation and Session Resolution — 2026-10-24
 
 **Status: Founder-implemented / pushed / GitHub CI SUCCESS / Independent QA PENDING. NOT CLOSED. M3 remains IN PROGRESS.**
@@ -225,7 +236,7 @@ Limitations:
 
 **Session Validation Persistence:** implemented at `5a36cc274ddb3c9b653ef114c8a0b9f30e1b1a58`, GitHub Actions run `39972021451` SUCCESS; Independent QA pending. The current function validates an already-computed digest, not the raw cookie/token. Founder reports 6 focused tests and local full regression 325 passed, 1 skipped.
 
-**Raw Session Token Validation + Session Resolution:** implemented at `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`; CI run `40054387449` SUCCESS; Independent QA PENDING. These functions validate/resolve at infrastructure level and do not yet extract the HTTP session cookie. Founder-reported local regression: 350 passed, 1 skipped. **Next:** Trusted Current-User HTTP Dependency, followed by logout/revocation, cookie/CSRF and browser integration. Do not mark pending subtasks CLOSED or expand to M4.
+**Raw Session Token Validation + Session Resolution:** implemented at `f1ca0cc5a9f2c1b4ab975452e9072a91b8b94eb1`; CI run `40054387449` SUCCESS; Independent QA PENDING. These functions validate/resolve at infrastructure level and do not yet extract the HTTP session cookie. Founder-reported local regression: 350 passed, 1 skipped. **Trusted Current-User HTTP Dependency:** implemented and CI SUCCESS at `f742d4f1386ef63395cdc215ab4f126beb17d5e8` (run `40055301574`); Independent QA PENDING. **Next:** Current-session Logout / Server-side Revocation, followed by cookie/CSRF and browser integration. Do not mark pending subtasks CLOSED or expand to M4.
 
 ## Password Screening — Development Status and Release Gates
 
