@@ -1441,12 +1441,13 @@ Approved implementation-level design for the current milestone must remain consi
 
 ---
 
-# Current Checkpoint — M3 Frontend Foundation Pause (2026-10-24)
+# Current Checkpoint — M3 Frontend Design APPROVED (2026-10-24)
 
-Founder requested a pause before further handoffs or frontend implementation. M3 remains IN PROGRESS; M4 is NOT authorized.
+Founder explicitly APPROVED the M3 Frontend Design Package and authorized **Founder-led implementation within approved M3 scope** following Tech Lead review (PASS WITH CONDITIONS), Product/UX focused revision and Independent QA focused condition verification (PASS; F1/F2/F3 RESOLVED). This supersedes the 2026-10-24 frontend pause and pending-design-approval checkpoints. **M3 remains IN PROGRESS; browser implementation and acceptance are not yet complete. M4 remains NOT AUTHORIZED.**
 
-M3 Browser Authentication UX direction (Register, Login, authenticated pre-tenant and recovery behavior) passed Independent QA and received Founder approval. FD-1 GET /auth/session was also Founder-approved as a minimal read-only contract (204 / 401 / 503, no-store, existing PostgreSQL session authority). Neither approval establishes frontend implementation completion.
+- **UI foundation:** Material UI (MUI) v9 with Emotion and supported Next.js App Router integration (`AppRouterCacheProvider`); a single custom Kijflow MUI Theme, Modern Minimal Purple, Light Mode First. No Tailwind alongside MUI during M3; no custom theme engine or speculative wrappers/frameworks.
+- **Visual baseline:** Primary `#6D28D9`, background `#F8F7FC`, surface `#FFFFFF`, Noto Sans Thai with fallbacks, maximum auth form width 420px, input/button radius 10px and auth surface radius 16px. Revised active TextField borders: normal `#858C99` (3.382:1 versus white), hover `#667085` (4.975:1), focus `#6D28D9` (7.105:1).
+- **FD-1 state handling:** `204` authenticated; initial/unknown `401` generic sign-in, later `401` after authoritative prior browser verification may show session-no-longer-active copy; `503`/network failure means uncertain/retry, not logged out or authenticated. Logout `503`/network uncertainty blocks protected content and uses `GET /auth/session` to reconcile; `401` leads to Login, `204` supports Retry Logout, unavailable stays uncertain.
+- **Implementation gates remain:** rendered border/focus-ring contrast after alpha blending, Thai/English font loading, mobile keyboard/touch/keyboard accessibility, backend authoritative NFC-normalized Unicode code-point password limits (do not substitute JavaScript string.length/HTML maxlength), and actual FD-1/CSRF/cookie/browser regression. No raw session token access or frontend authentication authority.
+- **Next:** Engineering Mentor guides Founder to verify package versions, install MUI/Emotion official App Router integration, implement one theme and verify `npm ci`, `npm run lint`, `npm run build` prior to incremental M3 Register/Login/Pre-tenant/Logout/recovery interfaces. FD-1 contract was design-approved separately; verify its implementation before frontend session-state integration. Independent implementation/browser QA and Founder closure are still required.
 
-Founder selected a visual direction in principle: **modern minimal purple**, **light mode first**, with a **custom MUI theme rather than a custom theme engine**. Founder proposed **Material UI** as Kijflow's UI component library; its technical adoption is **pending Tech Lead compatibility/maintainability review and final approval**. Tech Lead's earlier Tailwind CSS v4 + native-components proposal is a reviewed recommendation, not an accepted foundation decision.
-
-To resume: Tech Lead MUI technical review -> Product/UX concrete theme specification -> Independent QA combined review -> Founder approval -> Engineering Mentor-guided Founder implementation. No UI implementation is authorized during this pause. Detailed rationale and pending gates are in DECISION_LOG.
