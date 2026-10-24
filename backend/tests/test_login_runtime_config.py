@@ -13,6 +13,13 @@ CONFIG = {
     "LOGIN_ACCOUNT_WINDOW_SECONDS": "300",
 }
 
+@pytest.fixture(autouse=True)
+def trusted_origin_for_login_config(monkeypatch):
+    monkeypatch.setenv(
+        "TRUSTED_FRONTEND_ORIGIN",
+        "http://localhost:3100",
+    )
+
 
 def test_custom_login_config_loaded(monkeypatch):
     monkeypatch.setenv("LOGIN_COUNTER_HMAC_SECRET", "a1" * 32)

@@ -15,6 +15,12 @@ from app.auth.infrastructure.login_counter_identifier import (
     make_account_counter_identifier,
 )
 
+@pytest.fixture(autouse=True)
+def trusted_origin_for_session_lifetime(monkeypatch):
+    monkeypatch.setenv(
+        "TRUSTED_FRONTEND_ORIGIN",
+        "http://localhost:3100",
+    )
 
 @pytest.mark.parametrize(
     "configured_lifetime, expected_seconds",

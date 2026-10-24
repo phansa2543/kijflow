@@ -5,6 +5,13 @@ from dotenv import load_dotenv
 
 from app.main import app
 
+@pytest.fixture(autouse=True)
+def trusted_origin_for_login_startup(monkeypatch):
+    monkeypatch.setenv(
+        "TRUSTED_FRONTEND_ORIGIN",
+        "http://localhost:3100",
+    )
+
 @pytest.mark.parametrize(
     "secret",
     [None, "", "abc", "z" * 64,
