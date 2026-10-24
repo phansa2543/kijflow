@@ -17,7 +17,7 @@ def test_startup_rejects_invalid_login_hmac_secret(secret, monkeypatch):
         monkeypatch.setenv("LOGIN_COUNTER_HMAC_SECRET", secret)
 
     with pytest.raises(ValueError, match="invalid login counter HMAC configuration"):
-        with TestClient(app):
+        with patch("app.main.load_dotenv"), TestClient(app):
             pass
 
 def test_startup_accepts_valid_login_hmac_secret(monkeypatch):

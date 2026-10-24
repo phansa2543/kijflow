@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import delete, insert, update
+from sqlalchemy import delete, insert, update, func
 from sqlalchemy.exc import IntegrityError
 
 from app.auth.infrastructure.session_persistence import (
@@ -44,8 +44,15 @@ def create_session(
             user_id=user_id,
             token_digest=digest,
             expires_at=now + expires_in,
-            revoked_at=now if revoked else None,
+            revoked_at=None,
         )
+    )
+
+    if revoked:
+        connection.execute(
+            update(AuthSession)
+            .where(AuthSession.token_digest == digest)
+            .values(revoked_at=func.now())
     )
 
     return digest
