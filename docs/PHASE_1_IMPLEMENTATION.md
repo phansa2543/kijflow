@@ -3025,3 +3025,13 @@ Founder explicitly APPROVED the M3 Frontend Design Package and authorized **Foun
 **Next task upon explicit Founder resumption — Focus State / Accessibility Verification:** inspect actual normal/hover/focus TextField borders and focus ring including alpha-blended contrast, keyboard focus visibility, accessible labels; remaining responsive/mobile keyboard and SSR/hydration checks; inspect diff/CI and obtain Independent QA acceptance. Do not repeat already verified setup/build without a specific trigger.
 
 **Gate:** Theme Foundation may close only after evidence and Independent QA. Do not start Registration/Login/Logout screens until gate is satisfied. Do not implement M4 Organization/Membership/Tenant UI or introduce Tailwind, MUI X, theme engine, new auth authority or other unapproved changes during pause.
+
+---
+
+# M3 Theme Foundation — Focus Ring Pushed / Independent QA Pending (2026-10-25)
+
+Founder resumed the M3 Theme Foundation verification slice and pushed keyboard focus styling at implementation commit `0332d86510986a84afbe7d4b8389bbc27481c72c` on `main`. The commit changes only `frontend/app/theme.ts`, adding `MuiButton` `.Mui-focusVisible` with `outline: 3px solid #6D28D9` and `outlineOffset: 3px`. The original Theme Foundation implementation remains `5fb676bfaab0ba7e54436243b36104d691c47074`.
+
+GitHub Actions run [40157448915](https://github.com/phansa2543/kijflow/actions/runs/40157448915) completed SUCCESS for the new implementation SHA. Engineering Mentor reported local keyboard and visual checks: TextField border states, control accessible names, button focus computed style, desktop/mobile 375×812 without measured horizontal overflow, initial SSR content and no observed hydration errors. `npm ci` and prior lint/build were Founder-reported; **final local lint/build after the focus change were not independently confirmed in the handoff**. The CI run being green is not proof of frontend lint/build unless those steps are present in its workflow.
+
+**Current gate:** M3 IN PROGRESS; Theme Foundation implemented/pushed, **Independent QA PENDING — NOT CLOSED**. Next request focused Independent QA review of the exact final implementation SHA and browser accessibility/responsive evidence, including actual rendered focus-indicator contrast. `frontend/app/layout.tsx` still has starter `Create Next App` metadata; treat as a small follow-up, not an independently established accessibility blocker. Do not commence M3 Auth Screens or M4 until the Theme Foundation review/Founder closure gate is satisfied. No backend auth or architecture change.
