@@ -1,7 +1,17 @@
 "use client"
 
-import { useState, FormEvent } from "react"
-import { Box, Button, TextField, Typography, Alert } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material"
+
+import { useState, useRef, FormEvent } from "react"
+import { 
+    Box, 
+    Button, 
+    TextField, 
+    Typography, 
+    Alert,
+    IconButton,
+    InputAdornment
+} from "@mui/material";
 
 import { registerUser } from "@/lib/api/registration"
 
@@ -17,6 +27,11 @@ export default function RegisterPage() {
 
     const [submitError, setSubmitError] = useState("")
     const [submitSuccess, setSubmitSuccess] = useState(false)
+
+    const [showPassword, setShowPassword] = useState(false)
+
+    const emailInputRef = useRef<HTMLInputElement>(null)
+    const passwordInputRef = useRef<HTMLInputElement>(null)
 
     function validateForm(): boolean {
         let valid = true
@@ -35,6 +50,14 @@ export default function RegisterPage() {
         if (!password) {
             setPasswordError("กรุณากรอกรหัสผ่าน")
             valid = false
+        }
+
+        if (!valid) {
+            if (!email.trim() || !/^[^\s@]+@[^\s@]+$/.test(email.trim())) {
+                emailInputRef.current?.focus()
+            } else {
+                passwordInputRef.current?.focus()
+            }
         }
 
         return valid
@@ -65,12 +88,15 @@ export default function RegisterPage() {
                     switch (result.code) {
                         case "INVALID_EMAIL":
                             setEmailError("รูปแบบอีเมลไม่ถูกต้อง")
+                            emailInputRef.current?.focus()
                             break
                         case "INVALID_PASSWORD_LENGTH":
                             setPasswordError("รหัสผ่านต้องมีความยาว 8 ตัวอักษรขึ้นไป")
+                            passwordInputRef.current?.focus()
                             break
                         case "PASSWORD_REJECTED":
                             setPasswordError("ไม่สามารถใช้รหัสผ่านนี้ได้ กรุณาเลือกรหัสผ่านอื่น")
+                            passwordInputRef.current?.focus()
                             break
                         default:
                             setSubmitError("ข้อมูลลงทะเบียนไม่ถูกต้อง กรุณาตรวจสอบข้อมูล")
@@ -132,6 +158,7 @@ export default function RegisterPage() {
                     }}
                 >
                     <TextField
+                        inputRef={ emailInputRef }
                         error={ Boolean(emailError) }
                         helperText={ emailError }
                         value={ email }
@@ -145,6 +172,7 @@ export default function RegisterPage() {
                         required
                     />
                     <TextField
+                        inputRef={ passwordInputRef }
                         error={ Boolean(passwordError) }
                         helperText={ passwordError ||
                             "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร และควรเป็นรหัสที่คาดเดายาก"
@@ -154,10 +182,31 @@ export default function RegisterPage() {
                         id="register-password"
                         name="password"
                         label="รหัสผ่าน"
-                        type="password"
+                        type={ showPassword ? "text" : "password" }
                         autoComplete="new-password"
                         fullWidth
                         required
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            type="button"
+                                            aria-label={
+                                                showPassword
+                                                    ? "ซ่อนรหัสผ่าน"
+                                                    : "แสดงรหัสผ่าน"
+                                            }
+                                            aria-pressed={ showPassword }
+                                            onClick={() => setShowPassword((value) => !value)}
+                                            edge="end"
+                                        >
+                                            { showPassword ? <Visibility /> : <VisibilityOff /> }
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }
+                        }}
                     />
                     { submitError && (
                         <Alert severity="error" role="alert">
