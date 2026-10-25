@@ -3057,3 +3057,27 @@ GitHub Actions run [40157448915](https://github.com/phansa2543/kijflow/actions/r
 **Founder-reported local verification after fix:** `npm ls zod` shows `zod@4.6.7`; `npm audit` found **0 vulnerabilities**; `npm run lint` PASS; `npm run build` PASS (Next.js 16.4.3 production compilation, TypeScript validation and 4 static pages). This resolves the known Zod security follow-up on the audited dependency tree at that time, **not a permanent guarantee of zero future vulnerabilities**. No `npm audit fix --force` was used.
 
 **Next:** proceed with approved M3 Registration Screen slice via Engineering Mentor, within previously approved M3 frontend design and backend authentication/CSRF boundaries. Keep real browser auth integration and remaining independently pending backend/security QA OPEN; M3 IN PROGRESS; Theme Foundation remains CLOSED; M4 NOT AUTHORIZED.
+
+---
+
+# M3 Registration Validation Feedback — Founder-approved Contract Change (2026-10-25)
+
+**Status: IMPLEMENTATION AUTHORIZED — NOT YET IMPLEMENTED / INDEPENDENT QA PENDING.** Following Product/UX, Tech Lead and Independent Security QA PASS WITH CONDITIONS reviews, Founder approved a narrow public-safe Registration error-contract refinement and elected to **retain the existing Registration UX without Confirm Password**.
+
+| Known outcome | HTTP | Public code | Frontend mapping |
+|---|---:|---|---|
+| Typed invalid email syntax | 422 | `INVALID_EMAIL` | Email field |
+| Typed password length invalid after authoritative NFC normalization (8–128 Unicode code points) | 422 | `INVALID_PASSWORD_LENGTH` | Password field |
+| Common OR compromised password screening rejection | 422 | `PASSWORD_REJECTED` | Password field; same code/message for both sources |
+| RequestValidationError / malformed or missing fields | 422 | `REGISTRATION_FAILED` | Generic form error |
+| Duplicate canonical email | 409 | `REGISTRATION_FAILED` | Generic form error (no account existence disclosure) |
+| Oversized body | 413 | `REGISTRATION_FAILED` | Generic form error |
+| Rate limited | 429 | `REGISTRATION_FAILED` | Generic form error; preserve Retry-After and no-store |
+| Screening or limiter unavailable | 503 | `REGISTRATION_FAILED` | Temporary unavailable/retry; fail closed |
+| Unexpected/internal exception | 500 | `REGISTRATION_FAILED` | Generic form error |
+
+**Engineering requirements:** use explicit typed semantic failures for known email/length validation, with boundary-safe translation; do not classify by exception messages. Unexpected `ValueError` must not turn into field-specific 422. Preserve route-local sanitized Framework/Pydantic 422, existing CSRF 403 boundary, unchanged registration request (only email/password) and success 201 response, persistence atomicity, no-session-on-registration, rate-limit quota accounting, and no sensitive/provider/internal information in errors/logs. No new endpoint, table, framework, session/cookie or Architecture changes.
+
+**UX:** keep existing Show/Hide Password design, do not add Confirm Password. Local required/email-format guidance and helpful Thai policy text may be displayed; backend remains sole policy authority for NFC-normalized Unicode code-point length and screening. Never use JS string.length or HTML maxlength as authoritative validation. Map recognized status+code to accessible inline errors; generic 422/unknown codes to form-level errors, 503 to temporary retry, 409 without asserting email exists, and 429 observing Retry-After. Deterministic input IDs, aria-invalid/describedby, keyboard focus and error announcements required.
+
+**Required QA before closure:** backend tests for exact code mappings, normalized 7/8/128/129 password boundaries, common/HIBP rejection equivalence, screening unavailable 503, framework-generated 422 sanitization, unknown exception generic fallback, duplicate and concurrent registration, CSRF, rate-limiting/quota/Retry-After, oversized body, no leaked sensitive input, no partial persistence/session issuance; frontend lint/build and real-browser error/accessibility/security regression; independent implementation review and Founder acceptance. Founder-led implementation with Engineering Mentor authorized; **M3 remains OPEN, M4 NOT AUTHORIZED**.
