@@ -2,7 +2,7 @@
 
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 
-import { useState, useRef, FormEvent } from "react"
+import { useState, useRef, useEffect, FormEvent } from "react"
 import { 
     Box, 
     Button, 
@@ -33,6 +33,27 @@ export default function RegisterPage() {
     const emailInputRef = useRef<HTMLInputElement>(null)
     const passwordInputRef = useRef<HTMLInputElement>(null)
 
+    type FocusTarget = "email" | "password"
+    const [focusRequest, setFocusRequest] = useState<{
+        target: FocusTarget
+        sequence: number
+    } | null>(null)
+
+    function requestFieldFocus(target: FocusTarget) {
+        setFocusRequest((previous) => ({
+            target,
+            sequence: (previous?.sequence ?? 0) + 1
+        }))
+    }
+
+    useEffect(() => {
+        if (focusRequest?.target === "email" && emailError) {
+            emailInputRef.current?.focus()
+        } else if (focusRequest?.target === "password" && passwordError) {
+            passwordInputRef.current?.focus()
+        }
+    }, [focusRequest, emailError, passwordError])
+
     function validateForm(): boolean {
         let valid = true
 
@@ -54,9 +75,9 @@ export default function RegisterPage() {
 
         if (!valid) {
             if (!email.trim() || !/^[^\s@]+@[^\s@]+$/.test(email.trim())) {
-                emailInputRef.current?.focus()
+                requestFieldFocus("email")
             } else {
-                passwordInputRef.current?.focus()
+                requestFieldFocus("password")
             }
         }
 
@@ -68,10 +89,11 @@ export default function RegisterPage() {
 
         if (isSubmitting || submitSuccess) return;
 
+        setSubmitError("")
+
         if (!validateForm()) return;
 
-        setIsSubmitting(true)
-        setSubmitError("")
+        setIsSubmitting(true)   
 
         try {
             const result = await registerUser(email, password)
@@ -161,8 +183,23 @@ export default function RegisterPage() {
                         inputRef={ emailInputRef }
                         error={ Boolean(emailError) }
                         helperText={ emailError }
+                        slotProps={{
+                            htmlInput: {
+                                "aria-describedby": emailError
+                                    ? "register-email-error"
+                                    : undefined
+                            },
+                            formHelperText: {
+                                id: "register-email-error"
+                            }
+                        }}
                         value={ email }
-                        onChange={ (event) => setEmail(event.target.value) }
+                        onChange={ 
+                            (event) => {
+                                setEmail(event.target.value)
+                                setEmailError("")
+                            } 
+                        }
                         id="register-email"
                         name="email"
                         label="อีเมล"
@@ -178,7 +215,12 @@ export default function RegisterPage() {
                             "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร และควรเป็นรหัสที่คาดเดายาก"
                          }
                         value={ password }
-                        onChange={ (event) => setPassword(event.target.value) }
+                        onChange={ 
+                            (event) => {
+                                setPassword(event.target.value)
+                                setPasswordError("")
+                            } 
+                        }
                         id="register-password"
                         name="password"
                         label="รหัสผ่าน"
@@ -187,6 +229,12 @@ export default function RegisterPage() {
                         fullWidth
                         required
                         slotProps={{
+                            htmlInput: {
+                                "aria-describedby": "register-password-helper"
+                            },
+                            formHelperText: {
+                                id: "register-password-helper"
+                            },
                             input: {
                                 endAdornment: (
                                     <InputAdornment position="end">
