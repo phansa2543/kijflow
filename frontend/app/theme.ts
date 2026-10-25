@@ -35,6 +35,16 @@ export const kijflowTheme = createTheme({
                     }
                 }
             }
+        },
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    "&.Mui-focusVisible": {
+                        outline: "3px solid #6D28D9",
+                        outlineOffset: "3px"
+                    }
+                }
+            }
         }
     }
 })
