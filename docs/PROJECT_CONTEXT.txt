@@ -1511,3 +1511,16 @@ Founder approved a limited public-safe Registration error-code contract: HTTP 42
 ## M3 Registration Password UX — Founder Clarification (2026-10-25)
 
 Founder directs that the Registration UI communicate only **minimum 8-character** password guidance; **maximum 128 need not be displayed** in helper text or password-length error feedback. Command Center's previous F3 requirement to show 8–128 in both UI strings is superseded; no further F3 copy change is required. Backend validation remains NFC-normalized **8–128 Unicode code points** and remains authoritative. This is an accepted UX trade-off, not a backend password-policy revision. F1/F2 source verification is recorded separately; independent QA and final M3 acceptance remain open. M4 NOT AUTHORIZED.
+
+
+---
+
+## M3 Registration QA Findings — Founder-requested Pause after B1 (2026-10-25)
+
+**Current state: PAUSED BY FOUNDER / M3 IN PROGRESS / M4 NOT AUTHORIZED.** After Independent QA returned FAIL on Registration Screen and Public-safe Error Contract combined acceptance (backend contract source-review PASS; browser acceptance not proven), Founder requested a development pause and documentation sync after B1 Password Visibility work. The pause does not cancel QA findings or approve the Registration slice.
+
+**B1 Password Visibility:** Implemented and pushed on `main` at `32136f3e6fabd3d9fb5eaed48d67c07f953da351` (`feat(auth): add accessible registration password visibility`); changes are limited to `frontend/app/register/page.tsx`, `frontend/package.json`, `frontend/package-lock.json`. GitHub Actions run [40185343630](https://github.com/phansa2543/kijflow/actions/runs/40185343630) SUCCESS **for backend CI only**. Frontend lint/build, screenshots/DOM and keyboard behavior are Founder/Engineering Mentor-reported; independent QA acceptance **PENDING**. Source includes MUI eye icons, initial hidden password, toggle accessible label and `aria-pressed`. No Confirm Password added.
+
+**Outstanding:** B2 Focus/Error Announcement **PENDING**, although the B1 commit also introduces some `inputRef` and focus calls; these partial changes have not established full accessibility or screen-reader acceptance. C1 consume valid `Retry-After` for HTTP 429 **NOT STARTED**; N1 align frontend email-format validation with authoritative backend accepted syntax **NOT STARTED / NON-BLOCKING**. No further implementation authorized while paused; resume only on Founder instruction, then focused corrections, browser/accessibility verification, Independent QA delta review and explicit Founder acceptance.
+
+**Preserve decisions:** minimum-only 8-character password copy, authoritative backend NFC 8–128 Unicode code points, unchanged public-safe error contract, CSRF/rate limiting/session boundaries, M3-only scope. M4 NOT AUTHORIZED.
