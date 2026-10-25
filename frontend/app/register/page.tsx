@@ -9,11 +9,9 @@ export default function RegisterPage() {
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [confirmPassword, setConfirmPassword] = useState("")
 
     const [emailError, setEmailError] = useState("")
     const [passwordError, setPasswordError] = useState("")
-    const [confirmPasswordError, setConfirmPasswordError] = useState("")
 
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -25,7 +23,6 @@ export default function RegisterPage() {
 
         setEmailError("")
         setPasswordError("")
-        setConfirmPasswordError("")
 
         if (!email.trim()) {
             setEmailError("กรุณากรอกอีเมล")
@@ -40,13 +37,6 @@ export default function RegisterPage() {
             valid = false
         }
 
-        if (!confirmPassword) {
-            setConfirmPasswordError("กรุณายืนยันรหัสผ่าน")
-            valid = false
-        } else if (password !== confirmPassword) {
-            setConfirmPasswordError("รหัสผ่านไม่ตรงกัน")
-            valid = false
-        }
         return valid
     }
 
@@ -67,7 +57,6 @@ export default function RegisterPage() {
                 case "success":
                     setSubmitSuccess(true)
                     setPassword("")
-                    setConfirmPassword("")
                     break
                 case "conflict":
                     setSubmitError("ไม่สามารถลงทะเบียนได้ กรุณาตรวจสอบข้อมูล")
@@ -171,10 +160,6 @@ export default function RegisterPage() {
                         required
                     />
                     <TextField
-                        error={ Boolean(confirmPasswordError) }
-                        helperText={ confirmPasswordError }
-                        value={ confirmPassword }
-                        onChange={ (event) => setConfirmPassword(event.target.value) }
                         id="register-confirm-password"
                         name="confirmPassword"
                         label="ยืนยันรหัสผ่าน"

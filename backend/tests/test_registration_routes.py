@@ -52,9 +52,9 @@ TestClient = partial(
         ),
         (
             ValueError("Unexpected validation"),
-            422,
+            500,
             "REGISTRATION_FAILED",
-            "Invalid registration data"
+            "An unexpected error occurred"
         ),
         (
             RegistrationConflict("Duplicate email"),
@@ -120,6 +120,8 @@ def test_registration_error_mapping(error, status_code, code, message):
 
     assert "Internal secret" not in response.text
     assert "Duplicate email" not in response.text
+
+    assert "Unexpected validation" not in response.text
 
 def test_registration_success_response():
     app = FastAPI()

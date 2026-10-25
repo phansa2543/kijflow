@@ -83,10 +83,6 @@ def register(
         return registration_error(
             422, "Password is not allowed", "PASSWORD_REJECTED"
         )
-    except ValueError:
-        return registration_error(
-            422, "Invalid registration data"
-        )
     except Exception:
         return registration_error(
             500, "An unexpected error occurred"
