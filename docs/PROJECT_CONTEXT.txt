@@ -1489,3 +1489,13 @@ GitHub Actions run [40157448915](https://github.com/phansa2543/kijflow/actions/r
 **Non-blocking QA follow-ups for Auth UI:** use explicit deterministic field IDs/labels for SSR accessibility; validate real mobile keyboard/error/focus and hydration behavior with actual forms; replace `Create Next App` metadata before customer-facing auth UI acceptance. The temporary smoke test is not a real Auth screen.
 
 **Next authorized M3 slice:** Incremental Registration/Login/Logout/pre-tenant session UI within the existing Founder-approved frontend design, with Engineering Mentor guidance and required frontend/browser security QA. **M3 remains IN PROGRESS, M4 NOT AUTHORIZED.**
+
+---
+
+# M3 Frontend Dependency Security Follow-up — Remediated (2026-10-25)
+
+**Status: REMEDIATED / Founder local verification PASS; committed on main.** The previously reported one HIGH npm audit finding was identified as GitHub Advisory `GHSA-mrhx-c7xc-m3w5` affecting transitive development dependency `zod@4.6.5` via `eslint-config-next@16.4.0 → eslint-plugin-react-hooks@7.1.1`. Founder ran `npm audit fix`; pushed commit `c21731f765f746b7421042ae4e8fe06f5ba92955` changes only `frontend/package-lock.json`, upgrading `zod` from `4.6.5` to `4.6.7` (`dev: true`), with no application-code change. GitHub Actions [40160281412](https://github.com/phansa2543/kijflow/actions/runs/40160281412) SUCCESS at this SHA (backend CI only; does not validate frontend lint/build).
+
+**Founder-reported local verification after fix:** `npm ls zod` shows `zod@4.6.7`; `npm audit` found **0 vulnerabilities**; `npm run lint` PASS; `npm run build` PASS (Next.js 16.4.3 production compilation, TypeScript validation and 4 static pages). This resolves the known Zod security follow-up on the audited dependency tree at that time, **not a permanent guarantee of zero future vulnerabilities**. No `npm audit fix --force` was used.
+
+**Next:** proceed with approved M3 Registration Screen slice via Engineering Mentor, within previously approved M3 frontend design and backend authentication/CSRF boundaries. Keep real browser auth integration and remaining independently pending backend/security QA OPEN; M3 IN PROGRESS; Theme Foundation remains CLOSED; M4 NOT AUTHORIZED.
