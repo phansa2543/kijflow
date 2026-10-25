@@ -2861,3 +2861,17 @@ Tech Lead technical verdict PASS WITH CONDITIONS. Product/UX proposed detailed t
 - Verify build/lint/browser regression; implementation and final M3 remain **OPEN**, not Founder-closed.
 
 **Scope:** M3 browser Register, Login, authenticated pre-tenant, Logout and session checking/recovery only; M4 Organization/Membership/tenant context remains excluded. Previous backend Cookie/CSRF and rewrite/proxy closure remains in force. AQ-014/AQ-016 unchanged.
+
+---
+
+## Founder Approval — M3 Registration Public-safe Validation Error Contract (2026-10-25)
+
+**Decision: APPROVED for Founder implementation**, after Product/UX, Tech Lead and Independent Security QA source/design reviews returned PASS WITH CONDITIONS. This is a narrow M3 Registration HTTP public-contract refinement, not a new Authentication architecture or full M3 acceptance.
+
+**Approved mapping:** intentionally typed known email-validation failure → HTTP 422 `INVALID_EMAIL`; typed password-length failure (after backend NFC normalization, 8–128 Unicode code points) → HTTP 422 `INVALID_PASSWORD_LENGTH`; unified local common/HIBP compromised password rejection → HTTP 422 `PASSWORD_REJECTED`. All other relevant errors retain `REGISTRATION_FAILED`: malformed/framework RequestValidationError 422, duplicate canonical email 409, oversized body 413, rate limiting 429, screening/limiter unavailable 503, unexpected/internal failure 500. Existing Origin/CSRF 403 behavior is unchanged. Do not match exception message strings; preserve generic safe public messages and sanitize framework 422. Unknown/unexpected ValueError must not masquerade as user validation.
+
+**Invariants:** no account-existence-specific code; no source/provider/compromise-count details; no plaintext password, token, sensitive request input, exception trace or internal identifier leaks; no changes to request/success schemas, registration transaction, CSRF, attempt accounting, session/cookie, rate limiting, or password screening policy; unavailable screening remains fail-closed 503 and never PASSWORD_REJECTED. Existing registration without automatic session issuance stays unchanged.
+
+**Frontend UX:** retain Founder-approved existing Registration UX **without Confirm Password**. Use inline safe local errors and map exact approved HTTP+public code; generic 422 and unknown codes stay form-level. Do not use JS string.length/HTML maxlength as backend password authority. Maintain deterministic labels/IDs and accessible error/focus behavior.
+
+**Implementation gate:** Founder writes code with Engineering Mentor guidance. Require typed validation classification, focused backend error-mapping/security regressions including duplicate/concurrent registration, rate limit, CSRF, rollback, sensitive-leakage, screening-failure and framework 422, then real-browser accessibility/integration and Independent QA before contract closure. M3 IN PROGRESS; Theme Foundation CLOSED; M4 NOT AUTHORIZED.
