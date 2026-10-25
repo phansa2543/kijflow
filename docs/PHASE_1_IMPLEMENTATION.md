@@ -3117,3 +3117,15 @@ GitHub Actions run [40157448915](https://github.com/phansa2543/kijflow/actions/r
 **Accepted Founder decisions remain unchanged:** no Confirm Password; minimum **8-character-only** password UI guidance without mandatory 128-character wording; backend remains authoritative for NFC-normalized **8–128 Unicode code points** and approved screening; public-safe error codes, trusted Origin/CSRF, abuse controls and atomic registration unchanged.
 
 **Resume gate:** only upon Founder instruction, Engineering Mentor supports Founder-led B2, C1 and N1 focused work; verify exact pushed diff/SHA and CI, local frontend lint/build, browser errors/focus/keyboard/mobile/screen reader, real Next.js→FastAPI→PostgreSQL and security cases; return to Independent QA for focused delta review, then obtain Founder Acceptance. Do not close Registration, M3, or start M4 while paused. Theme Foundation and previously CLOSED backend workstreams remain CLOSED.
+
+---
+
+## M3 Registration B2 — Pushed Checkpoint / Founder Pause (2026-10-25)
+
+**Current: M3 IN PROGRESS; Founder has paused further development. B2 Focus/Error Announcement is IMPLEMENTED / PUSHED, Independent QA PENDING, NOT CLOSED. Registration Screen retains prior QA FAIL / REMEDIATION status. M4 NOT AUTHORIZED.**
+
+GitHub `main` B2 commit: `9ad8ecb9e3199082c5c6494a559bfd7eda11df86`; changes only `frontend/app/register/page.tsx`. GitHub Actions run [40203623956](https://github.com/phansa2543/kijflow/actions/runs/40203623956) completed SUCCESS; this is not proof of frontend accessibility or frontend CI. Founder/Engineering Mentor report local lint/build PASS and visual focus checks for empty form, missing password, and repeated submit; independent browser and screen-reader verification remain outstanding.
+
+Source confirms sequence-based `focusRequest` with an Effect for repeatable client-side focus, explicit MUI helper IDs / `aria-describedby`, clearing field-specific stale errors when edited and clearing a previous submit error on a new attempt. **Important residual verification:** backend validation branches still call `inputRef.current?.focus()` directly, so the submitted B2 source does not yet demonstrate that backend-error focus always waits until React renders updated error descriptions. Also verify screen-reader announcements, repeated identical backend errors, keyboard/password-visibility interaction, and rendered accessible descriptions. These are QA risks, not independently confirmed user-facing defects.
+
+**Resume only on Founder instruction:** give the exact SHA to Independent QA for focused B2 source/browser/accessibility delta review; return verified defects to Engineering Mentor for Founder-led corrections. Only after B2 verification proceed to C1 HTTP 429 `Retry-After` (NOT STARTED). N1 email-format alignment remains NOT STARTED / NON-BLOCKING. Preserve no Confirm Password, minimum-only 8-character UI copy, backend NFC 8–128-code-point authority, public-safe error contracts, existing CSRF/session security and M3 scope. No M4.
