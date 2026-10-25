@@ -1505,3 +1505,9 @@ GitHub Actions run [40157448915](https://github.com/phansa2543/kijflow/actions/r
 ## M3 Registration Validation Feedback — Founder Approved (2026-10-25)
 
 Founder approved a limited public-safe Registration error-code contract: HTTP 422 `INVALID_EMAIL`, `INVALID_PASSWORD_LENGTH`, `PASSWORD_REJECTED`, with existing generic `REGISTRATION_FAILED` preserved for framework/malformed 422, duplicate 409, body-too-large 413, rate limit 429, screening/limiter unavailable 503 and unexpected 500; CSRF/Origin handling unchanged. Known validation classifications require typed exceptions; no exception-message matching or password-screening source disclosure. Existing Registration UX remains **without Confirm Password**. Implementation by Founder under Engineering Mentor is authorized; code is not yet implemented/QA-accepted. Security regression and Independent QA remain mandatory; M3 IN PROGRESS, M4 NOT AUTHORIZED.
+
+---
+
+## M3 Registration Password UX — Founder Clarification (2026-10-25)
+
+Founder directs that the Registration UI communicate only **minimum 8-character** password guidance; **maximum 128 need not be displayed** in helper text or password-length error feedback. Command Center's previous F3 requirement to show 8–128 in both UI strings is superseded; no further F3 copy change is required. Backend validation remains NFC-normalized **8–128 Unicode code points** and remains authoritative. This is an accepted UX trade-off, not a backend password-policy revision. F1/F2 source verification is recorded separately; independent QA and final M3 acceptance remain open. M4 NOT AUTHORIZED.
