@@ -3091,3 +3091,29 @@ GitHub Actions run [40157448915](https://github.com/phansa2543/kijflow/actions/r
 **Security/technical invariants unchanged:** authoritative Backend password length **8–128 Unicode code points after NFC**, rejection above 128, no silent truncation, existing common/compromised screening, approved `422 INVALID_PASSWORD_LENGTH` response, CSRF/rate-limit/persistence/session boundaries, and no frontend JS `string.length`/HTML `maxlength` as policy authority. Accepted UX trade-off: the one public password-length error code may display minimum-only guidance even for extraordinarily long inputs; do not silently modify backend policy or introduce new error codes. Keep no Confirm Password per Founder approval.
 
 **Evidence and gate:** GitHub `main` source review at `fad7f69a1f6cb7b431c21e47223b26852d9d4423` confirmed F1 Confirm Password removal and the retained minimum-only wording; previous source review at `36a3b8168e3480eebd333a5f0eb279da41495598` confirmed F2 unexpected ValueError maps generic 500. CI run 40180968867 SUCCESS (backend only); frontend lint/build remains Founder-reported, not CI independently proven. Next: Independent QA on full M3 Registration public-safe error contract and browser/UI/security/accessibility. Neither this decision nor prior source checks constitute independent QA acceptance or M3 closure; M4 NOT AUTHORIZED.
+
+
+---
+
+## M3 Registration Independent QA FAIL — B1 Implementation and Founder-requested Pause (2026-10-25)
+
+**Disposition: PAUSED by Founder after B1; Registration slice remains NOT ACCEPTED.** Independent QA reviewed the Registration Screen/Public-safe Error Contract at code commit `fad7f69a1f6cb7b431c21e47223b26852d9d4423` with `main` at `c73708f60d9811d5b5c40621bc8a94e17f1c9ede` and returned **FAIL** for combined acceptance. Backend public-safe mapping and security controls passed **source review only**, not a new independent local backend regression. Frontend B1 and B2 were blockers; C1 and N1 require follow-up. Full Next.js→FastAPI→PostgreSQL browser verification, screen-reader/mobile and frontend CI evidence were not established.
+
+### B1 Password visibility — IMPLEMENTED / LOCAL PASS REPORTED / INDEPENDENT QA PENDING
+
+- Verified pushed implementation `32136f3e6fabd3d9fb5eaed48d67c07f953da351` (`feat(auth): add accessible registration password visibility`), parent `c73708f60d9811d5b5c40621bc8a94e17f1c9ede`.
+- Exact committed diff: `frontend/app/register/page.tsx`, `frontend/package.json`, `frontend/package-lock.json`. Uses `@mui/icons-material` Visibility/VisibilityOff, hidden password initially, `IconButton` to toggle, stateful accessible label, `aria-pressed`, and ordinary keyboard-usable button semantics. No Confirm Password; backend untouched.
+- GitHub Actions [40185343630](https://github.com/phansa2543/kijflow/actions/runs/40185343630) **SUCCESS at exact B1 SHA**, but workflow runs **backend-only** tests, not frontend lint/build/browser.
+- Founder/Engineering Mentor reported frontend lint/build PASS, rendered icon and accessible DOM evidence, Tab/Enter/Space keyboard PASS; these are **not independently executed QA**. B1 is **not CLOSED**.
+
+### Remaining QA Findings — ON HOLD
+
+| Finding | Status at Founder pause | Resume acceptance requirement |
+|---|---|---|
+| B2 — validation focus and dynamic error announcement | **PENDING / PARTIALLY PRESENT IN SOURCE** | B1 commit already adds input refs and local/backend focus calls; verify actual first-invalid focus, consistent email validation, MUI input-error association, dynamic screen-reader announcements and unnecessary focus movement in real browser before accepting |
+| C1 — HTTP 429 Retry-After | **NOT STARTED** | Safely consume valid server `Retry-After` with fallback; no Backend limiter change or countdown framework |
+| N1 — frontend/backend email-format consistency | **NOT STARTED / NON-BLOCKING** | Avoid locally rejecting backend-accepted email syntax; Backend remains validation authority |
+
+**Accepted Founder decisions remain unchanged:** no Confirm Password; minimum **8-character-only** password UI guidance without mandatory 128-character wording; backend remains authoritative for NFC-normalized **8–128 Unicode code points** and approved screening; public-safe error codes, trusted Origin/CSRF, abuse controls and atomic registration unchanged.
+
+**Resume gate:** only upon Founder instruction, Engineering Mentor supports Founder-led B2, C1 and N1 focused work; verify exact pushed diff/SHA and CI, local frontend lint/build, browser errors/focus/keyboard/mobile/screen reader, real Next.js→FastAPI→PostgreSQL and security cases; return to Independent QA for focused delta review, then obtain Founder Acceptance. Do not close Registration, M3, or start M4 while paused. Theme Foundation and previously CLOSED backend workstreams remain CLOSED.
