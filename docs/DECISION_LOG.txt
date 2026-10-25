@@ -2875,3 +2875,13 @@ Tech Lead technical verdict PASS WITH CONDITIONS. Product/UX proposed detailed t
 **Frontend UX:** retain Founder-approved existing Registration UX **without Confirm Password**. Use inline safe local errors and map exact approved HTTP+public code; generic 422 and unknown codes stay form-level. Do not use JS string.length/HTML maxlength as backend password authority. Maintain deterministic labels/IDs and accessible error/focus behavior.
 
 **Implementation gate:** Founder writes code with Engineering Mentor guidance. Require typed validation classification, focused backend error-mapping/security regressions including duplicate/concurrent registration, rate limit, CSRF, rollback, sensitive-leakage, screening-failure and framework 422, then real-browser accessibility/integration and Independent QA before contract closure. M3 IN PROGRESS; Theme Foundation CLOSED; M4 NOT AUTHORIZED.
+
+---
+
+## M3 Registration Password UX — Founder Directive (2026-10-25)
+
+**Founder Decision: ACCEPTED.** The Registration form is to communicate the **minimum 8-character password requirement** in its user-facing helper/validation wording; it is **not required to display the 128-character upper bound**, including when rendering the public `INVALID_PASSWORD_LENGTH` error. The Founder explicitly rejected Command Center's F3 demand to add the 128-character maximum to both frontend strings. Existing wording that communicates at least 8 characters and encourages a hard-to-guess password is acceptable. Do not reopen this UI-copy change as a blocking F3 defect merely because the upper bound is absent.
+
+**Boundary:** This is a **Registration UX/copy decision only**. It does **not** change accepted backend password policy: NFC normalization, **8–128 Unicode code points**, no silent truncation, and required screening. Backend remains the authority; it must continue to reject inputs longer than 128 code points using approved public-safe `INVALID_PASSWORD_LENGTH`. No JS `string.length` or HTML `maxlength` may replace backend rules. Accepted UX trade-off: an unusually long password may receive minimum-focused guidance rather than the complete upper-bound rule; that trade-off does not permit backend validation bypass.
+
+**Effect on review:** F3 “maximum must appear in both Thai UI strings” is **SUPERSEDED / NO FRONTEND CHANGE REQUIRED**. F1 Confirm Password removal and F2 Unexpected ValueError classification were independently source-reviewed at commit `fad7f69a1f6cb7b431c21e47223b26852d9d4423` (F1) and `36a3b8168e3480eebd333a5f0eb279da41495598` (F2), respectively. Registration Contract and M3 remain **INDEPENDENT QA / FOUNDER ACCEPTANCE OPEN**. M4 remains NOT AUTHORIZED.
