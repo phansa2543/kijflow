@@ -7,6 +7,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
+from app.auth.domain.validation_errors import (
+    InvalidEmail,
+    InvalidPasswordLength
+)
+
 from app.auth.application.errors import (
     PasswordRejected,
     RegistrationConflict,
@@ -25,36 +30,53 @@ TestClient = partial(
 )
 
 @pytest.mark.parametrize(
-    "error, status_code, message",
+    "error, status_code, code, message",
     [
         (
             PasswordRejected("Rejected"),
             422,
-            "Invalid registration data",
+            "PASSWORD_REJECTED",
+            "Password is not allowed",
         ),
         (
-            ValueError("Invalid email"),
+            InvalidEmail("Invalid email"),
             422,
-            "Invalid registration data",
+            "INVALID_EMAIL",
+            "Invalid email"
+        ),
+        (
+            InvalidPasswordLength("Invalid length"),
+            422,
+            "INVALID_PASSWORD_LENGTH",
+            "Invalid password length"
+        ),
+        (
+            ValueError("Unexpected validation"),
+            422,
+            "REGISTRATION_FAILED",
+            "Invalid registration data"
         ),
         (
             RegistrationConflict("Duplicate email"),
             409,
+            "REGISTRATION_FAILED",
             "Registration could not be completed",
         ),
         (
             ScreeningUnavailable("HIBP unavailable"),
             503,
+            "REGISTRATION_FAILED",
             "Registration temporarily unavailable",
         ),
         (
             RuntimeError("Internal secret"),
             500,
+            "REGISTRATION_FAILED",
             "An unexpected error occurred",
         ),
     ],
 )
-def test_registration_error_mapping(error, status_code, message):
+def test_registration_error_mapping(error, status_code, code, message):
     app = FastAPI()
     app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
     app.include_router(router)
@@ -91,7 +113,7 @@ def test_registration_error_mapping(error, status_code, message):
     assert response.status_code == status_code
     assert response.json() == {
         "error": {
-            "code": "REGISTRATION_FAILED",
+            "code": code,
             "message": message,
         }
     }
@@ -501,3 +523,41 @@ def test_duplicate_origin_cannot_reach_registration_handler():
 
     assert response.status_code == 403
     handler_factory.assert_not_called()
+
+def test_registration_framework_validation_is_generic():
+    app = FastAPI()
+    app.state.trusted_frontend_origin = TRUSTED_TEST_ORIGIN
+    app.include_router(router)
+
+    app.state.db_engine = Mock()
+    app.state.common_passwords = set()
+    app.state.hibp_client = Mock()
+
+    app.state.registration_rate_limit_threshold = 10
+    app.state.registration_rate_limit_window_seconds = 900
+
+    with (
+        patch(
+            "app.auth.presentation.registration_limit_route.make_registration_limit_checker",
+            return_value=Mock(),
+        ),
+        patch(
+            "app.auth.presentation.routes.make_registration_handler",
+        ) as handler,
+    ):
+        client = TestClient(app, client=("192.0.2.10", 12345))
+
+        response = client.post(
+            "/auth/register",
+            json={"email": "alice@example.com"},
+        )
+
+        handler.assert_not_called()
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "error": {
+            "code": "REGISTRATION_FAILED",
+            "message": "Invalid registration data",
+        }
+    }

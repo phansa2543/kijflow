@@ -1,6 +1,7 @@
 import pytest
 
 from app.auth.domain.email import canonicalize_email
+from app.auth.domain.validation_errors import InvalidEmail
 
 def test_canonicalize_email_lowercase():
     raw_email = "Alice@example.com"
@@ -159,3 +160,7 @@ def test_canonicalize_email_accepts_custom_domain():
     actual = canonicalize_email(raw_email)
 
     assert actual == expected
+
+def test_invalid_email_raises_typed_exception():
+    with pytest.raises(InvalidEmail):
+        canonicalize_email("invalid-email")

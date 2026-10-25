@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 
+from app.auth.domain.validation_errors import (
+    InvalidEmail,
+    InvalidPasswordLength
+)
+
 from app.auth.infrastructure.registration_wiring import (
     make_registration_handler,
 )
@@ -27,15 +32,17 @@ router = APIRouter(
 def registration_error(
     status_code: int,
     message: str,
+    code: str = "REGISTRATION_FAILED"
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={
             "error": {
-                "code": "REGISTRATION_FAILED",
+                "code": code,
                 "message": message,
             }
         },
+        headers={ "Cache-Control": "no-store" }
     )
 
 @router.post(
@@ -64,7 +71,19 @@ def register(
         return registration_error(
             503, "Registration temporarily unavailable"
         )
-    except (PasswordRejected, ValueError):
+    except InvalidEmail:
+        return registration_error(
+            422, "Invalid email", "INVALID_EMAIL"
+        )
+    except InvalidPasswordLength:
+        return registration_error(
+            422, "Invalid password length", "INVALID_PASSWORD_LENGTH"
+        )
+    except PasswordRejected:
+        return registration_error(
+            422, "Password is not allowed", "PASSWORD_REJECTED"
+        )
+    except ValueError:
         return registration_error(
             422, "Invalid registration data"
         )

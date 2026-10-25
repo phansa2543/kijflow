@@ -2,6 +2,7 @@ import pytest
 
 from pathlib import Path
 
+from app.auth.domain.validation_errors import InvalidPasswordLength
 from app.auth.domain.password import (
     normalize_password, 
     prepare_password
@@ -210,3 +211,11 @@ def test_get_password_hash_parts():
     assert suffix == "C6008F9CAB4083784CBD1874F76618D2A97"
     assert len(prefix) == 5
     assert len(suffix) == 35
+
+@pytest.mark.parametrize("password", [
+    "abcdefg",
+    "a" * 129,
+])
+def test_invalid_password_length_raises_typed_exception(password):
+    with pytest.raises(InvalidPasswordLength):
+        prepare_password(password)
