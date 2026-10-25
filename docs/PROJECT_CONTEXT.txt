@@ -1499,3 +1499,9 @@ GitHub Actions run [40157448915](https://github.com/phansa2543/kijflow/actions/r
 **Founder-reported local verification after fix:** `npm ls zod` shows `zod@4.6.7`; `npm audit` found **0 vulnerabilities**; `npm run lint` PASS; `npm run build` PASS (Next.js 16.4.3 production compilation, TypeScript validation and 4 static pages). This resolves the known Zod security follow-up on the audited dependency tree at that time, **not a permanent guarantee of zero future vulnerabilities**. No `npm audit fix --force` was used.
 
 **Next:** proceed with approved M3 Registration Screen slice via Engineering Mentor, within previously approved M3 frontend design and backend authentication/CSRF boundaries. Keep real browser auth integration and remaining independently pending backend/security QA OPEN; M3 IN PROGRESS; Theme Foundation remains CLOSED; M4 NOT AUTHORIZED.
+
+---
+
+## M3 Registration Validation Feedback — Founder Approved (2026-10-25)
+
+Founder approved a limited public-safe Registration error-code contract: HTTP 422 `INVALID_EMAIL`, `INVALID_PASSWORD_LENGTH`, `PASSWORD_REJECTED`, with existing generic `REGISTRATION_FAILED` preserved for framework/malformed 422, duplicate 409, body-too-large 413, rate limit 429, screening/limiter unavailable 503 and unexpected 500; CSRF/Origin handling unchanged. Known validation classifications require typed exceptions; no exception-message matching or password-screening source disclosure. Existing Registration UX remains **without Confirm Password**. Implementation by Founder under Engineering Mentor is authorized; code is not yet implemented/QA-accepted. Security regression and Independent QA remain mandatory; M3 IN PROGRESS, M4 NOT AUTHORIZED.
