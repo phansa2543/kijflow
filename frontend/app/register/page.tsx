@@ -159,15 +159,6 @@ export default function RegisterPage() {
                         fullWidth
                         required
                     />
-                    <TextField
-                        id="register-confirm-password"
-                        name="confirmPassword"
-                        label="ยืนยันรหัสผ่าน"
-                        type="password"
-                        autoComplete="new-password"
-                        fullWidth
-                        required
-                    />
                     { submitError && (
                         <Alert severity="error" role="alert">
                             { submitError }
