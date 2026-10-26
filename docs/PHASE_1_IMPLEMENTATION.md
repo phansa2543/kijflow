@@ -3178,3 +3178,17 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 - **Pause:** Founder requested no further development until explicitly resumed; Engineering Mentor guidance, Independent QA and Founder-controlled code ownership unchanged; M4 **NOT AUTHORIZED**.
 
 **Next action upon Founder resumption:** use the previously approved "M3 C1 Real HTTP 429 Integration Verification" handoff. Collect actual local browser Network + UI evidence at the exact SHA; submit to Command Center and Independent QA; then separately seek explicit Founder C1 closure. Do not implement new test framework, rewrite, endpoint, limiter change, or additional feature without approved evidence and scope.
+
+---
+
+## M3 Authentication UI Polish — Founder Feedback / Scope Proposal (2026-10-26)
+
+**Status: PROPOSED / UX REVIEW PENDING / NOT AUTHORIZED TO IMPLEMENT.** Founder describes the current Kijflow UI as visually plain. Command Center recommends exploring **limited polish of M3 Authentication screens**, not a comprehensive redesign. This is not an independently confirmed product defect, agreed design specification, or Founder-approved scope expansion.
+
+**Candidate scope to evaluate:** improve visual hierarchy, typography, spacing, button/form finish, and Kijflow brand expression in the existing Registration/Login/authentication UI, ideally alongside work on unfinished M3 screens and using the already accepted MUI/Emotion Modern Minimal Purple foundation. Maintain accessibility, responsive behavior, clear Thai copy, and low solo-maintainer overhead.
+
+**Explicit exclusions from this proposal:** new Theme Foundation or styling stack, standalone design-system framework, new UI libraries without proven need, non-authentication Dashboard or Business Module design, and broad visual redesign. No changes to authentication, privacy/security, or acceptance contracts.
+
+**Required gate before implementation:** Product & UX Designer reviews the actual screens and provides a concrete minimal proposal, necessity/value, UX risks, estimated one-person development/maintenance burden, alternative of deferring visual polish, and accessibility/regression implications. Founder must explicitly approve any new work. QA then checks changed presentation against existing keyboard, error, screen-reader, and browser criteria; do not claim polish is mandatory to close M3 absent Founder acceptance.
+
+**Priority:** C1 real Next.js → FastAPI HTTP 429 verification remains the exact authorized resume point. Founder-requested development pause remains active, C1 overall OPEN, M3 IN PROGRESS, M4 NOT AUTHORIZED. This proposal does not reorder the approved M3 work or authorize work during the pause.
