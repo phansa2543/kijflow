@@ -128,7 +128,11 @@ export default function RegisterPage() {
                     }
                     break
                 case "rate_limited":
-                    setSubmitError("มีคำขอมากเกินไป กรุณาลองใหม่ภายหลัง")
+                    if (result.retryAfterSeconds !== null) {
+                        setSubmitError(`มีคำขอมากเกินไป กรุณารอประมาณ ${result.retryAfterSeconds} วินาทีก่อนลองใหม่`)
+                    } else {
+                        setSubmitError("มีคำขอมากเกินไป กรุณาลองใหม่ภายหลัง")
+                    }
                     break
                 case "unavailable":
                     setSubmitError("ไม่สามารถยืนยันผลการลงทะเบียนได้ในขณะนี้ กรุณาลองตรวจสอบอีกครั้งภายหลัง")

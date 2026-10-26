@@ -8,10 +8,13 @@ export type RegistrationResult =
             | "PASSWORD_REJECTED"
             | "REGISTRATION_FAILED"
     }
+    |{
+        status: "rate_limited"
+        retryAfterSeconds: number | null
+    }
     | {
         status: 
             | "conflict"
-            | "rate_limited"
             | "unavailable"
             | "error"
     }
@@ -20,6 +23,37 @@ type RegistrationErrorResponse = {
     error?: {
         code?: unknown
     }
+}
+
+function parseRetryAfter(value: string | null): number | null {
+    if (value === null) return null
+
+    const trimmed = value.trim()
+
+    if (/^\d+$/.test(trimmed)) {
+        const seconds = Number(trimmed)
+
+        return Number.isSafeInteger(seconds) && seconds > 0
+            ? seconds : null
+    }
+
+    const httpDatePattern = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT$/
+
+    if (!httpDatePattern.test(trimmed)) return null
+
+    const date = Date.parse(trimmed)
+
+    if (
+        !Number.isFinite(date) ||
+        new Date(date).toUTCString() !== trimmed
+    ) {
+        return null
+    }
+
+    const seconds = Math.ceil((date - Date.now()) / 1000)
+
+    return Number.isSafeInteger(seconds) && seconds > 0
+        ? seconds : null
 }
 
 export async function registerUser(
@@ -72,7 +106,12 @@ export async function registerUser(
                         }
                 }
             case 429:
-                return { status: "rate_limited" }
+                return { 
+                    status: "rate_limited",
+                    retryAfterSeconds: parseRetryAfter(
+                        response.headers.get("Retry-After")
+                    )
+                }
             case 503:
                 return { status: "unavailable" }
             default:
