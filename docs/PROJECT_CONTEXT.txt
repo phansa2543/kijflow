@@ -1574,3 +1574,17 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **B2 status reconciliation:** Engineering Mentor and Independent QA handoffs report **B2 Founder-directed closure by QA Exception** following correction commit `9b73b73373435f4c72792448135edc66c474dec8`. The GitHub Project Sources reviewed for this sync still contain the older B2 OPEN checkpoint, and the primary Founder acceptance record was not independently located. Preserve the handoff-reported closure as **reported / provenance pending**; do **not** relabel it Independent QA PASS, automatically reopen B2, or invent acceptance evidence. Registration Screen and final M3 acceptance are not closed. N1 email-format alignment remains separately tracked **NON-BLOCKING**.
 
 **Exact resume point (only after Founder resumes):** Engineering Mentor guides Founder to run actual local Next.js + FastAPI (+ existing PostgreSQL setup), trigger a controlled development-only registration rate-limit HTTP 429 through the same-origin route, record the real Network response `Retry-After` header, Thai UI Alert and keyboard/console behavior, and return exact tested SHA + evidence to Command Center for Independent QA review. Do not fake this with request interception or modify rate-limit/CSRF protections. Actual screen-reader evidence remains a separate open check. No code, framework, architecture, M4, or unrelated scope work is authorized during pause.
+
+---
+
+# Founder UI Feedback — M3 Visual Polish Proposal (2026-10-26)
+
+**Status: FEEDBACK RECORDED / PROPOSAL ONLY — NOT APPROVED FOR IMPLEMENTATION.** Founder reported that the current Kijflow UI feels plain. Command Center assessed the distinction between intentional minimalist usability and an unfinished/prototype appearance. This is qualitative Founder feedback, **not** a verified usability defect or an accepted redesign mandate.
+
+**Recommendation pending Product & UX review and explicit Founder approval:** consider *limited M3 Authentication UI polish* when completing the remaining M3 Login/Authentication frontend screens: visual hierarchy, typography, spacing, form/button finish, restrained brand identity, and consistency within the already approved Modern Minimal Purple / MUI Theme. Evaluate actual Registration/Login screens and usability/accessibility before choosing specific changes. Preserve an easy-to-use Thai SME product, a single MUI styling system, and one-person maintenance simplicity.
+
+**Not recommended / not authorized:** full UI redesign, changing the approved Theme Foundation or technology stack, building a new design-system framework, or designing dashboards/business modules under M3. Avoid opening a parallel redesign workstream that delays core Authentication/QA.
+
+**Trade-off:** focused polish can improve perceived readiness and trust while reusing the existing foundation, but premature changes can create rework and delay M3 closure. Review the concrete UI first and size any proposed polish against that cost.
+
+**Governance and pause:** The Founder asked to **document this topic**, not explicitly to authorize implementation or expand M3 scope. Product & UX Designer should assess the real screens, communicate necessity/benefits/risks/implementation and maintenance cost plus an in-scope alternative, and obtain explicit Founder approval **before** a new UI-polish task is added. Current Founder pause and the C1 Real HTTP 429 Integration resume point remain unchanged; M3 IN PROGRESS; M4 NOT AUTHORIZED.
