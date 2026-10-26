@@ -110,15 +110,15 @@ export default function RegisterPage() {
                     switch (result.code) {
                         case "INVALID_EMAIL":
                             setEmailError("รูปแบบอีเมลไม่ถูกต้อง")
-                            emailInputRef.current?.focus()
+                            requestFieldFocus("email")
                             break
                         case "INVALID_PASSWORD_LENGTH":
                             setPasswordError("รหัสผ่านต้องมีความยาว 8 ตัวอักษรขึ้นไป")
-                            passwordInputRef.current?.focus()
+                            requestFieldFocus("password")
                             break
                         case "PASSWORD_REJECTED":
                             setPasswordError("ไม่สามารถใช้รหัสผ่านนี้ได้ กรุณาเลือกรหัสผ่านอื่น")
-                            passwordInputRef.current?.focus()
+                            requestFieldFocus("password")
                             break
                         default:
                             setSubmitError("ข้อมูลลงทะเบียนไม่ถูกต้อง กรุณาตรวจสอบข้อมูล")
