@@ -47,15 +47,18 @@ export default function RegisterPage() {
     }
 
     useEffect(() => {
-        if (focusRequest?.target === "email" && emailError) {
+        if (!focusRequest) return
+
+        if (focusRequest.target === "email") {
             emailInputRef.current?.focus()
-        } else if (focusRequest?.target === "password" && passwordError) {
+        } else {
             passwordInputRef.current?.focus()
         }
-    }, [focusRequest, emailError, passwordError])
+    }, [focusRequest])
 
     function validateForm(): boolean {
         let valid = true
+        let isEmailInvalid = false
 
         setEmailError("")
         setPasswordError("")
@@ -63,9 +66,11 @@ export default function RegisterPage() {
         if (!email.trim()) {
             setEmailError("กรุณากรอกอีเมล")
             valid = false
+            isEmailInvalid = true
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
             setEmailError("รูปแบบอีเมลไม่ถูกต้อง")
             valid = false
+            isEmailInvalid = true
         }
 
         if (!password) {
@@ -74,11 +79,9 @@ export default function RegisterPage() {
         }
 
         if (!valid) {
-            if (!email.trim() || !/^[^\s@]+@[^\s@]+$/.test(email.trim())) {
-                requestFieldFocus("email")
-            } else {
-                requestFieldFocus("password")
-            }
+            requestFieldFocus(
+                isEmailInvalid ? "email" : "password"
+            )
         }
 
         return valid
