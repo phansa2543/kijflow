@@ -3151,3 +3151,30 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **Independent QA focused delta assignment (still pending, not a reported PASS):** verify client-side focus and repeated submits; backend validation focus after error render; repeated identical backend errors; rendered `aria-describedby` links / accessible descriptions; actual dynamic screen-reader error announcements; stale error clearing / unexpected focus movement; keyboard and Show/Hide Password interaction. Source sequencing reduces the specific B2-F1 timing risk but does not independently prove every rendered or assistive-technology behavior. Return only confirmed defects to Engineering Mentor for Founder-led targeted remediation; obtain Founder acceptance before marking B2 CLOSED.
 
 **Following gate:** C1 HTTP 429 `Retry-After` remains NOT STARTED; N1 email-format alignment remains NON-BLOCKING / NOT STARTED. Preserve approved minimum-only 8-character UI wording (backend NFC-normalized 8–128 Unicode code points authoritative), no Confirm Password, approved registration public-error/CSRF/session boundaries, and no M4 or unapproved M3 scope expansion. New outside-scope proposals require explicit Founder review before implementation, including necessity, benefit, risks, effort/maintenance impact and in-scope alternative.
+
+---
+
+## M3 C1 Retry-After — QA PASS for C1-F1 / Real Integration Pending / Founder Pause (2026-10-26)
+
+**Current milestone gate: M3 IN PROGRESS. Founder has paused development. M4 NOT AUTHORIZED.** Founder explicitly selected **Option A**: test real Next.js → FastAPI HTTP 429 `Retry-After` forwarding and Registration UI behavior **before proposing overall C1 closure**. This updates the previous historical "C1 NOT STARTED" checkpoint, not the underlying approved M3 scope.
+
+### Completed implementation and verified delta
+
+- Initial C1 frontend `Retry-After` consumption: `354b67f9bb04421b83ffdb2c2016013deceaee58` (`frontend/lib/api/registration.ts`, `frontend/app/register/page.tsx`). Supports positive integer seconds and canonical future HTTP-date, rejects unusable values to `null` and uses existing form-level generic error fallback; no countdown, backend change or new dependency.
+- Independent QA found **C1-F1**: valid July HTTP-date rejected by missing `Jul` month regex branch.
+- Founder-led correction `a4e9ffc3d0263a915cf8c83537e6d5e4b5513d8e`: only `frontend/lib/api/registration.ts`, one-line change adding `Jul`, no other logic/dependencies. **C1-F1 Independent QA PASS** at exact corrected SHA: independently executed parser regression **32/32 PASS**; mocked HTTP 429 mapping **4/4 PASS**. GitHub Actions [40302976718](https://github.com/phansa2543/kijflow/actions/runs/40302976718) **SUCCESS (backend job only)**.
+- Engineering Mentor / Founder final handoff at the same SHA: tracked working tree **CLEAN**, frontend lint/build **PASS** and Chrome **mock** response cases (numeric 60, missing, invalid header) **3/3 PASS**, **Founder-reported**; not independently rerun or established by backend CI. No confirmed defects in tested C1 cases.
+
+### Still OPEN — acceptance evidence
+
+1. **Real browser end-to-end rate-limit:** run Next.js same-origin frontend and FastAPI backend (existing PostgreSQL test/development configuration), exercise real registration HTTP 429 in a controlled *local development* environment; inspect Chrome Network HTTP status, positive `Retry-After` response header through the rewrite, browser UI Thai retry guidance, visible Alert, keyboard and console/hydration behavior. Do not treat mocked Fetch/Chrome interception or direct-to-FastAPI requests as proof. No production/external-user load or security bypass.
+2. **Actual screen-reader announcement:** NOT VERIFIED; keep explicitly open until independently tested or dispositioned through a subsequent, explicit Founder acceptance decision. MUI source `role="alert"` is not proof of actual announcement.
+3. **Final C1 acceptance:** Independent QA reviews the real integration evidence, distinguishing Founder-reported from independent executions; Command Center presents actual remaining limits to Founder. **Overall C1 OPEN; no automatic closure.**
+
+### Adjacent workstream status and pause boundary
+
+- **B2 Focus/Error Announcement:** Independent QA found B2-F2/F3 at historical `18e9febb39655b8d352a5fdee06ba037f8644260`; source corrections are reported at `9b73b73373435f4c72792448135edc66c474dec8`. Subsequent Engineering Mentor and QA handoffs **report Founder-directed B2 closure by QA Exception**; however, the primary Founder acceptance record has not been verified in the currently indexed GitHub Project Sources. Treat as **reported closure pending provenance reconciliation**, not Independent QA PASS and not a reason to repeat already corrected code. No unrelated B2 re-opening without a confirmed new defect.
+- **N1 email-validation alignment:** NON-BLOCKING, separately tracked; no scope expansion here. Registration Screen / broader M3 authentication, browser/security/independent QA gates remain OPEN as applicable.
+- **Pause:** Founder requested no further development until explicitly resumed; Engineering Mentor guidance, Independent QA and Founder-controlled code ownership unchanged; M4 **NOT AUTHORIZED**.
+
+**Next action upon Founder resumption:** use the previously approved "M3 C1 Real HTTP 429 Integration Verification" handoff. Collect actual local browser Network + UI evidence at the exact SHA; submit to Command Center and Independent QA; then separately seek explicit Founder C1 closure. Do not implement new test framework, rewrite, endpoint, limiter change, or additional feature without approved evidence and scope.
