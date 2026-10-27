@@ -3192,3 +3192,15 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **Required gate before implementation:** Product & UX Designer reviews the actual screens and provides a concrete minimal proposal, necessity/value, UX risks, estimated one-person development/maintenance burden, alternative of deferring visual polish, and accessibility/regression implications. Founder must explicitly approve any new work. QA then checks changed presentation against existing keyboard, error, screen-reader, and browser criteria; do not claim polish is mandatory to close M3 absent Founder acceptance.
 
 **Priority:** C1 real Next.js → FastAPI HTTP 429 verification remains the exact authorized resume point. Founder-requested development pause remains active, C1 overall OPEN, M3 IN PROGRESS, M4 NOT AUTHORIZED. This proposal does not reorder the approved M3 work or authorize work during the pause.
+
+---
+
+## M3 C1 — Founder-Approved QA Exception Closure (2026-10-26)
+
+**Current C1 status: CLOSED WITH QA EXCEPTION — FOUNDER APPROVED.** This supersedes historical C1 OPEN / pause checkpoints. M3 **IN PROGRESS**, Registration Overall Acceptance **OPEN**, M4 **NOT AUTHORIZED**.
+
+**Evidence:** C1-F1 parser regression **32/32** and mocked HTTP 429 **4/4** were independently executed and PASS. Independent QA verified unchanged application code between baseline `a4e9ffc3d0263a915cf8c83537e6d5e4b5513d8e` and Founder-tested HEAD `813165aaae5f0127b8f44490575d72adc3ce9ab9` (only three documentation files changed). Real Windows/Chrome → Next.js same-origin `POST http://localhost:3000/auth/register` → FastAPI → PostgreSQL limiter testing was **Founder/Engineering Mentor-reported**: attempts 1–10 HTTP 422, attempt 11 HTTP 429, `Retry-After: 281`, `Cache-Control: no-store`, visible Thai Alert/retry guidance, no observed JS exception. **Independent QA did not directly reproduce browser behavior or inspect HAR/recording.** Final QA verdict: **PASS WITH EXPLICIT LIMITATIONS**. No new confirmed C1 application defect. Initial HTTP 503 was reportedly a local outdated Alembic revision, resolved by applying existing migrations.
+
+**Accepted limitations / release gate:** Keyboard operation was not separately verified during final real HTTP 429; Independent QA did not require a repeat test for narrow C1 closure. Actual screen-reader announcement of MUI `role="alert"` on initial and repeated 429 is **UNVERIFIED**, **not accessibility QA PASS**. Founder explicitly accepted the risk for internal C1 closure; **real assistive-technology verification and remediation of confirmed defects are mandatory before any external-user access (including beta)**. Keep tracked in external-use acceptance checklist; never silently waive or call PASS.
+
+**Next:** Remaining Registration Screen acceptance and M3 authentication UI/session integration plus outstanding backend/security QA. C1 is not reopened merely because browser evidence is Founder-led. UI Polish stays PROPOSED pending separate review/approval. This decision does not approve new code, new dependencies, M4 or general M3 closure.
