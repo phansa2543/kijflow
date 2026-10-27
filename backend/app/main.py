@@ -9,6 +9,7 @@ from app.auth.infrastructure.common_passwords import load_common_passwords
 from app.auth.infrastructure.password_hash import hash_password
 from app.auth.infrastructure.login_counter_identifier import load_login_counter_hmac_secret
 
+from app.auth.presentation.session_route import session_router
 from app.auth.presentation.routes import router as auth_router
 from app.auth.presentation.login_route import login_router
 from app.auth.presentation.logout_route import logout_router
@@ -82,6 +83,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(login_router)
 app.include_router(logout_router)
+app.include_router(session_router)
 
 common_password_file = (
     Path(__file__).resolve().parent
