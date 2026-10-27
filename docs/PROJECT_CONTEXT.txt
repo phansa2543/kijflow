@@ -1612,3 +1612,13 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **Evidence/provenance:** B1 accepted within Registration; B2 Founder QA Exception closure reaffirmed although original standalone approval record was not located; earlier keyboard/focus evidence remains Founder-reported with incomplete historical exact-SHA provenance. N1 Email frontend/backend syntax mismatch NON-BLOCKING; C1 Retry-After retains its distinct CLOSED WITH QA EXCEPTION status; Theme Foundation, backend Cookie/CSRF, Next.js rewrite remain CLOSED. Other external release gates remain.
 
 **Current sequence:** M3 Registration & Authentication **IN PROGRESS**; Registration internal slice CLOSED. Next: Command Center coordinates M3 Login readiness/Engineering Mentor handoff under previously approved authentication design; **no Login implementation started or authorized by this document update**. M4 **NOT AUTHORIZED**. Founder writes implementation code by default. UI Polish remains PROPOSED only.
+
+---
+
+# Current Checkpoint — M3 Session Check Implemented / QA Pending (2026-10-27)
+
+**Current:** Registration **CLOSED WITH EXPLICIT QA EXCEPTIONS — INTERNAL ONLY**; Session Check **IMPLEMENTED / CI SUCCESS / INDEPENDENT QA PENDING, NOT CLOSED**; M3 IN PROGRESS; M4 NOT AUTHORIZED.
+
+Founder pushed `GET /auth/session` at `5c58019d7caf3fd5ddb5529f419be9a34ac08204`, changing only three backend files. Source implements cookie/PostgreSQL-authoritative 204 (no body), 401 or 503 with `Cache-Control: no-store`. GitHub Actions run 40464949396 **SUCCESS (462 passed, 1 skipped)**; Founder-local full suite had **461 passed, 1 skipped, 1 failed** in Login fixed-window counter independence, while targeted retest passed. Boundary-crossing test timing is plausible but **unconfirmed**. Independent QA owns focused endpoint acceptance and targeted regression failure disposition; no blanket Login Abuse Protection reopening.
+
+**Next:** Engineering Mentor coordinates a strictly limited M3 Login API Client + Login Screen under the accepted frontend design; maintain FD-1 uncertain-state handling and require authoritative Session Check 204 before claiming browser session confirmed. No M4 or new frameworks. Four Registration QA exceptions remain external-use gates (real INVALID_EMAIL, DOM description, 375×812 responsive, screen reader); other external security/license gates remain.
