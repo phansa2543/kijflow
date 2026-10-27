@@ -1600,3 +1600,15 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **Accessibility risk — mandatory before external access including beta:** Actual screen-reader error announcement (initial and repeated 429) is **UNVERIFIED**, not QA PASS. Founder accepted this limitation for internal C1 closure only; test with real assistive technology and fix any confirmed defects before external use. Final keyboard repetition was not observed, and independent QA deemed it unnecessary for narrow C1 acceptance.
 
 **Next M3 focus:** Finish Registration acceptance and remaining authenticated frontend/session workflows and independent backend/security QA. Limited UI Polish remains a **PROPOSAL** pending Product & UX review and separate Founder approval, not a redesign authorization. See DECISION_LOG for closure decision and PHASE_1_IMPLEMENTATION for evidence/acceptance detail. No M4 work.
+
+---
+
+# Latest Checkpoint — Registration Internal Closure / M3 Next Gate (2026-10-27)
+
+**Founder decision:** M3 Registration Screen + public-safe error contract **CLOSED WITH EXPLICIT QA EXCEPTIONS for INTERNAL DEVELOPMENT ONLY** at tested implementation baseline `5badd183b1e509a87c42109f0729c28fbbfbf786`. Supersedes earlier Registration OPEN checkpoints. No newly confirmed blocking implementation defect; browser results remain Founder-reported rather than independently QA-reproduced.
+
+**Four UNVERIFIED items, explicitly accepted as internal-only limitations:** actual browser `INVALID_EMAIL` 422 presentation; rendered Email `aria-describedby` helper association; final Registration 375×812 usability; actual screen-reader announcement of field/form errors including initial/repeated 429. All must be actually verified, and confirmed defects fixed, **before external-user access, including beta**. Do not label these QA PASS or equate Registration closure with release readiness.
+
+**Evidence/provenance:** B1 accepted within Registration; B2 Founder QA Exception closure reaffirmed although original standalone approval record was not located; earlier keyboard/focus evidence remains Founder-reported with incomplete historical exact-SHA provenance. N1 Email frontend/backend syntax mismatch NON-BLOCKING; C1 Retry-After retains its distinct CLOSED WITH QA EXCEPTION status; Theme Foundation, backend Cookie/CSRF, Next.js rewrite remain CLOSED. Other external release gates remain.
+
+**Current sequence:** M3 Registration & Authentication **IN PROGRESS**; Registration internal slice CLOSED. Next: Command Center coordinates M3 Login readiness/Engineering Mentor handoff under previously approved authentication design; **no Login implementation started or authorized by this document update**. M4 **NOT AUTHORIZED**. Founder writes implementation code by default. UI Polish remains PROPOSED only.
