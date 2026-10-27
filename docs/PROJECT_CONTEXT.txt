@@ -1622,3 +1622,15 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 Founder pushed `GET /auth/session` at `5c58019d7caf3fd5ddb5529f419be9a34ac08204`, changing only three backend files. Source implements cookie/PostgreSQL-authoritative 204 (no body), 401 or 503 with `Cache-Control: no-store`. GitHub Actions run 40464949396 **SUCCESS (462 passed, 1 skipped)**; Founder-local full suite had **461 passed, 1 skipped, 1 failed** in Login fixed-window counter independence, while targeted retest passed. Boundary-crossing test timing is plausible but **unconfirmed**. Independent QA owns focused endpoint acceptance and targeted regression failure disposition; no blanket Login Abuse Protection reopening.
 
 **Next:** Engineering Mentor coordinates a strictly limited M3 Login API Client + Login Screen under the accepted frontend design; maintain FD-1 uncertain-state handling and require authoritative Session Check 204 before claiming browser session confirmed. No M4 or new frameworks. Four Registration QA exceptions remain external-use gates (real INVALID_EMAIL, DOM description, 375×812 responsive, screen reader); other external security/license gates remain.
+
+---
+
+# Current Checkpoint — M3 Login UI Implemented / EM-L1 Narrow Correction (2026-10-27)
+
+**Registration:** CLOSED WITH EXPLICIT QA EXCEPTIONS for internal development only; all pre-external-use gates retained. **Backend Session Check:** implemented at `5c58019d7caf3fd5ddb5529f419be9a34ac08204`, Independent QA PENDING.
+
+**Login Frontend:** Founder implemented typed Login/Session clients and MUI Login page at `8c01816f70110d1cf1a5ac53ffa70eafb6b7943b` (three frontend files only). GitHub Actions run 40484431343 SUCCESS with **backend-only** 462 passed, 1 skipped; frontend lint/build and Login→Session browser tests are Founder-reported PASS, not independent QA PASS.
+
+**Source-confirmed EM-L1 UI issue:** `handleSubmit()` enters `authState="checking"` during Login POST, temporarily replacing the Login Form and hiding its loading label. Command Center authorized a **minimal Founder-led fix only**: preserve initial session `checking`, remove Submit's state transition, use `isSubmitting`, then QA review corrected SHA + focused delta evidence. No confirmed new security defect. Independent Login UI QA and separate Session Check QA remain PENDING; no final M3 acceptance.
+
+**Scope:** M3 IN PROGRESS; M4 NOT AUTHORIZED. Preserve FD-1 204 authoritative / 401 unauthenticated / 503 or network uncertain, global User without Org authority, closed Registration/C1 limitations and existing external-user accessibility/license/security gates. No shell, visual polish or unapproved architecture changes.
