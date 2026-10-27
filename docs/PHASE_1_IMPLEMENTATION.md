@@ -3224,3 +3224,19 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **PRE-EXTERNAL-USER BLOCKING GATE (including beta):** Verify actual browser `INVALID_EMAIL` handling, rendered error association, final Registration 375×812 usability and real screen-reader announcements (initial/repeated validation/form/429); remedy verified defects. Retain other pre-external-user obligations (AQ-014, AQ-016, security and release acceptance). No exception authorizes external exposure before remediation and acceptance.
 
 **Sequence:** Registration internal slice CLOSED; continue remaining M3 authentication work via explicit scoped coordination, starting with Login readiness/approved design review before Founder-led code. Do not treat this entry as authorization to begin coding Login or M4, or close Session/Logout/Password Screening independent QA still pending.
+
+---
+
+## M3 Session Check — Implemented / CI Success / Independent QA Pending (2026-10-27)
+
+**Status: IMPLEMENTED / PUSHED / CI SUCCESS / INDEPENDENT QA PENDING — NOT CLOSED.** Founder implementation commit `5c58019d7caf3fd5ddb5529f419be9a34ac08204` changes only `backend/app/auth/presentation/session_route.py`, `backend/app/main.py`, and `backend/tests/test_session_route.py`. The current `main` was source-identical to this commit at review time.
+
+`GET /auth/session` reuses the trusted cookie-to-PostgreSQL current-user dependency. Source review verifies HTTP **204** with no body for a valid session, **401** for missing/malformed/unknown/expired/revoked sessions, **503** for authoritative database resolution failure, and `Cache-Control: no-store` on these responses. No User ID/raw token/Organization context is exposed. No new dependency, migration, or architecture was added. Founder-reported focused Session Check tests: **9/9 PASS**.
+
+GitHub Actions [40464949396](https://github.com/phansa2543/kijflow/actions/runs/40464949396) finished **SUCCESS**, backend CI job **462 passed, 1 skipped** at exact implementation SHA. **Founder-local full regression was NOT all green:** **461 passed, 1 skipped, 1 failed** in `test_login_rate_limit.py::test_account_and_source_counters_are_independent`; targeted rerun was Founder-reported PASS. Source review found the test makes consecutive fixed-window reservations while SQL uses PostgreSQL `clock_timestamp()`; a window transition is a plausible timing-related explanation, **not a proven root cause**. Independent QA must disposition test determinism versus a confirmed production limiter defect, without automatically reopening accepted Login Abuse Protection solely from an unexplained local failure.
+
+**Next QA gate:** Independent QA focused review of exact Session Check SHA, route registration, authoritative cookie/PostgreSQL resolution, 204/401/503 fail-closed contract, no-store/body/cookie/no-sensitive-data behavior, test coverage and the single regression discrepancy. CI green is not independent QA acceptance. Escalate a confirmed security/production defect.
+
+**Next approved frontend preparation scope:** Under existing Founder-approved M3 frontend design, Engineering Mentor may guide Founder-led **Login API Client + Login Screen** as a small next slice, with full integrated authentication/pre-tenant acceptance dependent on Session Check QA and real browser evidence. Preserve FD-1: network/503 uncertainty is neither authenticated nor signed-out; positive authenticated state must derive from authoritative `GET /auth/session` 204. Do not implement M4, Organization context, JWT, new frameworks, or UI Polish without separate approval.
+
+**Project status:** Registration CLOSED WITH EXPLICIT QA EXCEPTIONS (internal only); Session Check QA PENDING; M3 IN PROGRESS; M4 NOT AUTHORIZED.
