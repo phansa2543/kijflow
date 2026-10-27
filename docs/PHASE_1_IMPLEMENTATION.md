@@ -3204,3 +3204,23 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **Accepted limitations / release gate:** Keyboard operation was not separately verified during final real HTTP 429; Independent QA did not require a repeat test for narrow C1 closure. Actual screen-reader announcement of MUI `role="alert"` on initial and repeated 429 is **UNVERIFIED**, **not accessibility QA PASS**. Founder explicitly accepted the risk for internal C1 closure; **real assistive-technology verification and remediation of confirmed defects are mandatory before any external-user access (including beta)**. Keep tracked in external-use acceptance checklist; never silently waive or call PASS.
 
 **Next:** Remaining Registration Screen acceptance and M3 authentication UI/session integration plus outstanding backend/security QA. C1 is not reopened merely because browser evidence is Founder-led. UI Polish stays PROPOSED pending separate review/approval. This decision does not approve new code, new dependencies, M4 or general M3 closure.
+
+---
+
+## M3 Registration — Founder Internal Acceptance with Explicit QA Exceptions (2026-10-27)
+
+**CURRENT REGISTRATION STATUS: CLOSED WITH EXPLICIT QA EXCEPTIONS — FOUNDER APPROVED, INTERNAL DEVELOPMENT ONLY.** This supersedes older Registration OPEN and evidence-blocked checkpoints; it does **not** close M3. M3 **IN PROGRESS**; M4 **NOT AUTHORIZED**.
+
+**Acceptance evidence boundary:** Independent QA reviewed current source, public-safe 422 mappings, backend tests, B1/B2 corrections, and C1 tests. Founder-led real-browser / PostgreSQL evidence reports Registration 201, atomic User + PasswordCredential persistence, `INVALID_PASSWORD_LENGTH`, `PASSWORD_REJECTED`, generic duplicate 409, error clearing, focus stability, keyboard and Show/Hide Password outcomes. No new confirmed blocking implementation defect; browser behavior was not independently reproduced by QA. Tested implementation baseline `5badd183b1e509a87c42109f0729c28fbbfbf786`; follow-on docs-only commits do not themselves prove runtime results.
+
+**Founder-approved EXCEPTIONS — NOT QA PASS:**
+- Real HTTP 422 `INVALID_EMAIL` response displayed through actual Registration browser UI is UNVERIFIED (independent source/backend-test path verified; input `alice..smith@example.com` appears reachable).
+- Rendered Email input `aria-describedby` and `register-email-error` DOM association is UNVERIFIED despite matching source IDs.
+- Responsive layout at final Registration viewport 375×812 remains UNVERIFIED; existing source/mobile Theme Foundation evidence is supporting, not final-form runtime PASS.
+- Actual assistive-technology/screen-reader announcements for Registration field/form errors and initial/repeated 429 remain UNVERIFIED.
+
+**B1/B2 and ancillary disposition:** B1 Password Visibility accepted as part of Registration on source review + Founder-reported prior browser outcomes; no new separate B1 acceptance test. B2 source corrections verified; prior Founder-directed QA Exception closure reported but original primary acceptance record not found. Founder explicitly reaffirms this scoped internal B2 closure; do not call independent screen-reader PASS. Prior Chrome keyboard/focus evidence was Founder-reported, historical exact executed SHA incompletely proven and accepted with attribution limitation. Duplicate 409 body was not visible in DevTools, but prior backend response tests and generic UI were considered sufficient; no new duplicate persistence test mandatory. Screening 503 and browser CSRF negative accepted using previously approved backend/source evidence, not falsely called independently reproduced browser runs. N1 remains NON-BLOCKING.
+
+**PRE-EXTERNAL-USER BLOCKING GATE (including beta):** Verify actual browser `INVALID_EMAIL` handling, rendered error association, final Registration 375×812 usability and real screen-reader announcements (initial/repeated validation/form/429); remedy verified defects. Retain other pre-external-user obligations (AQ-014, AQ-016, security and release acceptance). No exception authorizes external exposure before remediation and acceptance.
+
+**Sequence:** Registration internal slice CLOSED; continue remaining M3 authentication work via explicit scoped coordination, starting with Login readiness/approved design review before Founder-led code. Do not treat this entry as authorization to begin coding Login or M4, or close Session/Logout/Password Screening independent QA still pending.
