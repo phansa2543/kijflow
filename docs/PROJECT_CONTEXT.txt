@@ -1588,3 +1588,15 @@ GitHub Actions [40291193143](https://github.com/phansa2543/kijflow/actions/runs/
 **Trade-off:** focused polish can improve perceived readiness and trust while reusing the existing foundation, but premature changes can create rework and delay M3 closure. Review the concrete UI first and size any proposed polish against that cost.
 
 **Governance and pause:** The Founder asked to **document this topic**, not explicitly to authorize implementation or expand M3 scope. Product & UX Designer should assess the real screens, communicate necessity/benefits/risks/implementation and maintenance cost plus an in-scope alternative, and obtain explicit Founder approval **before** a new UI-polish task is added. Current Founder pause and the C1 Real HTTP 429 Integration resume point remain unchanged; M3 IN PROGRESS; M4 NOT AUTHORIZED.
+
+---
+
+# Latest Checkpoint — M3 C1 Closed / Development Resumed (2026-10-26)
+
+**Current status:** M3 Registration & Authentication **IN PROGRESS — RESUMED**. **C1 Retry-After CLOSED WITH QA EXCEPTION, explicitly Founder-approved.** This supersedes older C1 OPEN and Founder-pause checkpoints. Registration Overall Acceptance remains OPEN; M4 **NOT AUTHORIZED**.
+
+**Evidence boundary:** Independent QA C1-F1 parser **32/32 PASS**, mocked 429 **4/4 PASS**, and source equivalence between implementation baseline `a4e9ffc3d0263a915cf8c83537e6d5e4b5513d8e` and tested HEAD `813165aaae5f0127b8f44490575d72adc3ce9ab9`. Real Next.js → FastAPI → PostgreSQL HTTP 429, `Retry-After: 281` and visible Thai Alert are **Founder/Engineering Mentor-reported PASS**, not independently QA browser reproduced. Final QA verdict: **PASS WITH EXPLICIT LIMITATIONS**.
+
+**Accessibility risk — mandatory before external access including beta:** Actual screen-reader error announcement (initial and repeated 429) is **UNVERIFIED**, not QA PASS. Founder accepted this limitation for internal C1 closure only; test with real assistive technology and fix any confirmed defects before external use. Final keyboard repetition was not observed, and independent QA deemed it unnecessary for narrow C1 acceptance.
+
+**Next M3 focus:** Finish Registration acceptance and remaining authenticated frontend/session workflows and independent backend/security QA. Limited UI Polish remains a **PROPOSAL** pending Product & UX review and separate Founder approval, not a redesign authorization. See DECISION_LOG for closure decision and PHASE_1_IMPLEMENTATION for evidence/acceptance detail. No M4 work.
