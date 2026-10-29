@@ -335,6 +335,8 @@ Phase 1 includes:
 - Organization
 - Membership
 - Self-service User registration
+- Global Account Security: Email Verification and Password Recovery/Reset (M3.5)
+- Verified current canonical login email required before Organization creation
 - Self-service Organization creation
 - Authentication
 - Trusted Organization context
@@ -421,6 +423,7 @@ Phase 1 must provide the minimum browser-operable interface for all approved cus
 Frontend implementation proceeds incrementally with the milestone that introduces each Foundation workflow.
 
 - M3: Registration, Login, Logout, authenticated pre-tenant state, and authentication error/recovery behavior.
+- M3.5: Verify canonical login email; recover/reset password securely, revoke all existing sessions on successful reset, and support browser workflows without Organization context.
 - M4: Zero-Organization experience, Organization creation, discovery, selection, switching, current Organization visibility, and minimal application shell.
 - M5: Safe tenant-context switching, stale-context recovery, and tenant-aware frontend state/cache isolation.
 - M6: Authorization-aware actions, navigation, and Access Denied handling.
@@ -1919,11 +1922,55 @@ Milestone 3 is complete when:
 
 ---
 
+## Milestone 3.5 — Global Account Security
+
+**Status:** Scope and placement FOUNDER APPROVED (DEC-012, 2026-10-29); detailed design, implementation and independent QA NOT STARTED. Begin only after formal M3 closure and subsequent explicit implementation authorization.
+
+### Goal
+
+Provide global User Identity mailbox verification and self-service password recovery before Organization bootstrap, without relying on Organization, Membership, trusted tenant context or tenant RLS.
+
+### Founder-Approved Scope and Policies (F1–F4)
+
+- Email Verification establishes proof of control of the **current canonical login email**. An authenticated but unverified User may Login but **cannot create an Organization**; Backend enforcement is authoritative.
+- Password Recovery/Reset supports users who forgot their password through proof sent to their canonical login email, with public-safe, account-enumeration-resistant responses.
+- A successful reset must validate and consume its intended recovery proof, replace the credential using the existing M3 password policy, **revoke every existing Session for that User**, and require normal Login; no automatic new Session.
+- A successful reset based on valid proof of the **current** canonical login mailbox also marks that email verified. Stale or mismatched mailbox proof cannot verify a newer/different email.
+- Neither workflow grants Membership, Ownership, tenant access or Organization context. M7 Invitation retains separate identity/recipient binding requirements.
+
+### Minimum Design and Delivery Work
+
+- Define verification state associated with the canonical login credential; migrate existing accounts without falsely treating unproven email as verified.
+- Define minimal purpose-bound, unpredictable, expiring, one-time verification and recovery tokens; never persist/log raw secrets and reject replay.
+- Introduce a narrow outbound account-email delivery boundary, safe sending/failure/resend behaviors and abuse/rate-limit controls without a generic messaging platform.
+- Verify normal, expired, invalid, replayed and delivery-unavailable behaviors. Ensure password reset reuses M3 password validation, screening and hashing.
+- Make token consumption, password update, all-session revocation and F4 verification state **transactionally consistent**; rejected attempts must not produce partial authority.
+- Provide minimal browser-operable Verification and Forgot/Reset Password experiences with accessible, safe recovery and uncertain/error states under DEC-010.
+- Test relevant security outcomes with real FastAPI/PostgreSQL and browser; maintain independent QA and CI regression evidence.
+
+### Explicit Non-Goals
+
+No M3 change/reopen; no Organization creation implementation in M3.5; no Membership, Invitation or Owner workflow; no MFA/SSO/social login; no customer-managed identity platform; no secondary email, email-change UX or generic notification infrastructure. Do not impose an Organization dependency on global account recovery.
+
+### Acceptance Criteria (M3.5)
+
+- User can demonstrate control of their current canonical email and receive authoritative verified status; failed/expired/used tokens cannot verify.
+- Unverified User can authenticate, but cannot create Organization when M4 implements creation; the M4 gate is covered by backend and browser tests.
+- Forgot Password does not materially enumerate known versus unknown accounts and is protected from abuse.
+- Valid single-use recovery enables password replacement under existing M3 policy; invalid, stale, expired or replayed proof cannot change credentials.
+- Successful reset marks the proven current mailbox verified, revokes all existing User sessions and requires normal Login; old password/sessions no longer authenticate.
+- Changes to password/email verification state never create another global User or change Organization/Membership.
+- Outbound-email behavior, database migration, browser UX, security regression and independent QA are validated to the appropriate milestone and deployment environment.
+
+**Design still pending:** token persistence/TTL, provider, resend, exact endpoints, UX layouts, rate limits and cleanup details. They require focused M3.5 design and security review; DEC-012 does not authorize implementation.
+
+---
+
 ## Milestone 4 — Organization Bootstrap & Trusted Organization Context
 
 ### Goal
 
-Enable authenticated Users to create Organizations through self-service and establish trusted Organization context only through validated Membership.
+Enable authenticated Users **with a verified current canonical login email** to create Organizations through self-service and establish trusted Organization context only through validated Membership.
 
 ### Scope
 
@@ -1998,6 +2045,7 @@ Client input alone cannot establish trusted Organization context.
 
 ### Security Requirements
 
+- Organization creation requires authoritative proof that the requesting User's current canonical login email is verified (DEC-012); an authenticated unverified User is denied creation without weakening Login.
 - Organization creation and Owner establishment form one valid operation.
 - Creator becomes Owner through trusted system behavior.
 - Arbitrary client input cannot assign Owner authority.
@@ -2021,9 +2069,10 @@ Client input alone cannot establish trusted Organization context.
 
 Milestone 4 is complete when:
 
-- authenticated User can create their first Organization,
+- authenticated User with verified current canonical login email can create their first Organization,
+- authenticated User without verified current canonical login email cannot create an Organization,
 - creator receives Owner Membership through trusted system behavior,
-- existing authenticated User can create an additional Organization,
+- existing authenticated User with verified current canonical login email can create an additional Organization,
 - each new Organization has independent ownership and Membership,
 - failed bootstrap does not leave invalid partial state,
 - system can identify Organizations the authenticated User is permitted to access,
@@ -2474,6 +2523,7 @@ This includes:
 
 Milestone 7 is complete when:
 
+- invitations retain secure recipient binding and do not rely solely on unverified login-email equality or verified-email flag alone,
 - invitations support new Users without Founder-created credentials,
 - invitations support existing Users without duplicate Identity,
 - accepted invitation can establish usable Membership,
@@ -2520,6 +2570,7 @@ Validate:
 - multi-Organization Membership
 - registration
 - authentication
+- M3.5 email verification, password recovery/reset, all-session reset revocation, and recovery-as-mailbox-verification proof
 - self-service Organization bootstrap
 - trusted Organization-context establishment
 - Organization switching
@@ -2980,6 +3031,7 @@ Phase 1 is complete only when:
 2. All applicable Founder-accepted decisions, including DEC-001 through DEC-011, remain preserved.
 3. Global Identity and multi-Organization Membership behavior are validated.
 4. Authentication is validated.
+4a. M3.5 Email Verification and Password Recovery/Reset are validated; M4 Organization creation requires verified canonical email, successful reset revokes all sessions and requires Login, and recovery proof for the current mailbox marks that email verified.
 5. Trusted Organization-context establishment is validated.
 6. Tenant isolation is validated through real PostgreSQL-backed and adversarial testing.
 7. Owner/Admin/Member authorization behavior is validated.
