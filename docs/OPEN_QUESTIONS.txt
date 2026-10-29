@@ -966,6 +966,32 @@ The decision should remain deferred until the first Business Module is sufficien
 
 ---
 
+## SQ-001A — Future Pricing / Packaging Candidate (Founder-Requested Documentation, 2026-10-29)
+
+Status:
+
+Open — **Future Phase 5 design candidate**, documented at Founder request; **not final Pricing/Packaging approval**, not a Phase 1 or Phase 2 implementation requirement.
+
+Proposed commercial model:
+
+- An Organization selects independently usable Business Modules, or a Package/Bundle covering an eligible combination.
+- **Module price**: recurring monthly price for a Module acquired independently at the Organization level.
+- **Package price**: separately published recurring monthly offer for the included Module combination; it may be less than the sum of standalone Module prices.
+- **Additional User price**: recurring monthly charge per eligible additional User **once per Organization**, not multiplied by the number of Modules; one Owner is conceptually included. No prepaid/reserved seat pool. Exact billable-membership definition (Active/Disabled/Revoked, timing) remains unresolved.
+- Illustrative calculation only: **monthly total = selected standalone Module prices OR applicable Package price, plus additional billable User charges**. Do not add both Module and Package prices for the same included Modules.
+- If standalone selections qualify for an equivalent lower-priced Package under the same commercial conditions, propose/offer the applicable Package price; price must not depend solely on whether selection occurred on the marketing Landing Page or inside the application.
+- Preserve a selected Package as **purchase intent** through Register/Login and Organization creation/selection when practical; re-confirm the offer and Organization at Checkout rather than requiring duplicate package selection.
+- **Checkout follows choosing or creating the paying Organization.** Purchase intent does not itself create Subscription or Module Entitlement.
+- Keep Module Entitlement (Phase 2) distinct from Subscription/Billing (Phase 5), and both distinct from User/Membership Authorization (Foundation). Do not predetermine Subscription cardinality or detailed data model.
+
+Examples such as Sales ฿399/month, Inventory ฿299/month, a combined Package ฿599/month and Additional User ฿79/month are **illustrative only, not approved rates or price points**.
+
+Deferred decisions for Phase 5: actual prices, package eligibility, bundles, discount application and best-price rules, effective dates/price changes, monthly vs annual terms, taxes, trial/free-tier, precise billable User lifecycle, proration, refunds, cancellation, payment provider, checkout ownership capability and Subscription/Entitlement behavior. Validate against the first real Business Module and target SME market before approval.
+
+**Boundary:** This records the current planning conversation without revising DEC-006/DEC-007, closing SQ-001/SQ-002, or authorizing Phase 1 code/architecture changes.
+
+---
+
 ## SQ-002
 
 Should modules be independently priced?
