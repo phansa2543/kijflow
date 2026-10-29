@@ -1634,3 +1634,25 @@ Founder pushed `GET /auth/session` at `5c58019d7caf3fd5ddb5529f419be9a34ac08204`
 **Source-confirmed EM-L1 UI issue:** `handleSubmit()` enters `authState="checking"` during Login POST, temporarily replacing the Login Form and hiding its loading label. Command Center authorized a **minimal Founder-led fix only**: preserve initial session `checking`, remove Submit's state transition, use `isSubmitting`, then QA review corrected SHA + focused delta evidence. No confirmed new security defect. Independent Login UI QA and separate Session Check QA remain PENDING; no final M3 acceptance.
 
 **Scope:** M3 IN PROGRESS; M4 NOT AUTHORIZED. Preserve FD-1 204 authoritative / 401 unauthenticated / 503 or network uncertain, global User without Org authority, closed Registration/C1 limitations and existing external-user accessibility/license/security gates. No shell, visual polish or unapproved architecture changes.
+
+---
+
+# Founder-Approved Phase 1 M3.5 Placement and Account Security Policies (2026-10-29)
+
+**Authority:** DEC-012, Founder explicitly approved F1–F4. This supersedes older statements that Phase 1 has no placement for Email Verification/Password Recovery, but does **not** reopen the M3 design or its acceptance record.
+
+**Phase 1 milestone sequence:** M1 → M2 → M3 → **M3.5 Global Account Security** → M4 → M5 → M6 → M7 → M8. M4–M8 numbering and existing responsibilities are preserved.
+
+**M3.5 owns Global User account security only:** Email Verification of the current canonical login email, and Password Recovery/Reset via safe mailbox proof. This work remains independent of Organization, Membership, tenant context, and Owner/Admin/Member capabilities.
+
+**F2:** Unverified global Users may Login; **M4 Organization creation requires Backend-validated verification of the current canonical login email**. This does not authorize early M4 implementation.
+
+**F3:** Successful password reset must revoke **all** existing User auth Sessions and require normal Login, without auto-login.
+
+**F4:** Successful reset supported by valid recovery proof for the **current canonical login mailbox** also marks that email verified; stale/mismatched proof must not verify another mailbox. Credential/token/session/verification changes must be consistently enforced.
+
+**Implementation boundary:** M3 **IN PROGRESS, UNCHANGED**. Its Registration internal QA exceptions, pending Session Check and Login QA, EM-L1 narrow correction, and all external-release gates remain unchanged. M3.5 **FOUNDER-APPROVED PLACEMENT / DETAILED DESIGN AND IMPLEMENTATION NOT STARTED**; start detailed review after M3 closure. M4 **NOT AUTHORIZED**. No code, schema changes or new UI implementation is implied by this documentation decision.
+
+**Design to resolve later:** token persistence/expiry, account-email provider/delivery failure handling, resend and abuse policy, reset/verification browser UX, security regression and Independent QA. M7 Invitation must retain its own recipient-identity binding and never equate unverified email equality with mailbox control.
+
+**Project Sources:** DEC-012 in DECISION_LOG; scope, M3.5 and M4/M7/M8 acceptance implications in PHASE_1_IMPLEMENTATION; open technical design details tracked in OPEN_QUESTIONS.
