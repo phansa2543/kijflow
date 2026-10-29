@@ -2927,3 +2927,39 @@ Tech Lead technical verdict PASS WITH CONDITIONS. Product/UX proposed detailed t
 **Mandatory gate before ANY external-user access, including beta:** Independently/adequately verify real `INVALID_EMAIL` browser presentation, rendered accessible descriptions, final Registration mobile usability, actual screen-reader announcements (initial/repeated field/form errors including 429) and remediate any confirmed defects. Also retain all previously documented AQ-014/AQ-016 and other security/release gates. Internal acceptance does not waive these requirements or imply external access approval.
 
 **Next work:** M3 remains **IN PROGRESS**; M4 **NOT AUTHORIZED**. Founder directs Registration acceptance resolution before Login implementation; now that Registration is closed internally, Command Center may coordinate a **separately scoped M3 Login readiness/design/Engineering Mentor handoff**, with implementation by Founder only on explicit authorization. No Login implementation, M4 code, new frameworks, or unrelated scope changes are authorized by this documentation sync.
+
+---
+
+# DEC-012 — Phase 1 Global Account Security Placement and Account-Lifecycle Policies
+
+## Date
+2026-10-29
+
+## Status
+FOUNDER APPROVED — F1–F4. **Decision/documentation only; no implementation authorization.**
+
+## Context
+The Founder separately approved Email Verification and Password Recovery/Reset as Phase 1 SaaS Foundation requirements. The Tech Lead-led placement review recommended a dedicated milestone to preserve the existing M3 Authentication acceptance and the clear M4 Organization Bootstrap boundary.
+
+## Accepted Decisions
+- **F1 — Placement:** Introduce **M3.5 — Global Account Security** after M3 and before M4, with no renumbering of M4–M8. M3.5 owns Email Verification and Password Recovery/Reset as global account-security workflows independent of Organization, Membership and tenant context.
+- **F2 — Organization-creation gate:** An authenticated global User **must have verified the current canonical login email before creating an Organization**. Login remains permitted while email is unverified. Client presentation cannot substitute for authoritative backend verification.
+- **F3 — Password-reset session policy:** A successful Password Reset must **revoke all existing authentication Sessions for the User**, then require normal Login. Do not automatically authenticate the User after a reset. The password update, valid one-time recovery-token consumption, session revocation and relevant verification-state change must be transactionally consistent.
+- **F4 — Recovery proves current mailbox:** A successful Password Reset, authorized by valid proof of control of the **current canonical login email mailbox**, also marks that email verified. An obsolete, mismatched or superseded email/token must not verify a different/current mailbox by accident.
+
+## Reasoning
+Account recovery and mailbox proof belong to Global User Identity rather than Organization/Tenant operations. Placement immediately after M3 reuses the existing credential and opaque PostgreSQL session model, enables safe prerequisites before M4 Organization creation and supplies trustworthy mailbox-proof concepts before M7 Invitation. This reduces rework without diluting M4 or turning M8 validation into feature implementation.
+
+## Scope / Guardrails
+M3 scope, code, UI status, security acceptance, QA exceptions and pending EM-L1 correction **remain unchanged**. M4–M8 retain their numbering and established responsibilities. No implementation, schema, M4 work or new UX design is authorized by this decision. The existing MUI/Next.js/FastAPI/PostgreSQL and Global User/Membership architecture remains authoritative.
+
+M3.5 detailed design must determine minimal email delivery, verification/recovery token lifecycle, purpose binding, expiry and single-use, resend, rate limiting, account-enumeration resistance, error/recovery UX, and browser/independent QA acceptance. Recovery must enforce existing M3 password policy. Preserve the existing distinction between unverified login email and proven mailbox control; M7 Invitation still requires its own secure recipient-binding design rather than assuming an email flag alone grants Membership.
+
+## Trade-offs
+A new milestone increases Phase 1 effort, outbound email operational dependency, migration, security and browser test scope, and postpones M4. In return, it avoids mixing global account security with Organization bootstrap and supports self-service recovery with lower support burden for a one-person software house.
+
+## Open Mechanisms
+Exact schema/tables, token length and TTLs, email provider, sending/resend failure behavior, routes, UX screens, abuse thresholds and operational cleanup remain for M3.5 Product/Architecture/Security/QA detailed design, not prematurely decided here.
+
+## Founder Approval
+**Accepted F1, F2, F3 and F4 on 2026-10-29.** M3 **IN PROGRESS / UNCHANGED**; M3.5 **APPROVED PLACEMENT, DESIGN AND IMPLEMENTATION NOT STARTED**; M4 **NOT AUTHORIZED**.
