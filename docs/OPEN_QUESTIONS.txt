@@ -1083,6 +1083,42 @@ The support model must remain realistic for a one-person software house.
 
 ---
 
+# PHASE 1 — GLOBAL ACCOUNT SECURITY (M3.5)
+
+## ASQ-001 — Email Verification / Password Recovery Milestone Placement
+
+Status:
+
+Resolved — Founder Approved (2026-10-29; DEC-012).
+
+Resolution:
+
+Email Verification and Password Recovery/Reset are approved Phase 1 requirements. **M3.5 — Global Account Security** is placed after M3 and before M4; M4–M8 numbering is unchanged. M3 code, approved design, acceptance status and QA exceptions are unchanged. M4 implementation remains NOT AUTHORIZED.
+
+---
+
+## ASQ-002 — Account Email and Recovery Technical Design
+
+Which minimal verification and recovery token models, expiry/reissue rules, email provider and failure/retry behavior, abuse thresholds, migration strategy, cleanup, browser UX and security QA are suitable for a one-person software house?
+
+Status:
+
+Open — Defer to M3.5 Detailed Product / Architecture / Security / QA Design after M3 closure.
+
+Accepted policy constraints (DEC-012):
+
+- These are **global User Identity** workflows, not Organization or tenant workflows.
+- Authenticated Users with unverified current canonical login email may Login, but **cannot create an Organization**. M4 must enforce this at the Backend.
+- Successful Password Reset consumes valid proof, updates the credential under existing M3 password policy, revokes **all** existing User Sessions, and requires normal Login without automatically issuing a Session.
+- A reset succeeds as email verification only when the recovery token proves control of the **current canonical login email mailbox**. Stale/mismatched proof cannot verify another email.
+- The security-sensitive updates must be consistent. Failure cannot leave partial credential/session/verification authority.
+- Tokens should be purpose-bound, unpredictable, expiring and single use; design must prevent account enumeration, replay and abuse.
+- M7 Invitation retains its own recipient identity-binding design; verification state alone must not grant Membership.
+
+Unresolved implementation choices must not be mistaken for additional Founder-approved architecture or Authorization to implement. See DEC-012 and M3.5 section in PHASE_1_IMPLEMENTATION.
+
+---
+
 # QUESTION MANAGEMENT
 
 When resolving a question:
