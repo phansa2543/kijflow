@@ -1,16 +1,92 @@
 "use client"
 
-import { useState, useEffect, type FormEvent } from "react"
+import { useState, useEffect, type FormEvent, type ReactNode } from "react"
 import { 
     Alert,
     Box,
     Button,
+    CircularProgress,
     TextField,
-    Typography
+    Typography,
+    IconButton,
+    InputAdornment
 } from "@mui/material"
+import { Visibility, VisibilityOff } from "@mui/icons-material"
 
 import { loginUser } from "@/lib/api/login"
 import { checkSession } from "@/lib/api/session"
+
+const alertSx = {
+    border: 1,
+    borderColor: "currentColor",
+    alignItems: "flex-start",
+    "& .MuiAlert-message": {
+        minWidth: 0,
+        lineHeight: 1.75,
+        overflowWrap: "anywhere"
+    }
+}
+
+const buttonSx = {
+    minHeight: 48,
+    py: 1.5,
+    fontSize: "1rem",
+    fontWeight: 600,
+    lineHeight: 1.5,
+    textTransform: "none",
+    overflowWrap: "anywhere",
+    boxShadow: "none",
+    "&:hover": { boxShadow: "none" }
+}
+
+function LoginCard({ children }: { children: ReactNode }) {
+    return (
+        <Box
+            sx={{
+                minHeight: "100dvh",
+                boxSizing: "border-box",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: "background.default",
+                color: "text.primary",
+                px: { xs: 2, sm: 3 },
+                py: { xs: 4, sm: 6 }
+            }}
+        >
+            <Box
+                component="main"
+                aria-labelledby="login-heading"
+                sx={{
+                    width: "100%",
+                    maxWidth: 420,
+                    minWidth: 0,
+                    boxSizing: "border-box",
+                    bgcolor: "background.paper",
+                    borderRadius: "16px",
+                    border: 1,
+                    borderColor: "divider",
+                    boxShadow: 2,
+                    p: { xs: 3, sm: 4 },
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 3,
+                    overflowWrap: "anywhere"
+                }}
+            >
+                <Typography
+                    id="login-heading"
+                    variant="h5"
+                    component="h1"
+                    sx={{ fontWeight: 700, lineHeight: 1.5 }}
+                >
+                    เข้าสู่ระบบ Kijflow
+                </Typography>
+                { children }
+            </Box>
+        </Box>
+    )
+}
 
 export default function LoginPage() {
     const [email, setEmail] = useState("")
@@ -25,6 +101,7 @@ export default function LoginPage() {
     | "uncertain"
 
     const [authState, setAuthState] = useState<AuthState>("checking")
+    const [showPassword, setShowPassword] = useState(false)
 
     useEffect(() => {
         let cancelled = false
@@ -151,130 +228,151 @@ export default function LoginPage() {
 
     if (authState === "checking") {
         return (
-            <Box
-                component="main"
-                sx={{
-                    minHeight: "100vh",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center"
-                }}
-            >
-                <Typography role="status">
-                    กำลังตรวจสอบสถานะการเข้าสู่ระบบ...
-                </Typography>
-            </Box>
+            <LoginCard>
+                <Box
+                    role="status"
+                    aria-live="polite"
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 2,
+                        py: 1,
+                        textAlign: "center"
+                    }}
+                >
+                    <CircularProgress size={28} aria-hidden="true" />
+                    <Typography color="text.secondary" sx={{ lineHeight: 1.75 }}>
+                        กำลังตรวจสอบสถานะการเข้าสู่ระบบ...
+                    </Typography>
+                </Box>
+            </LoginCard>
         )
     }
 
     if (authState === "authenticated") {
         return (
-            <Box
-                component="main"
-                sx={{ p: 4 }}
-            >
+            <LoginCard>
                 <Alert
                     severity="success"
+                    role="status"
+                    sx={ alertSx }
                 >
                     เข้าสู่ระบบสำเร็จและยืนยัน Session แล้ว
                 </Alert>
                 <Typography
-                    sx={{ mt: 2 }}
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ lineHeight: 1.75 }}
                 >
                     ยืนยัน Global User Identity แล้ว
                 </Typography>
-            </Box>
+            </LoginCard>
         )
     }
 
     return (
-        <Box
-            sx={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                p: 2
-            }}
-        >
+        <LoginCard>
             <Box
+                component="form"
+                onSubmit={ handleSubmit }
+                noValidate
+                aria-busy={ isSubmitting }
                 sx={{
-                    width: "100%",
-                    maxWidth: 420
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2.5,
+                    minWidth: 0
                 }}
             >
-                <Typography
-                    variant="h4"
-                    component="h1"
-                    gutterBottom
+                <TextField
+                    id="login-email"
+                    label="อีเมล"
+                    type="email"
+                    autoComplete="username"
+                    value={ email }
+                    onChange={(event) => setEmail(event.target.value)}
+                    fullWidth
+                    required
+                    disabled={ isSubmitting }
+                />
+                <TextField
+                    id="login-password"
+                    label="รหัสผ่าน"
+                    type={ showPassword ? "text" : "password" }
+                    autoComplete="current-password"
+                    value={ password }
+                    onChange={(event) => setPassword(event.target.value)}
+                    fullWidth
+                    required
+                    disabled={ isSubmitting }
+                    slotProps={{
+                        input: {
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        type="button"
+                                        edge="end"
+                                        aria-label={
+                                            showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"
+                                        }
+                                        aria-pressed={ showPassword }
+                                        disabled={ isSubmitting }
+                                        onClick={() => setShowPassword((previous) => !previous)}
+                                        sx={{
+                                            minWidth: 44,
+                                            minHeight: 44,
+                                            "&Mui-focusVisible": {
+                                                outline: "2px solid",
+                                                outlineColor: "primary.main",
+                                                outlineOffset: 2
+                                            }
+                                        }}
+                                    >
+                                        { showPassword ? <VisibilityOff /> : <Visibility /> }
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }
+                    }}
+                />
+                {
+                    error && (
+                        <Alert
+                            severity={ authState === "uncertain" ? "warning" : "error" }
+                            role="alert"
+                            sx={ alertSx }
+                        >
+                            { error }
+                        </Alert>
+                    )
+                }
+                {
+                    authState === "uncertain" && !isSubmitting && (
+                        <Button
+                            type="button"
+                            variant="outlined"
+                            fullWidth
+                            disabled={ isSubmitting }
+                            loading={ isSubmitting }
+                            onClick={ retrySessionCheck }
+                            sx={ buttonSx }
+                        >
+                            ตรวจสอบสถานะอีกครั้ง
+                        </Button>
+                    )
+                }
+                <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    disabled={ isSubmitting }
+                    loading={ isSubmitting }
+                    sx={ buttonSx }
                 >
-                    เข้าสู่ระบบ Kijflow
-                </Typography>
-                <Box
-                    component="form"
-                    onSubmit={ handleSubmit }
-                    noValidate
-                >
-                    <TextField
-                        id="login-email"
-                        label="อีเมล"
-                        type="email"
-                        autoComplete="username"
-                        value={ email }
-                        onChange={(event) => setEmail(event.target.value)}
-                        fullWidth
-                        required
-                        margin="normal"
-                        disabled={ isSubmitting }
-                    />
-                    <TextField
-                        id="login-password"
-                        label="รหัสผ่าน"
-                        type="password"
-                        autoComplete="current-password"
-                        value={ password }
-                        onChange={(event) => setPassword(event.target.value)}
-                        fullWidth
-                        required
-                        margin="normal"
-                        disabled={ isSubmitting }
-                    />
-                    {
-                        error && (
-                            <Alert
-                                severity="error"
-                                role="alert"
-                                sx={{ mt: 2 }}
-                            >
-                                { error }
-                            </Alert>
-                        )
-                    }
-                    {
-                        authState === "uncertain" && !isSubmitting && (
-                            <Button
-                                type="button"
-                                variant="outlined"
-                                fullWidth
-                                disabled={ isSubmitting }
-                                onClick={ retrySessionCheck }
-                                sx={{ mt: 2 }}
-                            >
-                                ตรวจสอบสถานะอีกครั้ง
-                            </Button>
-                        )
-                    }
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        fullWidth
-                        disabled={ isSubmitting }
-                        sx={{ mt: 3 }}
-                    >
-                        { isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ" }
-                    </Button>
-                </Box>
+                    { isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ" }
+                </Button>
             </Box>
-        </Box>
+        </LoginCard>
     )
 }
