@@ -153,7 +153,10 @@ export default function RegisterPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                p: 2
+                bgcolor: "background.default",
+                color: "text.primary",
+                px: { xs: 2, sm: 3 },
+                py: { xs: 4, sm: 6 }
             }}
         >
             <Box
@@ -161,21 +164,34 @@ export default function RegisterPage() {
                 sx={{
                     width: "100%",
                     maxWidth: 420,
+                    boxSizing: "border-box",
                     bgcolor: "background.paper",
                     borderRadius: "16px",
-                    p: 3,
+                    border: 1,
+                    borderColor: "divider",
+                    boxShadow: 2,
+                    p: { xs: 3, sm: 4 },
                     display: "flex",
                     flexDirection: "column",
-                    gap: 2
+                    gap: 3
                 }}
             >
-                <Typography 
-                    variant="h5" 
-                    variantMapping={{ h5: "h1" }} 
-                    sx={{ fontWeight: 600 }}
-                >
-                    สมัครสมาชิก Kijflow
-                </Typography>
+                <Box component="header">
+                    <Typography
+                        variant="h5"
+                        variantMapping={{ h5: "h1" }}
+                        sx={{ fontWeight: 700, lineHeight: 1.5 }}
+                    >
+                        สมัครสมาชิก Kijflow
+                    </Typography>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 1, lineHeight: 1.75 }}
+                    >
+                        เริ่มต้นใช้งานด้วยอีเมลและรหัสผ่านของคุณ
+                    </Typography>
+                </Box>
                 <Box
                     component="form"
                     onSubmit={ handleSubmit }
@@ -183,7 +199,24 @@ export default function RegisterPage() {
                     sx={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: 2
+                        gap: 2.5,
+                        minWidth: 0,
+                        "& .MuiFormHelperText-root": {
+                            mx: 0,
+                            mt: 1,
+                            lineHeight: 1.75,
+                            overflowWrap: "anywhere"
+                        },
+                        "& .MuiAlert-root": {
+                            border: 1,
+                            borderColor: "currentColor",
+                            alignItems: "flex-start",
+                            "& .MuiAlert-message": {
+                                minWidth: 0,
+                                lineHeight: 1.75,
+                                overflowWrap: "anywhere"
+                            }
+                        }
                     }}
                 >
                     <TextField
@@ -255,6 +288,15 @@ export default function RegisterPage() {
                                             aria-pressed={ showPassword }
                                             onClick={() => setShowPassword((value) => !value)}
                                             edge="end"
+                                            sx={{
+                                                minWidth: 44,
+                                                minHeight: 44,
+                                                "&.Mui-focusVisible": {
+                                                    outline: "3px solid",
+                                                    outlineColor: "primary.main",
+                                                    outlineOffset: "2px"
+                                                }
+                                            }}
                                         >
                                             { showPassword ? <Visibility /> : <VisibilityOff /> }
                                         </IconButton>
@@ -279,7 +321,15 @@ export default function RegisterPage() {
                         fullWidth
                         disabled={ isSubmitting || submitSuccess }
                         loading={ isSubmitting }
-                        sx={{ py: 1.5 }}
+                        sx={{
+                            minHeight: 48,
+                            py: 1.5,
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                            lineHeight: 1.5,
+                            boxShadow: "none",
+                            "&:hover": { boxShadow: "none" }
+                        }}
                     >
                         สมัครสมาชิก
                     </Button>
